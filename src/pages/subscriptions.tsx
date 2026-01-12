@@ -11,6 +11,7 @@ import { parseISO, startOfDay } from 'date-fns'
 import { BILLING_CYCLE_LABELS } from '@/types/subscription'
 import { Plus, MoreVertical, Pencil, Trash2, Power, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { SubscriptionLogo } from '@/components/ui/subscription-logo'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -139,12 +140,13 @@ export function Subscriptions() {
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <div
-                        className="flex h-12 w-12 items-center justify-center rounded-xl text-white font-semibold text-lg"
-                        style={{ backgroundColor: sub.color || category?.color || '#6b7280' }}
-                      >
-                        {sub.name.charAt(0).toUpperCase()}
-                      </div>
+                      <SubscriptionLogo
+                        logoUrl={sub.logo_url}
+                        name={sub.name}
+                        color={sub.color || category?.color}
+                        size="lg"
+                        className="rounded-xl"
+                      />
                       <div>
                         <h3 className="font-semibold">{sub.name}</h3>
                         {category && (

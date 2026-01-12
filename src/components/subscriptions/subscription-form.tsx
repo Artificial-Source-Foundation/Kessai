@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { format } from 'date-fns'
 import { useCategories } from '@/hooks/use-categories'
 import { usePaymentCardStore } from '@/stores/payment-card-store'
-import { pickLogoAsBase64 } from '@/lib/logo-storage'
+import { pickAndSaveLogo, getLogoDataUrl } from '@/lib/logo-storage'
 import { CreditCard, Upload, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -52,7 +52,9 @@ export function SubscriptionForm({
 
   useEffect(() => {
     if (subscription?.logo_url) {
-      setLogoPreview(subscription.logo_url)
+      getLogoDataUrl(subscription.logo_url).then((url) => {
+        if (url) setLogoPreview(url)
+      })
     }
   }, [subscription?.logo_url])
 
@@ -268,10 +270,12 @@ export function SubscriptionForm({
               onClick={async () => {
                 setIsUploadingLogo(true)
                 try {
-                  const base64Logo = await pickLogoAsBase64()
-                  if (base64Logo) {
-                    form.setValue('logo_url', base64Logo)
-                    setLogoPreview(base64Logo)
+                  const subId = subscription?.id || `new-${Date.now()}`
+                  const filename = await pickAndSaveLogo(subId)
+                  if (filename) {
+                    form.setValue('logo_url', filename)
+                    const dataUrl = await getLogoDataUrl(filename)
+                    if (dataUrl) setLogoPreview(dataUrl)
                   }
                 } finally {
                   setIsUploadingLogo(false)

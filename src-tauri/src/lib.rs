@@ -1,4 +1,9 @@
+use tauri::Manager;
 use tauri_plugin_sql::{Migration, MigrationKind};
+use std::fs;
+use std::path::PathBuf;
+use image::ImageReader;
+use base64::{Engine as _, engine::general_purpose::STANDARD as BASE64};
 
 fn get_migrations() -> Vec<Migration> {
     vec![
@@ -117,6 +122,52 @@ fn get_migrations() -> Vec<Migration> {
     ]
 }
 
+fn get_logos_dir(app_handle: &tauri::AppHandle) -> PathBuf {
+    let resource_dir = app_handle.path().resource_dir().unwrap_or_else(|_| PathBuf::from("."));
+    let logos_dir = resource_dir.join("data").join("logos");
+    fs::create_dir_all(&logos_dir).ok();
+    logos_dir
+}
+
+#[tauri::command]
+fn save_logo(app_handle: tauri::AppHandle, source_path: String, subscription_id: String) -> Result<String, String> {
+    let logos_dir = get_logos_dir(&app_handle);
+    let filename = format!("{}.webp", subscription_id);
+    let dest_path = logos_dir.join(&filename);
+
+    let img = ImageReader::open(&source_path)
+        .map_err(|e| format!("Failed to open image: {}", e))?
+        .decode()
+        .map_err(|e| format!("Failed to decode image: {}", e))?;
+
+    let resized = img.thumbnail(256, 256);
+    
+    resized.save_with_format(&dest_path, image::ImageFormat::WebP)
+        .map_err(|e| format!("Failed to save WebP: {}", e))?;
+
+    Ok(filename)
+}
+
+#[tauri::command]
+fn get_logo_base64(app_handle: tauri::AppHandle, filename: String) -> Result<String, String> {
+    let logos_dir = get_logos_dir(&app_handle);
+    let file_path = logos_dir.join(&filename);
+    
+    let data = fs::read(&file_path)
+        .map_err(|e| format!("Failed to read logo: {}", e))?;
+    
+    let base64_data = BASE64.encode(&data);
+    Ok(format!("data:image/webp;base64,{}", base64_data))
+}
+
+#[tauri::command]
+fn delete_logo(app_handle: tauri::AppHandle, filename: String) -> Result<(), String> {
+    let logos_dir = get_logos_dir(&app_handle);
+    let file_path = logos_dir.join(&filename);
+    fs::remove_file(&file_path).ok();
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -129,6 +180,7 @@ pub fn run() {
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
+        .invoke_handler(tauri::generate_handler![save_logo, get_logo_base64, delete_logo])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

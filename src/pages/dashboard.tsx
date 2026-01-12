@@ -9,6 +9,7 @@ import { getUpcomingPayments, formatShortDate, getDaysUntil } from '@/lib/date-u
 import { StatsCard } from '@/components/dashboard/stats-card'
 import { CategoryBreakdown } from '@/components/dashboard/category-breakdown'
 import { MonthlyTrendChart } from '@/components/dashboard/monthly-trend-chart'
+import { SubscriptionLogo } from '@/components/ui/subscription-logo'
 import type { CurrencyCode } from '@/lib/currency'
 
 export function Dashboard() {
@@ -104,20 +105,12 @@ export function Dashboard() {
                   className="flex items-center justify-between rounded-lg bg-white/5 p-3"
                 >
                   <div className="flex items-center gap-3">
-                    {sub.logo_url ? (
-                      <img
-                        src={sub.logo_url}
-                        alt={sub.name}
-                        className="h-10 w-10 rounded-lg object-cover"
-                      />
-                    ) : (
-                      <div
-                        className="flex h-10 w-10 items-center justify-center rounded-lg text-white font-semibold"
-                        style={{ backgroundColor: sub.color || '#6b7280' }}
-                      >
-                        {sub.name.charAt(0).toUpperCase()}
-                      </div>
-                    )}
+                    <SubscriptionLogo
+                      logoUrl={sub.logo_url}
+                      name={sub.name}
+                      color={sub.color}
+                      size="md"
+                    />
                     <div>
                       <p className="font-medium">{sub.name}</p>
                       <p className="text-sm text-muted-foreground">

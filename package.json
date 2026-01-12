@@ -7,8 +7,10 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
+    "start": "tauri dev",
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tauri build",
+    "build:web": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",

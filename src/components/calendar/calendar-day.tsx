@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { SubscriptionLogo } from '@/components/ui/subscription-logo';
 import type { Subscription } from '@/types/subscription';
 
 interface DayPayment {
@@ -63,28 +64,14 @@ export function CalendarDay({
       {hasPayments && (
         <div className="flex flex-wrap items-center justify-center gap-1 px-1">
           {visiblePayments.map((p, idx) => (
-            p.subscription.logo_url ? (
-              <img
-                key={idx}
-                src={p.subscription.logo_url}
-                alt={p.subscription.name}
-                className={cn(
-                  'h-5 w-5 rounded-full object-cover border',
-                  p.isPaid ? 'border-emerald-500/50 opacity-60' : 'border-white/20'
-                )}
-              />
-            ) : (
-              <div
-                key={idx}
-                className={cn(
-                  'h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white',
-                  p.isPaid && 'opacity-60'
-                )}
-                style={{ backgroundColor: p.subscription.color || '#8b5cf6' }}
-              >
-                {p.subscription.name.charAt(0).toUpperCase()}
-              </div>
-            )
+            <SubscriptionLogo
+              key={idx}
+              logoUrl={p.subscription.logo_url}
+              name={p.subscription.name}
+              color={p.subscription.color}
+              size="sm"
+              className={cn(p.isPaid && 'opacity-60')}
+            />
           ))}
           {remainingCount > 0 && (
             <span className="text-[10px] text-muted-foreground">+{remainingCount}</span>
