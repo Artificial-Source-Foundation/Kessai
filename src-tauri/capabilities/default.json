@@ -9,6 +9,13 @@
     "sql:default",
     "sql:allow-execute",
     "sql:allow-select",
-    "notification:default"
+    "notification:default",
+    "fs:default",
+    "fs:allow-app-read",
+    "fs:allow-app-write",
+    "fs:allow-app-read-recursive",
+    "fs:allow-app-write-recursive",
+    "dialog:default",
+    "dialog:allow-open"
   ]
 }

@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { useSubscriptions } from '@/hooks/use-subscriptions'
+import { useSubscriptionStore } from '@/stores/subscription-store'
 import { useUiStore } from '@/stores/ui-store'
 import { useSettingsStore } from '@/stores/settings-store'
+import { usePaymentStore } from '@/stores/payment-store'
 import { formatCurrency } from '@/lib/currency'
-import { formatPaymentDate } from '@/lib/date-utils'
+import { formatPaymentDate, calculateNextPaymentDate } from '@/lib/date-utils'
+import { parseISO, startOfDay } from 'date-fns'
 import { BILLING_CYCLE_LABELS } from '@/types/subscription'
-import { Plus, MoreVertical, Pencil, Trash2, Power } from 'lucide-react'
+import { Plus, MoreVertical, Pencil, Trash2, Power, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -23,6 +26,7 @@ export function Subscriptions() {
   const { subscriptions, isLoading, remove, toggleActive, getCategory } = useSubscriptions()
   const { openSubscriptionDialog } = useUiStore()
   const { settings, fetch: fetchSettings } = useSettingsStore()
+  const { markAsPaid } = usePaymentStore()
   const currency = (settings?.currency || 'USD') as CurrencyCode
 
   useEffect(() => {
@@ -31,6 +35,34 @@ export function Subscriptions() {
 
   const [deleteTarget, setDeleteTarget] = useState<Subscription | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+
+  const handleMarkAsPaid = async (sub: Subscription) => {
+    if (!sub.next_payment_date) return
+    try {
+      await markAsPaid(sub.id, sub.next_payment_date, sub.amount)
+      
+      const currentPaymentDate = parseISO(sub.next_payment_date)
+      const nextDate = calculateNextPaymentDate(currentPaymentDate, sub.billing_cycle, sub.billing_day || undefined)
+      await useSubscriptionStore.getState().update(sub.id, { 
+        next_payment_date: nextDate.toISOString().split('T')[0] 
+      })
+      
+      toast.success('Payment recorded', {
+        description: `${sub.name} marked as paid. Next payment: ${formatPaymentDate(nextDate)}`,
+      })
+    } catch (error) {
+      toast.error('Error', {
+        description: 'Failed to record payment.',
+      })
+    }
+  }
+
+  const canMarkAsPaid = (sub: Subscription): boolean => {
+    if (!sub.next_payment_date || !sub.is_active) return false
+    const paymentDate = startOfDay(parseISO(sub.next_payment_date))
+    const today = startOfDay(new Date())
+    return paymentDate <= today
+  }
 
   const handleDelete = async () => {
     if (!deleteTarget) return
@@ -161,9 +193,22 @@ export function Subscriptions() {
                       </span>
                     </div>
                     {sub.next_payment_date && (
-                      <p className="text-sm text-muted-foreground">
-                        Next: {formatPaymentDate(sub.next_payment_date)}
-                      </p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm text-muted-foreground">
+                          Next: {formatPaymentDate(sub.next_payment_date)}
+                        </p>
+                        {canMarkAsPaid(sub) && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleMarkAsPaid(sub)}
+                            className="h-7 gap-1 text-xs bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20"
+                          >
+                            <Check className="h-3 w-3" />
+                            Paid
+                          </Button>
+                        )}
+                      </div>
                     )}
                     {!sub.is_active && (
                       <span className="inline-block rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">

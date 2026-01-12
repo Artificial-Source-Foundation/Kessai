@@ -1,8 +1,11 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { format } from 'date-fns'
 import { useCategories } from '@/hooks/use-categories'
+import { usePaymentCardStore } from '@/stores/payment-card-store'
+import { pickLogoAsBase64 } from '@/lib/logo-storage'
+import { CreditCard, Upload, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -38,7 +41,20 @@ export function SubscriptionForm({
   isLoading = false,
 }: SubscriptionFormProps) {
   const { categories } = useCategories()
+  const { cards, fetch: fetchCards } = usePaymentCardStore()
   const isEditing = Boolean(subscription)
+  const [logoPreview, setLogoPreview] = useState<string | null>(null)
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false)
+
+  useEffect(() => {
+    fetchCards()
+  }, [fetchCards])
+
+  useEffect(() => {
+    if (subscription?.logo_url) {
+      setLogoPreview(subscription.logo_url)
+    }
+  }, [subscription?.logo_url])
 
   const form = useForm<SubscriptionFormData>({
     resolver: zodResolver(subscriptionFormSchema),
@@ -218,6 +234,80 @@ export function SubscriptionForm({
             ))}
           </div>
         </div>
+
+        <div className="space-y-2">
+          <Label>Logo</Label>
+          <div className="flex items-center gap-3">
+            {logoPreview ? (
+              <div className="relative">
+                <img
+                  src={logoPreview}
+                  alt="Logo preview"
+                  className="h-12 w-12 rounded-lg object-cover border border-white/10"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLogoPreview(null)
+                    form.setValue('logo_url', null)
+                  }}
+                  className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 flex items-center justify-center"
+                >
+                  <X className="h-3 w-3 text-white" />
+                </button>
+              </div>
+            ) : (
+              <div className="h-12 w-12 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
+                <Upload className="h-5 w-5 text-muted-foreground" />
+              </div>
+            )}
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isUploadingLogo}
+              onClick={async () => {
+                setIsUploadingLogo(true)
+                try {
+                  const base64Logo = await pickLogoAsBase64()
+                  if (base64Logo) {
+                    form.setValue('logo_url', base64Logo)
+                    setLogoPreview(base64Logo)
+                  }
+                } finally {
+                  setIsUploadingLogo(false)
+                }
+              }}
+            >
+              {isUploadingLogo ? 'Uploading...' : logoPreview ? 'Change Logo' : 'Upload Logo'}
+            </Button>
+          </div>
+        </div>
+
+        {cards.length > 0 && (
+          <div className="space-y-2">
+            <Label htmlFor="card">Payment Card</Label>
+            <Select
+              value={form.watch('card_id') || 'none'}
+              onValueChange={(value) => form.setValue('card_id', value === 'none' ? null : value)}
+            >
+              <SelectTrigger className="bg-white/5 border-white/10">
+                <SelectValue placeholder="Select card" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No card</SelectItem>
+                {cards.map((card) => (
+                  <SelectItem key={card.id} value={card.id}>
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="h-4 w-4" style={{ color: card.color }} />
+                      {card.name}
+                      {card.last_four && <span className="text-muted-foreground">•••• {card.last_four}</span>}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         <div className="space-y-2">
           <Label htmlFor="notes">Notes</Label>

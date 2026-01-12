@@ -1,5 +1,4 @@
 import { cn } from '@/lib/utils';
-import { PaymentIndicatorStack } from './payment-indicator';
 import { motion } from 'framer-motion';
 import type { Subscription } from '@/types/subscription';
 
@@ -30,15 +29,18 @@ export function CalendarDay({
   onClick,
 }: CalendarDayProps) {
   const hasPayments = payments.length > 0;
+  const maxLogos = 3;
+  const visiblePayments = payments.slice(0, maxLogos);
+  const remainingCount = payments.length - maxLogos;
 
   return (
     <motion.button
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
       onClick={onClick}
       className={cn(
-        'relative h-12 w-full rounded-lg transition-all duration-200',
-        'flex flex-col items-center justify-center gap-0.5',
+        'relative h-20 w-full rounded-lg transition-all duration-200',
+        'flex flex-col items-center justify-start pt-1 gap-1',
         'backdrop-blur-sm border',
         isCurrentMonth
           ? 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20'
@@ -59,14 +61,35 @@ export function CalendarDay({
       </span>
 
       {hasPayments && (
-        <PaymentIndicatorStack
-          payments={payments.map((p) => ({
-            color: p.subscription.color || '#8b5cf6',
-            isPaid: p.isPaid,
-            isSkipped: p.isSkipped,
-          }))}
-          maxVisible={3}
-        />
+        <div className="flex flex-wrap items-center justify-center gap-1 px-1">
+          {visiblePayments.map((p, idx) => (
+            p.subscription.logo_url ? (
+              <img
+                key={idx}
+                src={p.subscription.logo_url}
+                alt={p.subscription.name}
+                className={cn(
+                  'h-5 w-5 rounded-full object-cover border',
+                  p.isPaid ? 'border-emerald-500/50 opacity-60' : 'border-white/20'
+                )}
+              />
+            ) : (
+              <div
+                key={idx}
+                className={cn(
+                  'h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white',
+                  p.isPaid && 'opacity-60'
+                )}
+                style={{ backgroundColor: p.subscription.color || '#8b5cf6' }}
+              >
+                {p.subscription.name.charAt(0).toUpperCase()}
+              </div>
+            )
+          ))}
+          {remainingCount > 0 && (
+            <span className="text-[10px] text-muted-foreground">+{remainingCount}</span>
+          )}
+        </div>
       )}
 
       {isToday && (

@@ -16,7 +16,9 @@ import {
 import { CategoryManager } from '@/components/categories/category-manager'
 import { NotificationSettings } from '@/components/settings/notification-settings'
 import { DataManagement } from '@/components/settings/data-management'
+import { CardManager } from '@/components/settings/card-manager'
 import type { Theme } from '@/types/settings'
+import type { CurrencyCode } from '@/lib/currency'
 
 export function SettingsPage() {
   const { settings, isLoading, setCurrency, update, refresh: refetchSettings } = useSettings()
@@ -142,6 +144,15 @@ export function SettingsPage() {
               <span className="font-medium">MIT</span>
             </div>
           </div>
+        </div>
+
+        <div className="glass-card space-y-6 p-6">
+          <div>
+            <h2 className="text-lg font-semibold">Payment Cards</h2>
+            <p className="text-sm text-muted-foreground">Manage your payment methods</p>
+          </div>
+
+          <CardManager currency={settings.currency as CurrencyCode} />
         </div>
 
         <div className="glass-card space-y-6 p-6 lg:col-span-2">

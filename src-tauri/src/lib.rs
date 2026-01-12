@@ -96,6 +96,24 @@ fn get_migrations() -> Vec<Migration> {
             "#,
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 5,
+            description: "create_payment_cards_table",
+            sql: r#"
+                CREATE TABLE IF NOT EXISTS payment_cards (
+                    id TEXT PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    card_type TEXT NOT NULL DEFAULT 'debit',
+                    last_four TEXT,
+                    color TEXT NOT NULL DEFAULT '#6b7280',
+                    credit_limit REAL,
+                    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+                );
+
+                ALTER TABLE subscriptions ADD COLUMN card_id TEXT REFERENCES payment_cards(id);
+            "#,
+            kind: MigrationKind::Up,
+        },
     ]
 }
 
@@ -109,6 +127,8 @@ pub fn run() {
                 .build(),
         )
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_dialog::init())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

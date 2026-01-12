@@ -76,20 +76,24 @@ export function useCalendarStats(currentDate: Date) {
 
       return subscriptionsForMonth
         .filter((sub) => {
-          if (sub.billing_cycle === 'yearly' && sub.next_payment_date) {
+          if (sub.next_payment_date) {
             const nextPayment = parseISO(sub.next_payment_date);
-            return getDate(nextPayment) === dayOfMonth && isSameMonth(nextPayment, currentDate);
+            if (isSameMonth(nextPayment, currentDate)) {
+              return getDate(nextPayment) === dayOfMonth;
+            }
           }
           
-          if (sub.billing_cycle === 'monthly' || sub.billing_cycle === 'quarterly') {
+          if (sub.billing_day && (sub.billing_cycle === 'monthly' || sub.billing_cycle === 'quarterly')) {
             return sub.billing_day === dayOfMonth;
           }
           
-          if (sub.billing_cycle === 'weekly') {
-            return true;
+          if (sub.billing_cycle === 'weekly' && sub.next_payment_date) {
+            const nextPayment = parseISO(sub.next_payment_date);
+            const checkDate = new Date(year, month - 1, dayOfMonth);
+            return nextPayment.getDay() === checkDate.getDay();
           }
 
-          return sub.billing_day === dayOfMonth;
+          return false;
         })
         .map((sub) => {
           const payment = payments.find(

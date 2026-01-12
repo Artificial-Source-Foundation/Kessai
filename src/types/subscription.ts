@@ -10,11 +10,12 @@ export const subscriptionSchema = z.object({
   billing_cycle: billingCycleSchema,
   billing_day: z.number().min(1).max(31).nullable(),
   category_id: z.string().nullable(),
+  card_id: z.string().nullable().optional(),
   color: z
     .string()
     .regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color format')
     .nullable(),
-  logo_url: z.string().url().nullable().or(z.literal('')),
+  logo_url: z.string().url().nullable().or(z.literal('')).optional(),
   notes: z.string().max(500).nullable(),
   is_active: z.boolean(),
   next_payment_date: z.string().nullable(),
@@ -35,10 +36,12 @@ export const subscriptionFormSchema = z.object({
   billing_cycle: billingCycleSchema,
   billing_day: z.number().min(1).max(31).nullable(),
   category_id: z.string().nullable(),
+  card_id: z.string().nullable().optional(),
   color: z
     .string()
     .regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color')
     .nullable(),
+  logo_url: z.string().url().or(z.literal('')).nullable().optional(),
   notes: z.string().max(500).nullable(),
   next_payment_date: z.string().min(1, 'Payment date is required'),
 })
