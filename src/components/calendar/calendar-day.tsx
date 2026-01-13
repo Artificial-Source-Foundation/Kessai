@@ -44,18 +44,19 @@ export function CalendarDay({
         'flex flex-col items-center justify-start gap-1 pt-1',
         'border backdrop-blur-sm',
         isCurrentMonth
-          ? 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
+          ? 'border-glass-border bg-glass-surface hover:border-glass-border-hover hover:bg-glass-surface-hover'
           : 'text-muted-foreground/50 border-transparent bg-transparent',
-        isToday && 'border-violet-500/30 bg-violet-500/10 ring-2 ring-violet-500/50',
-        isSelected && 'border-violet-500/50 bg-violet-500/20',
+        isToday && 'border-primary/30 bg-primary/10 ring-primary/50 ring-2',
+        isSelected && 'border-primary/50 bg-primary/20 ring-primary/60 ring-2',
         hasPayments && !isSelected && 'bg-white/8'
       )}
     >
       <span
         className={cn(
           'text-sm font-medium',
-          isToday && 'text-violet-400',
-          isSelected && 'text-violet-300'
+          isToday &&
+            'bg-primary text-primary-foreground flex h-7 w-7 items-center justify-center rounded-full shadow-[0_0_12px_rgba(137,90,246,0.6)]',
+          isSelected && !isToday && 'text-primary'
         )}
       >
         {dayOfMonth}
@@ -82,7 +83,7 @@ export function CalendarDay({
       {isToday && (
         <motion.div
           layoutId="today-glow"
-          className="absolute inset-0 -z-10 rounded-lg bg-violet-500/20"
+          className="bg-primary/10 absolute inset-0 -z-10 rounded-lg"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}

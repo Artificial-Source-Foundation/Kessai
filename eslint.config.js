@@ -24,7 +24,10 @@ export default tseslint.config(
       'react-hooks/incompatible-library': 'off',
       'react-refresh/only-export-components': [
         'warn',
-        { allowConstantExport: true, allowExportNames: ['useTheme', 'buttonVariants'] },
+        {
+          allowConstantExport: true,
+          allowExportNames: ['useTheme', 'buttonVariants', 'badgeVariants'],
+        },
       ],
 
       '@typescript-eslint/no-unused-vars': [

@@ -78,7 +78,7 @@ export function MonthSummaryHeader({
         className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-xl"
       >
         <div className="mb-2 flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-violet-400" />
+          <Calendar className="text-primary h-4 w-4" />
           <span className="text-muted-foreground text-sm">Progress</span>
         </div>
         <div className="flex items-center gap-3">
@@ -90,7 +90,7 @@ export function MonthSummaryHeader({
               initial={{ width: 0 }}
               animate={{ width: `${progressPercentage}%` }}
               transition={{ duration: 0.5, ease: 'easeOut' }}
-              className="h-full rounded-full bg-gradient-to-r from-violet-500 to-blue-500"
+              className="from-primary to-accent-cyan h-full rounded-full bg-gradient-to-r"
             />
           </div>
         </div>

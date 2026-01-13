@@ -49,7 +49,7 @@ export function CalendarDayPanel({
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: 300 }}
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-          className="bg-background/80 h-full w-96 overflow-y-auto border-l border-white/10 p-6 backdrop-blur-xl"
+          className="glass-panel h-full w-[380px] overflow-y-auto border-l p-6"
         >
           <div className="mb-6 flex items-center justify-between">
             <div>
@@ -63,7 +63,7 @@ export function CalendarDayPanel({
 
           {payments.length > 0 ? (
             <>
-              <div className="mb-6 rounded-xl border border-white/10 bg-white/5 p-4">
+              <div className="glass-card mb-6 p-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-muted-foreground text-sm">Total Due</p>
