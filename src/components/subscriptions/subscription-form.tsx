@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { format } from 'date-fns'
+import dayjs from 'dayjs'
 import { toast } from 'sonner'
 import { useCategories } from '@/hooks/use-categories'
 import { usePaymentCardStore } from '@/stores/payment-card-store'
@@ -19,12 +19,12 @@ import {
 } from '@/components/ui/select'
 import {
   subscriptionFormSchema,
-  BILLING_CYCLE_LABELS,
   SUBSCRIPTION_COLORS,
   type SubscriptionFormData,
   type BillingCycle,
   type Subscription,
 } from '@/types/subscription'
+import { BILLING_CYCLE_LABELS } from '@/lib/constants'
 import { getCurrencyOptions } from '@/lib/currency'
 import { cn } from '@/lib/utils'
 
@@ -72,7 +72,7 @@ export function SubscriptionForm({
       logo_url: null,
       card_id: null,
       notes: null,
-      next_payment_date: format(new Date(), 'yyyy-MM-dd'),
+      next_payment_date: dayjs().format('YYYY-MM-DD'),
     },
   })
 
@@ -104,7 +104,7 @@ export function SubscriptionForm({
         notes: subscription.notes,
         next_payment_date: subscription.next_payment_date
           ? subscription.next_payment_date.split('T')[0]
-          : format(new Date(), 'yyyy-MM-dd'),
+          : dayjs().format('YYYY-MM-DD'),
       })
     }
   }, [subscription, form])

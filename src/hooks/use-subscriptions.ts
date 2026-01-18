@@ -1,8 +1,8 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useSubscriptionStore } from '@/stores/subscription-store'
 import { useCategoryStore } from '@/stores/category-store'
-import { calculateMonthlyAmount, calculateYearlyAmount } from '@/types/subscription'
+import { calculateMonthlyAmount } from '@/types/subscription'
 import type { Subscription } from '@/types/subscription'
 
 export function useSubscriptions() {
@@ -33,17 +33,21 @@ export function useSubscriptions() {
     fetchCategories()
   }, [fetch, fetchCategories])
 
-  const activeSubscriptions = subscriptions.filter((s) => s.is_active)
-
-  const totalMonthly = activeSubscriptions.reduce(
-    (sum, sub) => sum + calculateMonthlyAmount(sub.amount, sub.billing_cycle),
-    0
+  const activeSubscriptions = useMemo(
+    () => subscriptions.filter((s) => s.is_active),
+    [subscriptions]
   )
 
-  const totalYearly = activeSubscriptions.reduce(
-    (sum, sub) => sum + calculateYearlyAmount(sub.amount, sub.billing_cycle),
-    0
+  const totalMonthly = useMemo(
+    () =>
+      activeSubscriptions.reduce(
+        (sum, sub) => sum + calculateMonthlyAmount(sub.amount, sub.billing_cycle),
+        0
+      ),
+    [activeSubscriptions]
   )
+
+  const totalYearly = useMemo(() => totalMonthly * 12, [totalMonthly])
 
   const getCategory = (categoryId: string | null) => categories.find((c) => c.id === categoryId)
 

@@ -47,9 +47,9 @@ export function DonutChart({ segments, total, currency }: DonutChartProps) {
             strokeWidth="12"
             className="text-muted"
           />
-          {segmentsWithOffset.map((seg, i) => (
+          {segmentsWithOffset.map((seg) => (
             <circle
-              key={i}
+              key={seg.label}
               cx="50"
               cy="50"
               r="40"
@@ -60,7 +60,7 @@ export function DonutChart({ segments, total, currency }: DonutChartProps) {
               strokeDashoffset={-seg.offset}
               strokeLinecap="round"
               className="animate-donut-segment"
-              style={{ animationDelay: `${i * 150}ms` }}
+              style={{ animationDelay: `${segmentsWithOffset.indexOf(seg) * 150}ms` }}
             />
           ))}
         </svg>
@@ -72,8 +72,8 @@ export function DonutChart({ segments, total, currency }: DonutChartProps) {
         </div>
       </div>
       <div className="grid flex-1 grid-cols-1 gap-4 sm:grid-cols-2">
-        {segments.map((seg, i) => (
-          <div key={i} className="flex items-center gap-3">
+        {segments.map((seg) => (
+          <div key={seg.label} className="flex items-center gap-3">
             <div className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: seg.color }} />
             <div className="flex flex-col">
               <span className="text-muted-foreground text-xs">{seg.label}</span>

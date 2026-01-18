@@ -1,16 +1,16 @@
-import {
-  format,
-  addDays,
-  addWeeks,
-  addMonths,
-  addYears,
-  differenceInDays,
-  startOfDay,
-  isToday,
-  isTomorrow,
-  isThisWeek,
-  parseISO,
-} from 'date-fns'
+import dayjs from 'dayjs'
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
+import isToday from 'dayjs/plugin/isToday'
+import isTomorrow from 'dayjs/plugin/isTomorrow'
+import weekOfYear from 'dayjs/plugin/weekOfYear'
+
+// Extend dayjs with plugins
+dayjs.extend(isSameOrBefore)
+dayjs.extend(isSameOrAfter)
+dayjs.extend(isToday)
+dayjs.extend(isTomorrow)
+dayjs.extend(weekOfYear)
 
 /** Supported billing cycle frequencies */
 export type BillingCycle = 'weekly' | 'monthly' | 'quarterly' | 'yearly' | 'custom'
@@ -31,42 +31,34 @@ export function calculateNextPaymentDate(
   cycle: BillingCycle,
   billingDay?: number
 ): Date {
-  const today = startOfDay(new Date())
-  let nextDate = startOfDay(startDate)
+  const today = dayjs().startOf('day')
+  let nextDate = dayjs(startDate).startOf('day')
 
-  while (nextDate <= today) {
+  while (nextDate.isSameOrBefore(today)) {
     switch (cycle) {
       case 'weekly':
-        nextDate = addWeeks(nextDate, 1)
+        nextDate = nextDate.add(1, 'week')
         break
       case 'monthly':
-        nextDate = addMonths(nextDate, 1)
+        nextDate = nextDate.add(1, 'month')
         if (billingDay) {
-          nextDate.setDate(Math.min(billingDay, getDaysInMonth(nextDate)))
+          const daysInMonth = nextDate.daysInMonth()
+          nextDate = nextDate.date(Math.min(billingDay, daysInMonth))
         }
         break
       case 'quarterly':
-        nextDate = addMonths(nextDate, 3)
+        nextDate = nextDate.add(3, 'month')
         break
       case 'yearly':
-        nextDate = addYears(nextDate, 1)
+        nextDate = nextDate.add(1, 'year')
         break
       case 'custom':
-        nextDate = addMonths(nextDate, 1)
+        nextDate = nextDate.add(1, 'month')
         break
     }
   }
 
-  return nextDate
-}
-
-/**
- * Gets the number of days in a month.
- * @param date - Date to check
- * @returns Number of days in the month (28-31)
- */
-function getDaysInMonth(date: Date): number {
-  return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
+  return nextDate.toDate()
 }
 
 /**
@@ -77,8 +69,7 @@ function getDaysInMonth(date: Date): number {
  * formatPaymentDate('2024-01-15') // "Jan 15, 2024"
  */
 export function formatPaymentDate(date: Date | string): string {
-  const d = typeof date === 'string' ? parseISO(date) : date
-  return format(d, 'MMM d, yyyy')
+  return dayjs(date).format('MMM D, YYYY')
 }
 
 /**
@@ -89,8 +80,7 @@ export function formatPaymentDate(date: Date | string): string {
  * formatShortDate('2024-01-15') // "Jan 15"
  */
 export function formatShortDate(date: Date | string): string {
-  const d = typeof date === 'string' ? parseISO(date) : date
-  return format(d, 'MMM d')
+  return dayjs(date).format('MMM D')
 }
 
 /**
@@ -101,8 +91,7 @@ export function formatShortDate(date: Date | string): string {
  * getDaysUntil('2024-01-20') // 5 (if today is Jan 15)
  */
 export function getDaysUntil(date: Date | string): number {
-  const d = typeof date === 'string' ? parseISO(date) : date
-  return differenceInDays(startOfDay(d), startOfDay(new Date()))
+  return dayjs(date).startOf('day').diff(dayjs().startOf('day'), 'day')
 }
 
 /**
@@ -114,11 +103,12 @@ export function getDaysUntil(date: Date | string): number {
  * getUrgencyLevel(addDays(new Date(), 1)) // 'tomorrow'
  */
 export function getUrgencyLevel(date: Date | string): 'today' | 'tomorrow' | 'this-week' | 'later' {
-  const d = typeof date === 'string' ? parseISO(date) : date
+  const d = dayjs(date)
+  const today = dayjs()
 
-  if (isToday(d)) return 'today'
-  if (isTomorrow(d)) return 'tomorrow'
-  if (isThisWeek(d)) return 'this-week'
+  if (d.isToday()) return 'today'
+  if (d.isTomorrow()) return 'tomorrow'
+  if (d.week() === today.week() && d.year() === today.year()) return 'this-week'
   return 'later'
 }
 
@@ -135,17 +125,16 @@ export function getUpcomingPayments<T extends { next_payment_date: string | null
   subscriptions: T[],
   days: number
 ): T[] {
-  const cutoff = addDays(new Date(), days)
+  const cutoff = dayjs().add(days, 'day')
+  const now = dayjs()
 
   return subscriptions
     .filter((sub) => {
       if (!sub.next_payment_date) return false
-      const date = parseISO(sub.next_payment_date)
-      return date <= cutoff && date >= new Date()
+      const date = dayjs(sub.next_payment_date)
+      return date.isSameOrBefore(cutoff) && date.isSameOrAfter(now)
     })
     .sort((a, b) => {
-      const dateA = parseISO(a.next_payment_date!)
-      const dateB = parseISO(b.next_payment_date!)
-      return dateA.getTime() - dateB.getTime()
+      return dayjs(a.next_payment_date!).valueOf() - dayjs(b.next_payment_date!).valueOf()
     })
 }

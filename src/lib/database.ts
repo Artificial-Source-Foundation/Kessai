@@ -43,15 +43,3 @@ export async function execute(sql: string, params: unknown[] = []): Promise<void
   const database = await getDatabase()
   await database.execute(sql, params)
 }
-
-/**
- * Closes the database connection and resets the singleton.
- * Should be called when the application is shutting down.
- * @returns Promise that resolves when the connection is closed
- */
-export async function closeDatabase(): Promise<void> {
-  if (db) {
-    await db.close()
-    db = null
-  }
-}

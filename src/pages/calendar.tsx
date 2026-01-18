@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { format, addMonths, subMonths, getDay, startOfMonth } from 'date-fns'
+import dayjs from 'dayjs'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { CalendarDay } from '@/components/calendar/calendar-day'
 import { CalendarDayPanel } from '@/components/calendar/calendar-day-panel'
@@ -30,10 +30,12 @@ export function CalendarPage() {
   }, [fetchSettings])
 
   const selectedPayments = selectedDate ? getPaymentsForDate(selectedDate) : []
-  const firstDayOffset = getDay(startOfMonth(currentDate))
+  const firstDayOffset = dayjs(currentDate).startOf('month').day()
 
   const navigateMonth = useCallback((delta: number) => {
-    setCurrentDate((prev) => (delta > 0 ? addMonths(prev, 1) : subMonths(prev, 1)))
+    setCurrentDate((prev) =>
+      delta > 0 ? dayjs(prev).add(1, 'month').toDate() : dayjs(prev).subtract(1, 'month').toDate()
+    )
     setSelectedDate(null)
   }, [])
 
@@ -124,7 +126,7 @@ export function CalendarPage() {
                 <ChevronLeft className="h-5 w-5" />
               </button>
               <span className="text-foreground min-w-[140px] text-center text-lg font-bold">
-                {format(currentDate, 'MMMM yyyy')}
+                {dayjs(currentDate).format('MMMM YYYY')}
               </span>
               <button
                 onClick={() => navigateMonth(1)}
@@ -174,9 +176,7 @@ export function CalendarPage() {
                 isCurrentMonth={day.isCurrentMonth}
                 isToday={day.isToday}
                 isSelected={
-                  selectedDate
-                    ? format(selectedDate, 'yyyy-MM-dd') === format(day.date, 'yyyy-MM-dd')
-                    : false
+                  selectedDate ? dayjs(selectedDate).isSame(dayjs(day.date), 'day') : false
                 }
                 payments={day.payments}
                 totalAmount={day.totalAmount}

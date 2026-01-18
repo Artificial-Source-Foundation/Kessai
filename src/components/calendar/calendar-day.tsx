@@ -1,13 +1,5 @@
 import { cn } from '@/lib/utils'
-import type { Subscription } from '@/types/subscription'
-
-interface DayPayment {
-  subscription: Subscription
-  amount: number
-  isPaid: boolean
-  isSkipped: boolean
-  dueDate: string
-}
+import type { DayPayment } from '@/hooks/use-calendar-stats'
 
 interface CalendarDayProps {
   dayOfMonth: number
@@ -54,11 +46,11 @@ export function CalendarDay({
       </span>
 
       {hasPayments &&
-        visiblePayments.map((p, idx) => {
+        visiblePayments.map((p) => {
           const color = p.subscription.color || '#8655f6'
           return (
             <div
-              key={idx}
+              key={`${p.subscription.id}-${p.dueDate}`}
               className={cn(
                 'flex items-center gap-1.5 truncate rounded-lg border px-2 py-1.5 text-xs font-semibold shadow-sm',
                 p.isPaid || p.isSkipped ? 'opacity-70 grayscale' : ''

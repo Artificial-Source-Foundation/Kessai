@@ -1,8 +1,8 @@
 import { z } from 'zod'
 
-export const themeSchema = z.enum(['dark', 'light', 'system'])
+const themeSchema = z.enum(['dark', 'light', 'system'])
 
-export const settingsSchema = z.object({
+const settingsSchema = z.object({
   id: z.string(),
   theme: themeSchema,
   currency: z.string().length(3),

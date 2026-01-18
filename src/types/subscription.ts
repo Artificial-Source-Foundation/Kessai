@@ -51,14 +51,6 @@ export type BillingCycle = z.infer<typeof billingCycleSchema>
 export type NewSubscription = z.infer<typeof newSubscriptionSchema>
 export type SubscriptionFormData = z.infer<typeof subscriptionFormSchema>
 
-export const BILLING_CYCLE_LABELS: Record<BillingCycle, string> = {
-  weekly: 'Weekly',
-  monthly: 'Monthly',
-  quarterly: 'Quarterly',
-  yearly: 'Yearly',
-  custom: 'Custom',
-}
-
 export const BILLING_CYCLE_MULTIPLIERS: Record<BillingCycle, number> = {
   weekly: 52,
   monthly: 12,

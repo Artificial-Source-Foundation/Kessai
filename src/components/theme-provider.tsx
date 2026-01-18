@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useMemo } from 'react'
 import type { Theme } from '@/types/settings'
 
 type ThemeProviderProps = {
@@ -28,22 +28,31 @@ export function ThemeProvider({
     root.classList.remove('light', 'dark')
 
     if (theme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'dark'
-        : 'light'
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+      const systemTheme = mediaQuery.matches ? 'dark' : 'light'
       root.classList.add(systemTheme)
+
+      const handleChange = (e: MediaQueryListEvent) => {
+        root.classList.remove('light', 'dark')
+        root.classList.add(e.matches ? 'dark' : 'light')
+      }
+      mediaQuery.addEventListener('change', handleChange)
+      return () => mediaQuery.removeEventListener('change', handleChange)
     } else {
       root.classList.add(theme)
     }
   }, [theme])
 
-  const value = {
-    theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme)
-      setTheme(theme)
-    },
-  }
+  const value = useMemo(
+    () => ({
+      theme,
+      setTheme: (newTheme: Theme) => {
+        localStorage.setItem(storageKey, newTheme)
+        setTheme(newTheme)
+      },
+    }),
+    [theme, storageKey]
+  )
 
   return <ThemeProviderContext.Provider value={value}>{children}</ThemeProviderContext.Provider>
 }

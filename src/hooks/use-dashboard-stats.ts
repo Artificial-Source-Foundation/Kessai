@@ -2,7 +2,10 @@ import { useMemo } from 'react'
 import { useSubscriptionStore } from '@/stores/subscription-store'
 import { useCategoryStore } from '@/stores/category-store'
 import { calculateMonthlyAmount } from '@/types/subscription'
-import { subMonths, format, startOfMonth, endOfMonth, parseISO, isWithinInterval } from 'date-fns'
+import dayjs from 'dayjs'
+import isBetween from 'dayjs/plugin/isBetween'
+
+dayjs.extend(isBetween)
 
 /**
  * Spending data aggregated by category.
@@ -84,33 +87,33 @@ export function useDashboardStats() {
   }, [activeSubscriptions, categories])
 
   const monthlySpending = useMemo((): MonthlySpending[] => {
-    const now = new Date()
+    const now = dayjs()
     const months: MonthlySpending[] = []
 
     for (let i = 5; i >= 0; i--) {
-      const monthDate = subMonths(now, i)
-      const monthStart = startOfMonth(monthDate)
-      const monthEnd = endOfMonth(monthDate)
+      const monthDate = now.subtract(i, 'month')
+      const monthStart = monthDate.startOf('month')
+      const monthEnd = monthDate.endOf('month')
 
       let total = 0
 
       activeSubscriptions.forEach((sub) => {
         if (!sub.next_payment_date) return
 
-        const paymentDate = parseISO(sub.next_payment_date)
+        const paymentDate = dayjs(sub.next_payment_date)
         const monthlyAmount = calculateMonthlyAmount(sub.amount, sub.billing_cycle)
 
         if (
-          isWithinInterval(paymentDate, { start: monthStart, end: monthEnd }) ||
-          paymentDate < monthStart
+          paymentDate.isBetween(monthStart, monthEnd, 'day', '[]') ||
+          paymentDate.isBefore(monthStart)
         ) {
           total += monthlyAmount
         }
       })
 
       months.push({
-        month: format(monthDate, 'yyyy-MM'),
-        monthLabel: format(monthDate, 'MMM'),
+        month: monthDate.format('YYYY-MM'),
+        monthLabel: monthDate.format('MMM'),
         amount: Math.round(total * 100) / 100,
       })
     }

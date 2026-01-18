@@ -24,7 +24,7 @@ export default defineConfig(async () => ({
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
           'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-select', '@radix-ui/react-slot'],
           'vendor-forms': ['react-hook-form', '@hookform/resolvers', 'zod'],
-          'vendor-utils': ['date-fns', 'zustand', 'sonner'],
+          'vendor-utils': ['dayjs', 'zustand', 'sonner'],
         },
       },
     },

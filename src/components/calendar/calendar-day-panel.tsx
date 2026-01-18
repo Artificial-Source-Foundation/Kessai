@@ -1,18 +1,12 @@
-import { format } from 'date-fns'
+import { useMemo } from 'react'
+import dayjs from 'dayjs'
 import { X, CalendarDays } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SubscriptionCard } from './subscription-card'
 import { formatCurrency } from '@/lib/currency'
+import type { DayPayment } from '@/hooks/use-calendar-stats'
 import type { Subscription } from '@/types/subscription'
 import type { CurrencyCode } from '@/lib/currency'
-
-interface DayPayment {
-  subscription: Subscription
-  amount: number
-  isPaid: boolean
-  isSkipped: boolean
-  dueDate: string
-}
 
 interface CalendarDayPanelProps {
   isOpen: boolean
@@ -35,8 +29,11 @@ export function CalendarDayPanel({
   onSkip,
   onEdit,
 }: CalendarDayPanelProps) {
-  const totalAmount = payments.reduce((sum, p) => sum + p.amount, 0)
-  const unpaidPayments = payments.filter((p) => !p.isPaid && !p.isSkipped)
+  const totalAmount = useMemo(() => payments.reduce((sum, p) => sum + p.amount, 0), [payments])
+  const unpaidPayments = useMemo(
+    () => payments.filter((p) => !p.isPaid && !p.isSkipped),
+    [payments]
+  )
 
   if (!isOpen || !selectedDate) return null
 
@@ -58,7 +55,9 @@ export function CalendarDayPanel({
             <X className="h-5 w-5" />
           </button>
         </div>
-        <h2 className="text-foreground text-3xl font-black">{format(selectedDate, 'MMMM d')}</h2>
+        <h2 className="text-foreground text-3xl font-black">
+          {dayjs(selectedDate).format('MMMM D')}
+        </h2>
         <p className="text-muted-foreground mt-1 text-sm font-medium">
           {payments.length} payment{payments.length !== 1 ? 's' : ''} due{' '}
           <span className="text-foreground font-bold">

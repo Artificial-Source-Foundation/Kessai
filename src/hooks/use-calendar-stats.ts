@@ -1,22 +1,17 @@
 import { useMemo, useEffect, useState } from 'react'
 import { useSubscriptions } from './use-subscriptions'
 import { usePaymentStore } from '@/stores/payment-store'
-import {
-  startOfMonth,
-  endOfMonth,
-  eachDayOfInterval,
-  format,
-  parseISO,
-  isSameMonth,
-  getDate,
-} from 'date-fns'
+import dayjs from 'dayjs'
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import type { Subscription } from '@/types/subscription'
 import type { Payment } from '@/types/payment'
+
+dayjs.extend(isSameOrBefore)
 
 /**
  * Payment data for a specific day.
  */
-interface DayPayment {
+export interface DayPayment {
   /** The subscription associated with this payment */
   subscription: Subscription
   /** Amount due for this payment */
@@ -66,6 +61,19 @@ interface MonthStats {
 }
 
 /**
+ * Helper function to generate an array of dates in a range.
+ */
+function eachDayOfInterval(start: dayjs.Dayjs, end: dayjs.Dayjs): dayjs.Dayjs[] {
+  const days: dayjs.Dayjs[] = []
+  let current = start
+  while (current.isSameOrBefore(end, 'day')) {
+    days.push(current)
+    current = current.add(1, 'day')
+  }
+  return days
+}
+
+/**
  * Hook for computing calendar data and payment statistics.
  * Builds the calendar grid with payment data for each day.
  *
@@ -92,11 +100,12 @@ export function useCalendarStats(currentDate: Date) {
 
   const subscriptionsForMonth = useMemo(() => {
     const activeSubscriptions = subscriptions.filter((s) => s.is_active)
+    const currentDayjs = dayjs(currentDate)
 
     return activeSubscriptions.filter((sub) => {
       if (sub.billing_cycle === 'yearly' && sub.next_payment_date) {
-        const nextPayment = parseISO(sub.next_payment_date)
-        return isSameMonth(nextPayment, currentDate)
+        const nextPayment = dayjs(sub.next_payment_date)
+        return nextPayment.isSame(currentDayjs, 'month')
       }
       return true
     })
@@ -104,14 +113,15 @@ export function useCalendarStats(currentDate: Date) {
 
   const getPaymentsForDay = useMemo(() => {
     return (dayOfMonth: number): DayPayment[] => {
-      const dateStr = format(new Date(year, month - 1, dayOfMonth), 'yyyy-MM-dd')
+      const dateStr = dayjs(new Date(year, month - 1, dayOfMonth)).format('YYYY-MM-DD')
+      const currentDayjs = dayjs(currentDate)
 
       return subscriptionsForMonth
         .filter((sub) => {
           if (sub.next_payment_date) {
-            const nextPayment = parseISO(sub.next_payment_date)
-            if (isSameMonth(nextPayment, currentDate)) {
-              return getDate(nextPayment) === dayOfMonth
+            const nextPayment = dayjs(sub.next_payment_date)
+            if (nextPayment.isSame(currentDayjs, 'month')) {
+              return nextPayment.date() === dayOfMonth
             }
           }
 
@@ -123,9 +133,9 @@ export function useCalendarStats(currentDate: Date) {
           }
 
           if (sub.billing_cycle === 'weekly' && sub.next_payment_date) {
-            const nextPayment = parseISO(sub.next_payment_date)
-            const checkDate = new Date(year, month - 1, dayOfMonth)
-            return nextPayment.getDay() === checkDate.getDay()
+            const nextPayment = dayjs(sub.next_payment_date)
+            const checkDate = dayjs(new Date(year, month - 1, dayOfMonth))
+            return nextPayment.day() === checkDate.day()
           }
 
           return false
@@ -147,19 +157,20 @@ export function useCalendarStats(currentDate: Date) {
   }, [subscriptionsForMonth, payments, year, month, currentDate])
 
   const calendarDays = useMemo((): CalendarDay[] => {
-    const monthStart = startOfMonth(currentDate)
-    const monthEnd = endOfMonth(currentDate)
-    const today = new Date()
+    const currentDayjs = dayjs(currentDate)
+    const monthStart = currentDayjs.startOf('month')
+    const monthEnd = currentDayjs.endOf('month')
+    const today = dayjs()
 
-    return eachDayOfInterval({ start: monthStart, end: monthEnd }).map((date) => {
-      const dayOfMonth = getDate(date)
+    return eachDayOfInterval(monthStart, monthEnd).map((d) => {
+      const dayOfMonth = d.date()
       const dayPayments = getPaymentsForDay(dayOfMonth)
 
       return {
-        date,
+        date: d.toDate(),
         dayOfMonth,
         isCurrentMonth: true,
-        isToday: format(date, 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd'),
+        isToday: d.isSame(today, 'day'),
         payments: dayPayments,
         totalAmount: dayPayments.reduce((sum, p) => sum + p.amount, 0),
       }
@@ -192,9 +203,8 @@ export function useCalendarStats(currentDate: Date) {
   }, [calendarDays, prevMonthPayments])
 
   const getPaymentsForDate = (date: Date): DayPayment[] => {
-    const day = calendarDays.find(
-      (d) => format(d.date, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')
-    )
+    const targetDate = dayjs(date)
+    const day = calendarDays.find((d) => dayjs(d.date).isSame(targetDate, 'day'))
     return day?.payments || []
   }
 

@@ -1,14 +1,6 @@
 import { z } from 'zod'
 
-export const PaymentStatus = {
-  PAID: 'paid',
-  SKIPPED: 'skipped',
-  PENDING: 'pending',
-} as const
-
-export type PaymentStatusType = (typeof PaymentStatus)[keyof typeof PaymentStatus]
-
-export const paymentSchema = z.object({
+const paymentSchema = z.object({
   id: z.string(),
   subscription_id: z.string(),
   amount: z.number(),

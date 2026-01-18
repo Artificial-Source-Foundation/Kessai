@@ -1,5 +1,8 @@
 import { useState, useEffect, useMemo, lazy, Suspense } from 'react'
 import { toast } from 'sonner'
+import dayjs from 'dayjs'
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
+import { Plus, Pencil, Trash2, Search, LayoutGrid, List, Power } from 'lucide-react'
 import { useSubscriptions } from '@/hooks/use-subscriptions'
 import { useSubscriptionStore } from '@/stores/subscription-store'
 import { useUiStore } from '@/stores/ui-store'
@@ -7,15 +10,16 @@ import { useSettingsStore } from '@/stores/settings-store'
 import { usePaymentStore } from '@/stores/payment-store'
 import { formatCurrency } from '@/lib/currency'
 import { formatPaymentDate, calculateNextPaymentDate } from '@/lib/date-utils'
-import { parseISO, startOfDay } from 'date-fns'
-import { BILLING_CYCLE_LABELS, BILLING_CYCLE_SHORT } from '@/lib/constants'
-import type { BadgeVariant } from '@/components/ui/badge'
-import { Plus, Pencil, Trash2, Search, LayoutGrid, List, Power } from 'lucide-react'
+import { BILLING_CYCLE_LABELS, BILLING_CYCLE_SHORT, CATEGORY_BADGE_VARIANTS } from '@/lib/constants'
+import { calculateMonthlyAmount } from '@/types/subscription'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { SubscriptionLogo } from '@/components/ui/subscription-logo'
+import type { BadgeVariant } from '@/components/ui/badge'
 import type { CurrencyCode } from '@/lib/currency'
 import type { Subscription } from '@/types/subscription'
+
+dayjs.extend(isSameOrBefore)
 
 // Lazy load dialogs for better initial load performance
 const SubscriptionDialog = lazy(() =>
@@ -50,27 +54,14 @@ export function Subscriptions() {
   const totalMonthlyCost = useMemo(() => {
     return subscriptions
       .filter((sub) => sub.is_active)
-      .reduce((total, sub) => {
-        switch (sub.billing_cycle) {
-          case 'weekly':
-            return total + sub.amount * 4.33
-          case 'monthly':
-            return total + sub.amount
-          case 'quarterly':
-            return total + sub.amount / 3
-          case 'yearly':
-            return total + sub.amount / 12
-          default:
-            return total + sub.amount
-        }
-      }, 0)
+      .reduce((total, sub) => total + calculateMonthlyAmount(sub.amount, sub.billing_cycle), 0)
   }, [subscriptions])
 
   const handleMarkAsPaid = async (sub: Subscription) => {
     if (!sub.next_payment_date) return
     try {
       await markAsPaid(sub.id, sub.next_payment_date, sub.amount)
-      const currentPaymentDate = parseISO(sub.next_payment_date)
+      const currentPaymentDate = dayjs(sub.next_payment_date).toDate()
       const nextDate = calculateNextPaymentDate(
         currentPaymentDate,
         sub.billing_cycle,
@@ -89,9 +80,9 @@ export function Subscriptions() {
 
   const canMarkAsPaid = (sub: Subscription): boolean => {
     if (!sub.next_payment_date || !sub.is_active) return false
-    const paymentDate = startOfDay(parseISO(sub.next_payment_date))
-    const today = startOfDay(new Date())
-    return paymentDate <= today
+    const paymentDate = dayjs(sub.next_payment_date).startOf('day')
+    const today = dayjs().startOf('day')
+    return paymentDate.isSameOrBefore(today)
   }
 
   const handleDelete = async () => {
@@ -131,19 +122,7 @@ export function Subscriptions() {
 
   const getCategoryVariant = (categoryName?: string): BadgeVariant => {
     if (!categoryName) return 'secondary'
-    const variantMap: Record<string, BadgeVariant> = {
-      Entertainment: 'entertainment',
-      Software: 'software',
-      Music: 'music',
-      Health: 'health',
-      Shopping: 'shopping',
-      AI: 'ai',
-      Cloud: 'cloud',
-      Productivity: 'productivity',
-      Development: 'development',
-      Security: 'security',
-    }
-    return variantMap[categoryName] || 'secondary'
+    return (CATEGORY_BADGE_VARIANTS[categoryName] as BadgeVariant) || 'secondary'
   }
 
   return (
