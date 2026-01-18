@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { Plus, Pencil, Trash2, Lock } from 'lucide-react'
+import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { CategoryDialog } from './category-dialog'
@@ -67,7 +67,7 @@ export function CategoryManager() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-medium">Categories</h3>
+            <h3 className="text-foreground font-medium">Categories</h3>
             <p className="text-muted-foreground text-sm">
               Organize your subscriptions with categories
             </p>
@@ -102,7 +102,11 @@ export function CategoryManager() {
           </p>
           <div className="space-y-1">
             {defaultCategories.map((category) => (
-              <CategoryItem key={category.id} category={category} isDefault />
+              <CategoryItem
+                key={category.id}
+                category={category}
+                onDelete={() => setDeleteTarget(category)}
+              />
             ))}
           </div>
         </div>
@@ -130,14 +134,13 @@ export function CategoryManager() {
 
 type CategoryItemProps = {
   category: Category
-  isDefault?: boolean
   onEdit?: () => void
   onDelete?: () => void
 }
 
-function CategoryItem({ category, isDefault, onEdit, onDelete }: CategoryItemProps) {
+function CategoryItem({ category, onEdit, onDelete }: CategoryItemProps) {
   return (
-    <div className="flex items-center justify-between rounded-lg bg-white/5 px-3 py-2">
+    <div className="bg-muted flex items-center justify-between rounded-lg px-3 py-2">
       <div className="flex items-center gap-3">
         <div
           className="flex h-8 w-8 items-center justify-center rounded-lg"
@@ -145,14 +148,15 @@ function CategoryItem({ category, isDefault, onEdit, onDelete }: CategoryItemPro
         >
           <CategoryIconDisplay icon={category.icon} className="h-4 w-4 text-white" />
         </div>
-        <span className="font-medium">{category.name}</span>
-        {isDefault && <Lock className="text-muted-foreground h-3 w-3" />}
+        <span className="text-foreground font-medium">{category.name}</span>
       </div>
-      {!isDefault && (
-        <div className="flex gap-1">
+      <div className="flex gap-1">
+        {onEdit && (
           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onEdit}>
             <Pencil className="h-3.5 w-3.5" />
           </Button>
+        )}
+        {onDelete && (
           <Button
             variant="ghost"
             size="icon"
@@ -161,8 +165,8 @@ function CategoryItem({ category, isDefault, onEdit, onDelete }: CategoryItemPro
           >
             <Trash2 className="h-3.5 w-3.5" />
           </Button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }

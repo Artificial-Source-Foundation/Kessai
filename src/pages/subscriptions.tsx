@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, lazy, Suspense } from 'react'
 import { toast } from 'sonner'
 import { useSubscriptions } from '@/hooks/use-subscriptions'
 import { useSubscriptionStore } from '@/stores/subscription-store'
@@ -8,58 +8,24 @@ import { usePaymentStore } from '@/stores/payment-store'
 import { formatCurrency } from '@/lib/currency'
 import { formatPaymentDate, calculateNextPaymentDate } from '@/lib/date-utils'
 import { parseISO, startOfDay } from 'date-fns'
-import { BILLING_CYCLE_LABELS } from '@/types/subscription'
-import {
-  Plus,
-  MoreVertical,
-  Pencil,
-  Trash2,
-  Power,
-  Check,
-  Search,
-  LayoutGrid,
-  List,
-} from 'lucide-react'
+import { BILLING_CYCLE_LABELS, BILLING_CYCLE_SHORT } from '@/lib/constants'
+import type { BadgeVariant } from '@/components/ui/badge'
+import { Plus, Pencil, Trash2, Search, LayoutGrid, List, Power } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { SegmentedControl } from '@/components/ui/segmented-control'
 import { SubscriptionLogo } from '@/components/ui/subscription-logo'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { SubscriptionDialog } from '@/components/subscriptions/subscription-dialog'
-import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import type { CurrencyCode } from '@/lib/currency'
 import type { Subscription } from '@/types/subscription'
 
-const CATEGORY_VARIANT_MAP: Record<
-  string,
-  | 'entertainment'
-  | 'software'
-  | 'music'
-  | 'health'
-  | 'shopping'
-  | 'ai'
-  | 'cloud'
-  | 'productivity'
-  | 'development'
-  | 'security'
-  | 'secondary'
-> = {
-  Entertainment: 'entertainment',
-  Software: 'software',
-  Music: 'music',
-  Health: 'health',
-  Shopping: 'shopping',
-  AI: 'ai',
-  Cloud: 'cloud',
-  Productivity: 'productivity',
-  Development: 'development',
-  Security: 'security',
-}
+// Lazy load dialogs for better initial load performance
+const SubscriptionDialog = lazy(() =>
+  import('@/components/subscriptions/subscription-dialog').then((m) => ({
+    default: m.SubscriptionDialog,
+  }))
+)
+const ConfirmDialog = lazy(() =>
+  import('@/components/ui/confirm-dialog').then((m) => ({ default: m.ConfirmDialog }))
+)
 
 export function Subscriptions() {
   const { subscriptions, isLoading, remove, toggleActive, getCategory } = useSubscriptions()
@@ -68,7 +34,7 @@ export function Subscriptions() {
   const { markAsPaid } = usePaymentStore()
   const currency = (settings?.currency || 'USD') as CurrencyCode
 
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list')
   const [searchQuery, setSearchQuery] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<Subscription | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -80,6 +46,25 @@ export function Subscriptions() {
   const filteredSubscriptions = subscriptions.filter((sub) =>
     sub.name.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  const totalMonthlyCost = useMemo(() => {
+    return subscriptions
+      .filter((sub) => sub.is_active)
+      .reduce((total, sub) => {
+        switch (sub.billing_cycle) {
+          case 'weekly':
+            return total + sub.amount * 4.33
+          case 'monthly':
+            return total + sub.amount
+          case 'quarterly':
+            return total + sub.amount / 3
+          case 'yearly':
+            return total + sub.amount / 12
+          default:
+            return total + sub.amount
+        }
+      }, 0)
+  }, [subscriptions])
 
   const handleMarkAsPaid = async (sub: Subscription) => {
     if (!sub.next_payment_date) return
@@ -144,48 +129,76 @@ export function Subscriptions() {
     )
   }
 
-  const getCategoryVariant = (categoryName?: string) => {
+  const getCategoryVariant = (categoryName?: string): BadgeVariant => {
     if (!categoryName) return 'secondary'
-    return CATEGORY_VARIANT_MAP[categoryName] || 'secondary'
+    const variantMap: Record<string, BadgeVariant> = {
+      Entertainment: 'entertainment',
+      Software: 'software',
+      Music: 'music',
+      Health: 'health',
+      Shopping: 'shopping',
+      AI: 'ai',
+      Cloud: 'cloud',
+      Productivity: 'productivity',
+      Development: 'development',
+      Security: 'security',
+    }
+    return variantMap[categoryName] || 'secondary'
   }
 
   return (
     <>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-foreground text-3xl font-bold">Subscriptions</h1>
-            <p className="text-muted-foreground">
-              {subscriptions.length} subscription{subscriptions.length !== 1 ? 's' : ''} tracked
-            </p>
+      <div className="flex h-full flex-col gap-6">
+        <header className="flex flex-wrap items-end justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-foreground text-3xl font-bold tracking-tight">My Subscriptions</h1>
+            <div className="text-muted-foreground flex items-center gap-2">
+              <span>Total Monthly Cost:</span>
+              <span className="bg-primary/10 text-primary rounded px-2 py-0.5 text-sm font-semibold">
+                {formatCurrency(totalMonthlyCost, currency)}
+              </span>
+            </div>
           </div>
           <Button variant="glow" onClick={() => openSubscriptionDialog()} className="gap-2">
             <Plus className="h-4 w-4" />
             Add Subscription
           </Button>
-        </div>
+        </header>
 
         {subscriptions.length > 0 && (
-          <div className="glass-panel flex items-center gap-4 rounded-xl p-3">
-            <div className="relative flex-1">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="relative max-w-sm flex-1">
               <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Search subscriptions..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="glass-input h-10 w-full pr-4 pl-10 text-sm"
+                className="border-border bg-card text-foreground placeholder-muted-foreground focus:border-primary focus:ring-primary h-10 w-full rounded-lg border pr-4 pl-10 text-sm focus:ring-1 focus:outline-none"
               />
             </div>
-            <SegmentedControl
-              options={[
-                { value: 'grid', label: '', icon: <LayoutGrid className="h-4 w-4" /> },
-                { value: 'list', label: '', icon: <List className="h-4 w-4" /> },
-              ]}
-              value={viewMode}
-              onValueChange={(v) => setViewMode(v as 'grid' | 'list')}
-              size="md"
-            />
+            <div className="border-border bg-card flex rounded-lg border p-1">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`flex h-8 w-9 items-center justify-center rounded-md ${
+                  viewMode === 'grid'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`flex h-8 w-9 items-center justify-center rounded-md ${
+                  viewMode === 'list'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <List className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         )}
 
@@ -204,97 +217,94 @@ export function Subscriptions() {
           </div>
         ) : filteredSubscriptions.length === 0 ? (
           <div className="glass-card flex flex-col items-center justify-center py-16">
-            <Search className="text-muted-foreground/50 mb-4 h-12 w-12" />
+            <Search className="text-muted-foreground mb-4 h-12 w-12" />
             <p className="text-muted-foreground">No subscriptions match "{searchQuery}"</p>
           </div>
         ) : viewMode === 'grid' ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="stagger-children grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {filteredSubscriptions.map((sub) => {
               const category = getCategory(sub.category_id)
               return (
                 <div
                   key={sub.id}
-                  className={`glass-card-interactive group p-5 ${!sub.is_active ? 'opacity-60' : ''}`}
+                  className={`glass-card hover-lift group relative overflow-hidden ${!sub.is_active ? 'opacity-60' : ''}`}
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <SubscriptionLogo
-                        logoUrl={sub.logo_url}
-                        name={sub.name}
-                        color={sub.color || category?.color}
-                        size="lg"
-                        className="rounded-xl"
-                      />
-                      <div>
-                        <h3 className="text-foreground font-semibold">{sub.name}</h3>
-                        {category && (
-                          <Badge variant={getCategoryVariant(category.name)} size="sm">
-                            {category.name}
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          className="opacity-0 transition-opacity group-hover:opacity-100"
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => openSubscriptionDialog(sub.id)}>
-                          <Pencil className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleToggleActive(sub)}>
-                          <Power className="mr-2 h-4 w-4" />
-                          {sub.is_active ? 'Pause' : 'Activate'}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => setDeleteTarget(sub)}
-                          className="text-destructive focus:text-destructive"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                  <div className="bg-card/80 absolute top-2 right-2 z-10 flex gap-1 rounded-lg p-1 opacity-0 backdrop-blur-sm group-hover:opacity-100">
+                    <button
+                      onClick={() => openSubscriptionDialog(sub.id)}
+                      className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-md p-1.5"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleToggleActive(sub)}
+                      className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-md p-1.5"
+                    >
+                      <Power className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      onClick={() => setDeleteTarget(sub)}
+                      className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive rounded-md p-1.5"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
                   </div>
 
-                  <div className="mt-4 space-y-2">
-                    <div className="flex items-baseline justify-between">
-                      <span className="text-foreground text-2xl font-bold">
-                        {formatCurrency(sub.amount, currency)}
-                      </span>
-                      <span className="text-muted-foreground text-sm">
-                        {BILLING_CYCLE_LABELS[sub.billing_cycle]}
-                      </span>
-                    </div>
-                    {sub.next_payment_date && (
-                      <div className="flex items-center justify-between">
-                        <p className="text-muted-foreground text-sm">
-                          Next: {formatPaymentDate(sub.next_payment_date)}
-                        </p>
-                        {canMarkAsPaid(sub) && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleMarkAsPaid(sub)}
-                            className="border-success/30 bg-success/10 text-success hover:bg-success/20 h-7 gap-1 text-xs"
-                          >
-                            <Check className="h-3 w-3" />
-                            Paid
-                          </Button>
-                        )}
-                      </div>
-                    )}
-                    {!sub.is_active && (
-                      <Badge variant="warning" size="sm">
-                        Paused
+                  <div className="flex flex-col items-center p-6 pb-4">
+                    <SubscriptionLogo
+                      logoUrl={sub.logo_url}
+                      name={sub.name}
+                      color={sub.color || category?.color}
+                      size="xl"
+                      className="mb-4 rounded-2xl shadow-lg"
+                    />
+                    <h3 className="text-foreground text-lg font-bold">{sub.name}</h3>
+                    {category && (
+                      <Badge variant={getCategoryVariant(category.name)} size="sm" className="mt-1">
+                        {category.name}
                       </Badge>
+                    )}
+                  </div>
+
+                  <div className="border-border bg-muted/30 border-t px-6 py-4">
+                    <div className="mb-3 flex items-center justify-between">
+                      <div>
+                        <p className="text-foreground text-2xl font-bold">
+                          {formatCurrency(sub.amount, currency)}
+                        </p>
+                        <p className="text-muted-foreground text-xs">
+                          {BILLING_CYCLE_LABELS[sub.billing_cycle]}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <span
+                            className={`h-2 w-2 rounded-full ${
+                              sub.is_active ? 'bg-emerald-500' : 'bg-amber-500'
+                            }`}
+                          />
+                          <span
+                            className={`text-sm font-medium ${
+                              sub.is_active ? 'text-emerald-500' : 'text-amber-500'
+                            }`}
+                          >
+                            {sub.is_active ? 'Active' : 'Paused'}
+                          </span>
+                        </div>
+                        <p className="text-muted-foreground mt-0.5 text-xs">
+                          {sub.next_payment_date ? formatPaymentDate(sub.next_payment_date) : '-'}
+                        </p>
+                      </div>
+                    </div>
+                    {canMarkAsPaid(sub) && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleMarkAsPaid(sub)}
+                        className="w-full border-emerald-500/30 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
+                      >
+                        Mark as Paid
+                      </Button>
                     )}
                   </div>
                 </div>
@@ -302,122 +312,137 @@ export function Subscriptions() {
             })}
           </div>
         ) : (
-          <div className="glass-card overflow-hidden">
-            <table className="w-full">
-              <thead>
-                <tr className="border-border border-b">
-                  <th className="text-muted-foreground px-4 py-3 text-left text-xs font-semibold tracking-wider uppercase">
-                    Service
-                  </th>
-                  <th className="text-muted-foreground px-4 py-3 text-left text-xs font-semibold tracking-wider uppercase">
-                    Category
-                  </th>
-                  <th className="text-muted-foreground px-4 py-3 text-left text-xs font-semibold tracking-wider uppercase">
-                    Amount
-                  </th>
-                  <th className="text-muted-foreground px-4 py-3 text-left text-xs font-semibold tracking-wider uppercase">
-                    Next Payment
-                  </th>
-                  <th className="text-muted-foreground px-4 py-3 text-left text-xs font-semibold tracking-wider uppercase">
-                    Status
-                  </th>
-                  <th className="text-muted-foreground px-4 py-3 text-right text-xs font-semibold tracking-wider uppercase">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredSubscriptions.map((sub) => {
-                  const category = getCategory(sub.category_id)
-                  return (
-                    <tr
-                      key={sub.id}
-                      className={`group border-border/50 hover:bg-glass-surface-hover border-b transition-colors last:border-0 ${!sub.is_active ? 'opacity-60' : ''}`}
-                    >
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <SubscriptionLogo
-                            logoUrl={sub.logo_url}
-                            name={sub.name}
-                            color={sub.color || category?.color}
-                            size="sm"
-                          />
-                          <span className="text-foreground font-medium">{sub.name}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        {category && (
-                          <Badge variant={getCategoryVariant(category.name)} size="sm">
-                            {category.name}
-                          </Badge>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="text-foreground font-semibold">
-                          {formatCurrency(sub.amount, currency)}
-                        </span>
-                        <span className="text-muted-foreground ml-1 text-xs">
-                          /{sub.billing_cycle}
-                        </span>
-                      </td>
-                      <td className="text-muted-foreground px-4 py-3 text-sm">
-                        {sub.next_payment_date ? formatPaymentDate(sub.next_payment_date) : '-'}
-                      </td>
-                      <td className="px-4 py-3">
-                        <Badge variant={sub.is_active ? 'success' : 'warning'} size="sm" dot>
-                          {sub.is_active ? 'Active' : 'Paused'}
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                          {canMarkAsPaid(sub) && (
-                            <Button
-                              size="icon-sm"
-                              variant="ghost"
-                              onClick={() => handleMarkAsPaid(sub)}
-                              className="text-success hover:bg-success/10"
+          <div className="glass-card flex flex-1 flex-col overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[600px]">
+                <thead>
+                  <tr className="border-border bg-muted/30 border-b">
+                    <th className="text-muted-foreground px-4 py-3 text-left text-xs font-semibold tracking-wider uppercase">
+                      Service
+                    </th>
+                    <th className="text-muted-foreground px-4 py-3 text-left text-xs font-semibold tracking-wider uppercase">
+                      Cost
+                    </th>
+                    <th className="text-muted-foreground hidden px-4 py-3 text-left text-xs font-semibold tracking-wider uppercase md:table-cell">
+                      Next Payment
+                    </th>
+                    <th className="text-muted-foreground px-4 py-3 text-left text-xs font-semibold tracking-wider uppercase">
+                      Status
+                    </th>
+                    <th className="text-muted-foreground px-4 py-3 text-right text-xs font-semibold tracking-wider uppercase">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-border divide-y">
+                  {filteredSubscriptions.map((sub) => {
+                    const category = getCategory(sub.category_id)
+                    return (
+                      <tr
+                        key={sub.id}
+                        className={`group hover:bg-muted/30 ${!sub.is_active ? 'opacity-60' : ''}`}
+                      >
+                        <td className="px-4 py-4">
+                          <div className="flex items-center gap-3">
+                            <SubscriptionLogo
+                              logoUrl={sub.logo_url}
+                              name={sub.name}
+                              color={sub.color || category?.color}
+                              size="md"
+                              className="shrink-0 rounded-lg"
+                            />
+                            <div className="min-w-0">
+                              <p className="text-foreground truncate font-medium">{sub.name}</p>
+                              {category && (
+                                <Badge variant={getCategoryVariant(category.name)} size="sm">
+                                  {category.name}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-4">
+                          <p className="text-foreground font-semibold">
+                            {formatCurrency(sub.amount, currency)}
+                          </p>
+                          <p className="text-muted-foreground text-xs">
+                            {BILLING_CYCLE_SHORT[sub.billing_cycle]}
+                          </p>
+                        </td>
+                        <td className="hidden px-4 py-4 md:table-cell">
+                          <p className="text-muted-foreground text-sm">
+                            {sub.next_payment_date ? formatPaymentDate(sub.next_payment_date) : '-'}
+                          </p>
+                        </td>
+                        <td className="px-4 py-4">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`h-2 w-2 rounded-full ${
+                                sub.is_active ? 'bg-emerald-500' : 'bg-amber-500'
+                              }`}
+                            />
+                            <span
+                              className={`text-sm font-medium ${
+                                sub.is_active ? 'text-emerald-500' : 'text-amber-500'
+                              }`}
                             >
-                              <Check className="h-4 w-4" />
-                            </Button>
-                          )}
-                          <Button
-                            size="icon-sm"
-                            variant="ghost"
-                            onClick={() => openSubscriptionDialog(sub.id)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="icon-sm"
-                            variant="ghost"
-                            onClick={() => setDeleteTarget(sub)}
-                            className="text-destructive hover:bg-destructive/10"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+                              {sub.is_active ? 'Active' : 'Paused'}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-4">
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              onClick={() => openSubscriptionDialog(sub.id)}
+                              className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-lg p-2 opacity-0 group-hover:opacity-100"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() => handleToggleActive(sub)}
+                              className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-lg p-2 opacity-0 group-hover:opacity-100"
+                            >
+                              <Power className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() => setDeleteTarget(sub)}
+                              className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive rounded-lg p-2 opacity-0 group-hover:opacity-100"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <div className="border-border bg-muted/30 mt-auto border-t px-4 py-3">
+              <p className="text-muted-foreground text-sm">
+                {filteredSubscriptions.length} of {subscriptions.length} subscriptions
+              </p>
+            </div>
           </div>
         )}
       </div>
 
-      <SubscriptionDialog />
+      <Suspense fallback={null}>
+        <SubscriptionDialog />
+      </Suspense>
 
-      <ConfirmDialog
-        open={Boolean(deleteTarget)}
-        onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="Delete Subscription"
-        description={`Are you sure you want to delete "${deleteTarget?.name}"? This action cannot be undone.`}
-        confirmLabel="Delete"
-        variant="destructive"
-        isLoading={isDeleting}
-        onConfirm={handleDelete}
-      />
+      <Suspense fallback={null}>
+        <ConfirmDialog
+          open={Boolean(deleteTarget)}
+          onOpenChange={(open) => !open && setDeleteTarget(null)}
+          title="Delete Subscription"
+          description={`Are you sure you want to delete "${deleteTarget?.name}"? This action cannot be undone.`}
+          confirmLabel="Delete"
+          variant="destructive"
+          isLoading={isDeleting}
+          onConfirm={handleDelete}
+        />
+      </Suspense>
     </>
   )
 }

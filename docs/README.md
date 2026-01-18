@@ -1,29 +1,20 @@
-# Subby Documentation Hub
+# Subby Documentation
 
-> AI-optimized documentation for the Subby subscription tracker.
+> Documentation hub for the Subby subscription tracker.
 
 ## Quick Navigation
 
-| Section | Purpose |
-|---------|---------|
-| [PRD](./project/prd.md) | Product vision, goals, features |
-| [Architecture](./project/architecture.md) | System design & data flow |
-| [Epics](./epics/README.md) | Feature breakdown by epic |
-| [Sprints](./sprints/README.md) | Current & past sprint planning |
-| [Guides](./guides/setup.md) | Development setup & conventions |
-| [API](./api/commands.md) | Tauri command reference |
+| Section                                         | Purpose                   |
+| ----------------------------------------------- | ------------------------- |
+| [Architecture](./reference/architecture.md)     | System design & data flow |
+| [Setup Guide](./getting-started/setup.md)       | Development setup         |
+| [Conventions](./getting-started/conventions.md) | Code style & patterns     |
+| [Planning](./planning/)                         | Epics, sprints, PRD       |
 
-## Current Status
+## Project Status
 
-- **Active Sprint**: Sprint 01 — Foundation
-- **Epic in Progress**: Epic 01 — Project Foundation
-- **Next Milestone**: MVP v0.1.0
+**Version**: 0.1.0 (MVP Complete)
 
 ## For AI Assistants
 
-This documentation follows AI-optimization principles:
-- Maximum 4-level heading hierarchy
-- Kebab-case file naming
-- Explicit context in each document
-- Cross-references use relative paths
-- Each epic/sprint is self-contained
+See [AGENTS.md](../AGENTS.md) for coding instructions and [llms.txt](../llms.txt) for codebase navigation.

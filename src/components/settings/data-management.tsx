@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import {
   exportData,
-  downloadBackup,
+  saveBackupToFile,
   importData,
   validateBackupData,
   readFileAsJson,
@@ -26,8 +26,10 @@ export function DataManagement({ onDataChanged }: DataManagementProps) {
     setIsExporting(true)
     try {
       const data = await exportData()
-      downloadBackup(data)
-      toast.success('Backup downloaded successfully')
+      const saved = await saveBackupToFile(data)
+      if (saved) {
+        toast.success('Backup saved successfully')
+      }
     } catch (error) {
       toast.error('Failed to export data')
       console.error('Export error:', error)

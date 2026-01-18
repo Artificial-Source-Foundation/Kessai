@@ -1,16 +1,8 @@
+import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import {
-  LayoutDashboard,
-  CreditCard,
-  Calendar,
-  Settings,
-  ChevronLeft,
-  ChevronRight,
-} from 'lucide-react'
+import { LayoutDashboard, CreditCard, Calendar, Settings, ChevronLeft } from 'lucide-react'
+import { useTheme } from '@/components/theme-provider'
 import { cn } from '@/lib/utils'
-import { useUiStore } from '@/stores/ui-store'
-import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip'
 
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -20,99 +12,65 @@ const navItems = [
 ]
 
 export function Sidebar() {
-  const { sidebarCollapsed, toggleSidebar } = useUiStore()
+  const [collapsed, setCollapsed] = useState(false)
+  const { theme } = useTheme()
+  const logoSrc = theme === 'light' ? '/SubbyLogo.png' : '/SubbyLogoWhite.png'
 
   return (
-    <TooltipProvider delayDuration={0}>
-      <aside
-        className={cn(
-          'glass-panel relative flex flex-col transition-all duration-300',
-          sidebarCollapsed ? 'w-16' : 'w-60'
-        )}
-      >
-        <div className={cn('flex items-center gap-3 p-4', sidebarCollapsed && 'justify-center')}>
-          <div className="from-primary to-accent-cyan shadow-glow-sm flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br">
-            <span className="text-lg font-bold text-white">S</span>
-          </div>
-          {!sidebarCollapsed && (
-            <div className="overflow-hidden">
-              <h1 className="gradient-text text-xl font-bold">Subby</h1>
-              <p className="text-muted-foreground truncate text-xs">Subscription Tracker</p>
-            </div>
+    <aside
+      className={cn(
+        'glass-sidebar border-border relative z-20 flex h-full shrink-0 flex-col border-r transition-[width] duration-200 ease-out',
+        collapsed ? 'w-20' : 'w-64'
+      )}
+    >
+      <div className="flex items-center gap-3 overflow-hidden p-6">
+        <img src={logoSrc} alt="Subby" className="h-8 w-8 shrink-0 object-contain" />
+        <h1
+          className={cn(
+            'text-foreground text-xl font-bold tracking-tight whitespace-nowrap transition-[opacity,transform] duration-200',
+            collapsed ? 'translate-x-4 opacity-0' : 'translate-x-0 opacity-100'
           )}
-        </div>
+        >
+          Subby
+        </h1>
+      </div>
 
-        <nav className="flex-1 space-y-1 px-2 py-4">
-          {navItems.map(({ to, icon: Icon, label }) => {
-            const linkContent = (
-              <NavLink
-                key={to}
-                to={to}
-                className={({ isActive }) =>
-                  cn(
-                    'group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
-                    isActive
-                      ? 'bg-primary/10 text-foreground'
-                      : 'text-muted-foreground hover:bg-glass-surface-hover hover:text-foreground',
-                    sidebarCollapsed && 'justify-center px-0'
-                  )
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    {isActive && (
-                      <span className="bg-primary shadow-glow-sm absolute top-1/2 left-0 h-6 w-1 -translate-y-1/2 rounded-r-full" />
-                    )}
-                    <span
-                      className={cn(
-                        'flex h-9 w-9 items-center justify-center rounded-lg transition-colors',
-                        isActive ? 'bg-primary/20' : 'group-hover:bg-glass-surface-hover'
-                      )}
-                    >
-                      <Icon className="h-5 w-5 shrink-0" />
-                    </span>
-                    {!sidebarCollapsed && <span>{label}</span>}
-                  </>
-                )}
-              </NavLink>
-            )
-
-            if (sidebarCollapsed) {
-              return (
-                <Tooltip key={to}>
-                  <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
-                  <TooltipContent side="right" className="font-medium">
-                    {label}
-                  </TooltipContent>
-                </Tooltip>
+      <nav aria-label="Main navigation" className="flex flex-1 flex-col gap-2 px-4 py-4">
+        {navItems.map(({ to, icon: Icon, label }) => (
+          <NavLink
+            key={to}
+            to={to}
+            className={({ isActive }) =>
+              cn(
+                'flex items-center gap-3 overflow-hidden rounded-lg px-4 py-3 text-sm font-medium',
+                isActive
+                  ? 'border-primary bg-primary/15 text-foreground border-l-[3px]'
+                  : 'text-muted-foreground hover:bg-primary/5 hover:text-foreground'
               )
             }
-
-            return linkContent
-          })}
-        </nav>
-
-        <div className="border-border border-t p-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleSidebar}
-            className={cn(
-              'text-muted-foreground hover:text-foreground w-full justify-center gap-2',
-              !sidebarCollapsed && 'justify-start px-3'
-            )}
           >
-            {sidebarCollapsed ? (
-              <ChevronRight className="h-4 w-4" />
-            ) : (
-              <>
-                <ChevronLeft className="h-4 w-4" />
-                <span>Collapse</span>
-              </>
-            )}
-          </Button>
-        </div>
-      </aside>
-    </TooltipProvider>
+            <Icon className="h-5 w-5 shrink-0" />
+            <span
+              className={cn(
+                'whitespace-nowrap transition-[opacity,transform] duration-200',
+                collapsed ? 'translate-x-4 opacity-0' : 'translate-x-0 opacity-100'
+              )}
+            >
+              {label}
+            </span>
+          </NavLink>
+        ))}
+      </nav>
+
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        className="border-border bg-card text-muted-foreground hover:text-foreground absolute top-20 -right-3 flex h-6 w-6 items-center justify-center rounded-full border transition-transform duration-200 hover:scale-110"
+      >
+        <span className={cn('transition-transform duration-200', collapsed && 'rotate-180')}>
+          <ChevronLeft className="h-3 w-3" />
+        </span>
+      </button>
+    </aside>
   )
 }

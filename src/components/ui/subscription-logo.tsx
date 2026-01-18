@@ -6,7 +6,7 @@ interface SubscriptionLogoProps {
   logoUrl: string | null | undefined
   name: string
   color?: string | null
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'sm' | 'md' | 'lg' | 'xl'
   className?: string
 }
 
@@ -14,6 +14,7 @@ const sizeClasses = {
   sm: 'h-5 w-5 text-[10px]',
   md: 'h-10 w-10 text-sm',
   lg: 'h-12 w-12 text-base',
+  xl: 'h-16 w-16 text-xl',
 }
 
 export function SubscriptionLogo({
@@ -59,6 +60,8 @@ export function SubscriptionLogo({
       <img
         src={dataUrl}
         alt={name}
+        loading="lazy"
+        decoding="async"
         className={cn(sizeClass, 'rounded-full border border-white/20 object-cover', className)}
       />
     )

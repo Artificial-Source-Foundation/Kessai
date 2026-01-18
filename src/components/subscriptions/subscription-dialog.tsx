@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { useShallow } from 'zustand/react/shallow'
 import {
   Sheet,
   SheetContent,
@@ -15,8 +16,21 @@ import type { SubscriptionFormData } from '@/types/subscription'
 export function SubscriptionDialog() {
   const [isLoading, setIsLoading] = useState(false)
 
-  const { subscriptions, add, update } = useSubscriptionStore()
-  const { subscriptionDialogOpen, editingSubscriptionId, closeSubscriptionDialog } = useUiStore()
+  // Use selective subscriptions for better performance
+  const { subscriptions, add, update } = useSubscriptionStore(
+    useShallow((state) => ({
+      subscriptions: state.subscriptions,
+      add: state.add,
+      update: state.update,
+    }))
+  )
+  const { subscriptionDialogOpen, editingSubscriptionId, closeSubscriptionDialog } = useUiStore(
+    useShallow((state) => ({
+      subscriptionDialogOpen: state.subscriptionDialogOpen,
+      editingSubscriptionId: state.editingSubscriptionId,
+      closeSubscriptionDialog: state.closeSubscriptionDialog,
+    }))
+  )
 
   const subscription = editingSubscriptionId
     ? subscriptions.find((s) => s.id === editingSubscriptionId)
@@ -35,7 +49,9 @@ export function SubscriptionDialog() {
           billing_cycle: data.billing_cycle,
           billing_day: data.billing_day,
           category_id: data.category_id,
+          card_id: data.card_id ?? null,
           color: data.color,
+          logo_url: data.logo_url ?? null,
           notes: data.notes,
           next_payment_date: data.next_payment_date,
         })
@@ -50,8 +66,9 @@ export function SubscriptionDialog() {
           billing_cycle: data.billing_cycle,
           billing_day: data.billing_day,
           category_id: data.category_id,
+          card_id: data.card_id ?? null,
           color: data.color,
-          logo_url: null,
+          logo_url: data.logo_url ?? null,
           notes: data.notes,
           is_active: true,
           next_payment_date: data.next_payment_date,

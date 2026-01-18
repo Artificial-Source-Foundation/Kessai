@@ -4,23 +4,49 @@ import { useCategoryStore } from '@/stores/category-store'
 import { calculateMonthlyAmount } from '@/types/subscription'
 import { subMonths, format, startOfMonth, endOfMonth, parseISO, isWithinInterval } from 'date-fns'
 
+/**
+ * Spending data aggregated by category.
+ * Used for the donut chart breakdown.
+ */
 export type CategorySpending = {
+  /** Category ID or 'uncategorized' */
   id: string
+  /** Display name of the category */
   name: string
+  /** Hex color for the category */
   color: string
+  /** Total monthly amount for this category */
   amount: number
+  /** Percentage of total spending (0-100) */
   percentage: number
 }
 
+/**
+ * Monthly spending data point for trend charts.
+ */
 export type MonthlySpending = {
+  /** Month identifier in yyyy-MM format */
   month: string
+  /** Short month label (e.g., "Jan", "Feb") */
   monthLabel: string
+  /** Total spending for the month */
   amount: number
 }
 
+/**
+ * Hook for computing dashboard statistics from subscriptions.
+ * Calculates category breakdowns, monthly trends, and totals.
+ *
+ * All calculations are memoized for performance.
+ *
+ * @returns Dashboard statistics object
+ * @example
+ * const { totalMonthly, categorySpending } = useDashboardStats()
+ */
 export function useDashboardStats() {
-  const { subscriptions } = useSubscriptionStore()
-  const { categories } = useCategoryStore()
+  // Use selective subscriptions for better performance
+  const subscriptions = useSubscriptionStore((state) => state.subscriptions)
+  const categories = useCategoryStore((state) => state.categories)
 
   const activeSubscriptions = useMemo(
     () => subscriptions.filter((s) => s.is_active),

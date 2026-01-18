@@ -1,4 +1,3 @@
-import { motion, AnimatePresence } from 'framer-motion'
 import { format } from 'date-fns'
 import { X, CalendarDays } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -37,81 +36,75 @@ export function CalendarDayPanel({
   onEdit,
 }: CalendarDayPanelProps) {
   const totalAmount = payments.reduce((sum, p) => sum + p.amount, 0)
-  const unpaidAmount = payments
-    .filter((p) => !p.isPaid && !p.isSkipped)
-    .reduce((sum, p) => sum + p.amount, 0)
+  const unpaidPayments = payments.filter((p) => !p.isPaid && !p.isSkipped)
+
+  if (!isOpen || !selectedDate) return null
+
+  const handleMarkAllPaid = () => {
+    unpaidPayments.forEach((p) => {
+      onMarkPaid(p.subscription.id, p.dueDate, p.amount)
+    })
+  }
 
   return (
-    <AnimatePresence>
-      {isOpen && selectedDate && (
-        <motion.div
-          initial={{ opacity: 0, x: 300 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: 300 }}
-          transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-          className="glass-panel h-full w-[380px] overflow-y-auto border-l p-6"
-        >
-          <div className="mb-6 flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-bold">{format(selectedDate, 'MMMM d, yyyy')}</h2>
-              <p className="text-muted-foreground text-sm">{format(selectedDate, 'EEEE')}</p>
+    <div className="glass-card animate-slide-in-right flex h-full w-full flex-col overflow-hidden shadow-2xl lg:w-[380px]">
+      <div className="border-border relative border-b p-6">
+        <div className="via-border absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent to-transparent" />
+        <div className="mb-2 flex items-center justify-between">
+          <span className="text-muted-foreground text-xs font-bold tracking-widest uppercase">
+            Selected Day
+          </span>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <h2 className="text-foreground text-3xl font-black">{format(selectedDate, 'MMMM d')}</h2>
+        <p className="text-muted-foreground mt-1 text-sm font-medium">
+          {payments.length} payment{payments.length !== 1 ? 's' : ''} due{' '}
+          <span className="text-foreground font-bold">
+            {formatCurrency(totalAmount, currency)} total
+          </span>
+        </p>
+      </div>
+
+      <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-4">
+        {payments.length > 0 ? (
+          payments.map((payment) => (
+            <SubscriptionCard
+              key={payment.subscription.id}
+              subscription={payment.subscription}
+              amount={payment.amount}
+              isPaid={payment.isPaid}
+              isSkipped={payment.isSkipped}
+              dueDate={payment.dueDate}
+              currency={currency}
+              onMarkPaid={() =>
+                onMarkPaid(payment.subscription.id, payment.dueDate, payment.amount)
+              }
+              onSkip={() => onSkip(payment.subscription.id, payment.dueDate, payment.amount)}
+              onEdit={() => onEdit(payment.subscription)}
+            />
+          ))
+        ) : (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="bg-muted mb-4 flex h-16 w-16 items-center justify-center rounded-full">
+              <CalendarDays className="text-muted-foreground h-8 w-8" />
             </div>
-            <Button size="sm" variant="ghost" onClick={onClose} className="h-8 w-8 p-0">
-              <X className="h-4 w-4" />
-            </Button>
+            <h3 className="text-foreground mb-1 font-medium">No payments due</h3>
+            <p className="text-muted-foreground text-sm">
+              No subscriptions are scheduled for this day.
+            </p>
           </div>
+        )}
+      </div>
 
-          {payments.length > 0 ? (
-            <>
-              <div className="glass-card mb-6 p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-muted-foreground text-sm">Total Due</p>
-                    <p className="text-2xl font-bold">{formatCurrency(totalAmount, currency)}</p>
-                  </div>
-                  {unpaidAmount > 0 && unpaidAmount !== totalAmount && (
-                    <div className="text-right">
-                      <p className="text-muted-foreground text-sm">Remaining</p>
-                      <p className="text-lg font-semibold text-amber-400">
-                        {formatCurrency(unpaidAmount, currency)}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                {payments.map((payment) => (
-                  <SubscriptionCard
-                    key={payment.subscription.id}
-                    subscription={payment.subscription}
-                    amount={payment.amount}
-                    isPaid={payment.isPaid}
-                    isSkipped={payment.isSkipped}
-                    dueDate={payment.dueDate}
-                    currency={currency}
-                    onMarkPaid={() =>
-                      onMarkPaid(payment.subscription.id, payment.dueDate, payment.amount)
-                    }
-                    onSkip={() => onSkip(payment.subscription.id, payment.dueDate, payment.amount)}
-                    onEdit={() => onEdit(payment.subscription)}
-                  />
-                ))}
-              </div>
-            </>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white/5">
-                <CalendarDays className="text-muted-foreground h-8 w-8" />
-              </div>
-              <h3 className="mb-1 font-medium">No payments due</h3>
-              <p className="text-muted-foreground text-sm">
-                No subscriptions are scheduled for this day.
-              </p>
-            </div>
-          )}
-        </motion.div>
+      {unpaidPayments.length > 0 && (
+        <div className="border-border bg-muted/50 border-t p-6">
+          <Button onClick={handleMarkAllPaid} variant="glow" className="w-full gap-2 py-3.5">
+            Mark All as Paid
+          </Button>
+        </div>
       )}
-    </AnimatePresence>
+    </div>
   )
 }

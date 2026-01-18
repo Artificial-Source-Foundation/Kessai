@@ -13,32 +13,67 @@ import {
 import type { Subscription } from '@/types/subscription'
 import type { Payment } from '@/types/payment'
 
+/**
+ * Payment data for a specific day.
+ */
 interface DayPayment {
+  /** The subscription associated with this payment */
   subscription: Subscription
+  /** Amount due for this payment */
   amount: number
+  /** Whether the payment has been marked as paid */
   isPaid: boolean
+  /** Whether the payment has been skipped */
   isSkipped: boolean
+  /** Due date in yyyy-MM-dd format */
   dueDate: string
 }
 
+/**
+ * Calendar day data with payment information.
+ */
 interface CalendarDay {
+  /** JavaScript Date object */
   date: Date
+  /** Day number (1-31) */
   dayOfMonth: number
+  /** Whether this day is in the current displayed month */
   isCurrentMonth: boolean
+  /** Whether this day is today */
   isToday: boolean
+  /** Array of payments due on this day */
   payments: DayPayment[]
+  /** Sum of all payment amounts for this day */
   totalAmount: number
 }
 
+/**
+ * Monthly statistics for the calendar header.
+ */
 interface MonthStats {
+  /** Total expected spending for the month */
   totalAmount: number
+  /** Amount already paid */
   paidAmount: number
+  /** Amount still upcoming (not paid or skipped) */
   upcomingAmount: number
+  /** Total number of payments this month */
   paymentCount: number
+  /** Number of payments marked as paid */
   paidCount: number
+  /** Percentage change compared to previous month */
   comparisonToPrevMonth: number
 }
 
+/**
+ * Hook for computing calendar data and payment statistics.
+ * Builds the calendar grid with payment data for each day.
+ *
+ * @param currentDate - The month to display (any date in the target month)
+ * @returns Calendar days array, month stats, and payment lookup functions
+ * @example
+ * const { calendarDays, monthStats } = useCalendarStats(selectedMonth)
+ */
 export function useCalendarStats(currentDate: Date) {
   const { subscriptions } = useSubscriptions()
   const fetchPaymentsByMonth = usePaymentStore((s) => s.fetchPaymentsByMonth)

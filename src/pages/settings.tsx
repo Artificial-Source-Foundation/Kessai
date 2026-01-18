@@ -14,14 +14,13 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { CategoryManager } from '@/components/categories/category-manager'
-import { NotificationSettings } from '@/components/settings/notification-settings'
 import { DataManagement } from '@/components/settings/data-management'
 import { CardManager } from '@/components/settings/card-manager'
 import type { Theme } from '@/types/settings'
 import type { CurrencyCode } from '@/lib/currency'
 
 export function SettingsPage() {
-  const { settings, isLoading, setCurrency, update, refresh: refetchSettings } = useSettings()
+  const { settings, isLoading, setCurrency, refresh: refetchSettings } = useSettings()
   const { theme, setTheme } = useTheme()
   const { fetch: refetchSubscriptions } = useSubscriptionStore()
   const { fetch: refetchCategories } = useCategoryStore()
@@ -50,15 +49,15 @@ export function SettingsPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold">Settings</h1>
+      <header>
+        <h1 className="text-foreground mb-1 text-3xl font-bold tracking-tight">Settings</h1>
         <p className="text-muted-foreground">Customize your Subby experience</p>
-      </div>
+      </header>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="glass-card space-y-6 p-6">
           <div>
-            <h2 className="text-lg font-semibold">Appearance</h2>
+            <h2 className="text-foreground text-lg font-semibold">Appearance</h2>
             <p className="text-muted-foreground text-sm">Customize how Subby looks</p>
           </div>
 
@@ -82,7 +81,7 @@ export function SettingsPage() {
 
         <div className="glass-card space-y-6 p-6">
           <div>
-            <h2 className="text-lg font-semibold">Preferences</h2>
+            <h2 className="text-foreground text-lg font-semibold">Preferences</h2>
             <p className="text-muted-foreground text-sm">Set your default options</p>
           </div>
 
@@ -105,16 +104,7 @@ export function SettingsPage() {
 
         <div className="glass-card space-y-6 p-6">
           <div>
-            <h2 className="text-lg font-semibold">Notifications</h2>
-            <p className="text-muted-foreground text-sm">Configure payment reminders</p>
-          </div>
-
-          <NotificationSettings settings={settings} onUpdate={update} />
-        </div>
-
-        <div className="glass-card space-y-6 p-6">
-          <div>
-            <h2 className="text-lg font-semibold">Data Management</h2>
+            <h2 className="text-foreground text-lg font-semibold">Data Management</h2>
             <p className="text-muted-foreground text-sm">Export and import your data</p>
           </div>
 
@@ -123,36 +113,36 @@ export function SettingsPage() {
 
         <div className="glass-card space-y-6 p-6">
           <div>
-            <h2 className="text-lg font-semibold">About</h2>
+            <h2 className="text-foreground text-lg font-semibold">About</h2>
             <p className="text-muted-foreground text-sm">Application information</p>
           </div>
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Version</span>
-              <span className="font-medium">0.1.0</span>
+              <span className="text-foreground font-medium">0.1.0</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Author</span>
-              <span className="font-medium">Andrés (NewStella)</span>
+              <span className="text-foreground font-medium">Andres Godina</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">License</span>
-              <span className="font-medium">MIT</span>
+              <span className="text-foreground font-medium">MIT</span>
             </div>
           </div>
         </div>
 
         <div className="glass-card space-y-6 p-6">
           <div>
-            <h2 className="text-lg font-semibold">Payment Cards</h2>
+            <h2 className="text-foreground text-lg font-semibold">Payment Cards</h2>
             <p className="text-muted-foreground text-sm">Manage your payment methods</p>
           </div>
 
           <CardManager currency={settings.currency as CurrencyCode} />
         </div>
 
-        <div className="glass-card space-y-6 p-6 lg:col-span-2">
+        <div className="glass-card space-y-6 p-6">
           <CategoryManager />
         </div>
       </div>

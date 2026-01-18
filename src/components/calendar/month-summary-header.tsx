@@ -1,5 +1,4 @@
-import { motion } from 'framer-motion'
-import { TrendingUp, TrendingDown, Calendar, CheckCircle2 } from 'lucide-react'
+import { TrendingUp, TrendingDown, CheckCircle2, Clock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatCurrency, type CurrencyCode } from '@/lib/currency'
 
@@ -16,85 +15,60 @@ interface MonthSummaryHeaderProps {
 export function MonthSummaryHeader({
   totalAmount,
   paidAmount,
+  upcomingAmount,
   paymentCount,
   paidCount,
   comparisonToPrevMonth,
   currency = 'USD',
 }: MonthSummaryHeaderProps) {
-  const progressPercentage = paymentCount > 0 ? (paidCount / paymentCount) * 100 : 0
+  const upcomingCount = paymentCount - paidCount
   const isUp = comparisonToPrevMonth > 0
   const isDown = comparisonToPrevMonth < 0
 
   return (
-    <div className="mb-6 grid grid-cols-3 gap-4">
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-xl"
-      >
-        <div className="mb-2 flex items-center justify-between">
-          <span className="text-muted-foreground text-sm">Monthly Total</span>
-          {(isUp || isDown) && (
-            <div
-              className={cn(
-                'flex items-center gap-1 text-xs',
-                isUp ? 'text-rose-400' : 'text-emerald-400'
+    <div className="glass-card group relative overflow-hidden p-0.5">
+      <div className="from-primary/5 to-primary/5 absolute inset-0 bg-gradient-to-r via-transparent opacity-0 group-hover:opacity-100" />
+      <div className="relative z-10 flex flex-wrap items-center justify-between gap-8 p-5">
+        <div className="divide-border flex flex-wrap items-center gap-8 md:gap-12 md:divide-x">
+          <div className="flex flex-col first:pl-0">
+            <span className="text-muted-foreground mb-1 flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
+              Monthly Total
+              {(isUp || isDown) && (
+                <span
+                  className={cn(
+                    'flex items-center gap-1',
+                    isUp ? 'text-rose-400' : 'text-emerald-400'
+                  )}
+                >
+                  {isUp ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                  {Math.abs(comparisonToPrevMonth).toFixed(0)}%
+                </span>
               )}
-            >
-              {isUp ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-              <span>{Math.abs(comparisonToPrevMonth).toFixed(0)}%</span>
-            </div>
-          )}
-        </div>
-        <motion.p
-          key={totalAmount}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-2xl font-bold"
-        >
-          {formatCurrency(totalAmount, currency)}
-        </motion.p>
-      </motion.div>
+            </span>
+            <span className="text-foreground text-2xl font-bold tracking-tight">
+              {formatCurrency(totalAmount, currency)}
+            </span>
+          </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-xl"
-      >
-        <div className="mb-2 flex items-center gap-2">
-          <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-          <span className="text-muted-foreground text-sm">Paid</span>
-        </div>
-        <p className="text-2xl font-bold text-emerald-400">
-          {formatCurrency(paidAmount, currency)}
-        </p>
-      </motion.div>
+          <div className="flex flex-col md:pl-12">
+            <span className="mb-1 flex items-center gap-1.5 text-xs font-semibold tracking-wider text-emerald-500 uppercase">
+              <CheckCircle2 className="h-4 w-4" /> Paid ({paidCount})
+            </span>
+            <span className="text-2xl font-bold tracking-tight text-emerald-500">
+              {formatCurrency(paidAmount, currency)}
+            </span>
+          </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-xl"
-      >
-        <div className="mb-2 flex items-center gap-2">
-          <Calendar className="text-primary h-4 w-4" />
-          <span className="text-muted-foreground text-sm">Progress</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <p className="text-2xl font-bold">
-            {paidCount}/{paymentCount}
-          </p>
-          <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/10">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${progressPercentage}%` }}
-              transition={{ duration: 0.5, ease: 'easeOut' }}
-              className="from-primary to-accent-cyan h-full rounded-full bg-gradient-to-r"
-            />
+          <div className="flex flex-col md:pl-12">
+            <span className="text-primary mb-1 flex items-center gap-1.5 text-xs font-semibold tracking-wider uppercase">
+              <Clock className="h-4 w-4" /> Upcoming ({upcomingCount})
+            </span>
+            <span className="text-primary text-2xl font-bold tracking-tight">
+              {formatCurrency(upcomingAmount, currency)}
+            </span>
           </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   )
 }

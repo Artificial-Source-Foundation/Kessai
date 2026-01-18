@@ -106,10 +106,12 @@ export function CardManager({ currency }: CardManagerProps) {
       {isAdding && (
         <form
           onSubmit={form.handleSubmit(handleSubmit)}
-          className="space-y-4 rounded-lg border border-white/10 bg-white/5 p-4"
+          className="border-border bg-muted/50 space-y-4 rounded-lg border p-4"
         >
           <div className="flex items-center justify-between">
-            <h3 className="font-medium">{editingCard ? 'Edit Card' : 'Add Card'}</h3>
+            <h3 className="text-foreground font-medium">
+              {editingCard ? 'Edit Card' : 'Add Card'}
+            </h3>
             <Button type="button" variant="ghost" size="sm" onClick={handleCancel}>
               <X className="h-4 w-4" />
             </Button>
@@ -121,7 +123,7 @@ export function CardManager({ currency }: CardManagerProps) {
               <Input
                 id="card-name"
                 placeholder="My Visa Card"
-                className="border-white/10 bg-white/5"
+                className="border-border bg-muted/50"
                 {...form.register('name')}
               />
             </div>
@@ -132,7 +134,7 @@ export function CardManager({ currency }: CardManagerProps) {
                 value={form.watch('card_type')}
                 onValueChange={(value) => form.setValue('card_type', value as 'credit' | 'debit')}
               >
-                <SelectTrigger className="border-white/10 bg-white/5">
+                <SelectTrigger className="border-border bg-muted/50">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -150,7 +152,7 @@ export function CardManager({ currency }: CardManagerProps) {
                 id="last-four"
                 placeholder="1234"
                 maxLength={4}
-                className="border-white/10 bg-white/5"
+                className="border-border bg-muted/50"
                 {...form.register('last_four')}
               />
             </div>
@@ -162,7 +164,7 @@ export function CardManager({ currency }: CardManagerProps) {
                   id="credit-limit"
                   type="number"
                   placeholder="5000"
-                  className="border-white/10 bg-white/5"
+                  className="border-border bg-muted/50"
                   {...form.register('credit_limit', { valueAsNumber: true })}
                 />
               </div>
@@ -204,7 +206,7 @@ export function CardManager({ currency }: CardManagerProps) {
           {cards.map((card) => (
             <div
               key={card.id}
-              className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 p-3"
+              className="border-border bg-muted/50 flex items-center justify-between rounded-lg border p-3"
             >
               <div className="flex items-center gap-3">
                 <div
@@ -214,7 +216,7 @@ export function CardManager({ currency }: CardManagerProps) {
                   <CreditCard className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <p className="font-medium">{card.name}</p>
+                  <p className="text-foreground font-medium">{card.name}</p>
                   <p className="text-muted-foreground text-sm">
                     {card.card_type === 'credit' ? 'Credit' : 'Debit'}
                     {card.last_four && ` •••• ${card.last_four}`}

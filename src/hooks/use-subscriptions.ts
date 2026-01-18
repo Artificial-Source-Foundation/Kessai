@@ -1,14 +1,32 @@
 import { useEffect } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 import { useSubscriptionStore } from '@/stores/subscription-store'
 import { useCategoryStore } from '@/stores/category-store'
 import { calculateMonthlyAmount, calculateYearlyAmount } from '@/types/subscription'
 import type { Subscription } from '@/types/subscription'
 
 export function useSubscriptions() {
+  // Use selective subscriptions for better performance
   const { subscriptions, isLoading, error, fetch, add, update, remove, toggleActive } =
-    useSubscriptionStore()
+    useSubscriptionStore(
+      useShallow((state) => ({
+        subscriptions: state.subscriptions,
+        isLoading: state.isLoading,
+        error: state.error,
+        fetch: state.fetch,
+        add: state.add,
+        update: state.update,
+        remove: state.remove,
+        toggleActive: state.toggleActive,
+      }))
+    )
 
-  const { categories, fetch: fetchCategories } = useCategoryStore()
+  const { categories, fetch: fetchCategories } = useCategoryStore(
+    useShallow((state) => ({
+      categories: state.categories,
+      fetch: state.fetch,
+    }))
+  )
 
   useEffect(() => {
     fetch()

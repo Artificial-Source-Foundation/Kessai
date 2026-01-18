@@ -1,3 +1,5 @@
+import { save } from '@tauri-apps/plugin-dialog'
+import { writeTextFile } from '@tauri-apps/plugin-fs'
 import { getDatabase } from '@/lib/database'
 import type { Subscription } from '@/types/subscription'
 import type { Category } from '@/types/category'
@@ -65,21 +67,23 @@ export async function exportData(): Promise<BackupData> {
   }
 }
 
-export function downloadBackup(data: BackupData): void {
+export async function saveBackupToFile(data: BackupData): Promise<boolean> {
   const json = JSON.stringify(data, null, 2)
-  const blob = new Blob([json], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-
   const date = new Date().toISOString().split('T')[0]
-  const filename = `subby-backup-${date}.json`
+  const defaultFilename = `subby-backup-${date}.json`
 
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(url)
+  const filePath = await save({
+    defaultPath: defaultFilename,
+    filters: [{ name: 'JSON', extensions: ['json'] }],
+    title: 'Export Subby Backup',
+  })
+
+  if (!filePath) {
+    return false
+  }
+
+  await writeTextFile(filePath, json)
+  return true
 }
 
 export function validateBackupData(data: unknown): data is BackupData {

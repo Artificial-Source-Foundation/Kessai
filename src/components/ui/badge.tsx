@@ -35,6 +35,8 @@ const badgeVariants = cva('inline-flex items-center rounded-full font-medium tra
   },
 })
 
+export type BadgeVariant = VariantProps<typeof badgeVariants>['variant']
+
 export interface BadgeProps
   extends React.HTMLAttributes<HTMLSpanElement>, VariantProps<typeof badgeVariants> {
   dot?: boolean

@@ -1,3 +1,7 @@
+/**
+ * Supported currency configurations with symbol, name, and locale.
+ * Used for formatting amounts in the user's preferred currency.
+ */
 export const CURRENCIES = {
   USD: { symbol: '$', name: 'US Dollar', locale: 'en-US' },
   EUR: { symbol: '€', name: 'Euro', locale: 'de-DE' },
@@ -11,8 +15,18 @@ export const CURRENCIES = {
   BRL: { symbol: 'R$', name: 'Brazilian Real', locale: 'pt-BR' },
 } as const
 
+/** Valid currency code string (e.g., 'USD', 'EUR', 'GBP') */
 export type CurrencyCode = keyof typeof CURRENCIES
 
+/**
+ * Formats a number as currency with full precision.
+ * @param amount - The numeric amount to format
+ * @param currency - Currency code (defaults to USD)
+ * @returns Formatted currency string (e.g., "$15.99")
+ * @example
+ * formatCurrency(15.99, 'USD') // "$15.99"
+ * formatCurrency(1234.5, 'EUR') // "1.234,50 €"
+ */
 export function formatCurrency(amount: number, currency: CurrencyCode = 'USD'): string {
   const config = CURRENCIES[currency]
   return new Intl.NumberFormat(config.locale, {
@@ -23,6 +37,15 @@ export function formatCurrency(amount: number, currency: CurrencyCode = 'USD'): 
   }).format(amount)
 }
 
+/**
+ * Formats a number as compact currency for large values.
+ * @param amount - The numeric amount to format
+ * @param currency - Currency code (defaults to USD)
+ * @returns Compact formatted currency string (e.g., "$1.2K")
+ * @example
+ * formatCompactCurrency(1500, 'USD') // "$1.5K"
+ * formatCompactCurrency(1000000, 'EUR') // "1 Mio. €"
+ */
 export function formatCompactCurrency(amount: number, currency: CurrencyCode = 'USD'): string {
   const config = CURRENCIES[currency]
   return new Intl.NumberFormat(config.locale, {
@@ -34,10 +57,24 @@ export function formatCompactCurrency(amount: number, currency: CurrencyCode = '
   }).format(amount)
 }
 
+/**
+ * Gets the symbol for a currency code.
+ * @param currency - Currency code
+ * @returns Currency symbol (e.g., "$", "€", "£")
+ * @example
+ * getCurrencySymbol('USD') // "$"
+ * getCurrencySymbol('EUR') // "€"
+ */
 export function getCurrencySymbol(currency: CurrencyCode): string {
   return CURRENCIES[currency].symbol
 }
 
+/**
+ * Gets currency options for select dropdowns.
+ * @returns Array of currency options with value and label
+ * @example
+ * getCurrencyOptions() // [{ value: 'USD', label: '$ USD - US Dollar' }, ...]
+ */
 export function getCurrencyOptions(): { value: CurrencyCode; label: string }[] {
   return Object.entries(CURRENCIES).map(([code, config]) => ({
     value: code as CurrencyCode,

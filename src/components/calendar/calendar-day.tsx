@@ -1,6 +1,4 @@
 import { cn } from '@/lib/utils'
-import { motion } from 'framer-motion'
-import { SubscriptionLogo } from '@/components/ui/subscription-logo'
 import type { Subscription } from '@/types/subscription'
 
 interface DayPayment {
@@ -30,65 +28,61 @@ export function CalendarDay({
   onClick,
 }: CalendarDayProps) {
   const hasPayments = payments.length > 0
-  const maxLogos = 3
-  const visiblePayments = payments.slice(0, maxLogos)
-  const remainingCount = payments.length - maxLogos
+  const maxVisible = 2
+  const visiblePayments = payments.slice(0, maxVisible)
+  const remainingCount = payments.length - maxVisible
 
   return (
-    <motion.button
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
+    <button
       onClick={onClick}
       className={cn(
-        'relative h-20 w-full rounded-lg transition-all duration-200',
-        'flex flex-col items-center justify-start gap-1 pt-1',
-        'border backdrop-blur-sm',
-        isCurrentMonth
-          ? 'border-glass-border bg-glass-surface hover:border-glass-border-hover hover:bg-glass-surface-hover'
-          : 'text-muted-foreground/50 border-transparent bg-transparent',
-        isToday && 'border-primary/30 bg-primary/10 ring-primary/50 ring-2',
-        isSelected && 'border-primary/50 bg-primary/20 ring-primary/60 ring-2',
-        hasPayments && !isSelected && 'bg-white/8'
+        'border-border bg-background hover:bg-muted/50 flex min-h-[100px] flex-col gap-1 border p-2 text-left',
+        !isCurrentMonth && 'text-muted-foreground/40',
+        isCurrentMonth && 'text-foreground font-medium',
+        isToday && 'bg-primary/5',
+        isSelected && 'bg-primary/10 ring-primary/60 z-10 ring-2'
       )}
     >
       <span
         className={cn(
-          'text-sm font-medium',
+          'mb-1',
           isToday &&
-            'bg-primary text-primary-foreground flex h-7 w-7 items-center justify-center rounded-full shadow-[0_0_12px_rgba(137,90,246,0.6)]',
-          isSelected && !isToday && 'text-primary'
+            'bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-full font-bold'
         )}
       >
         {dayOfMonth}
       </span>
 
-      {hasPayments && (
-        <div className="flex flex-wrap items-center justify-center gap-1 px-1">
-          {visiblePayments.map((p, idx) => (
-            <SubscriptionLogo
+      {hasPayments &&
+        visiblePayments.map((p, idx) => {
+          const color = p.subscription.color || '#8655f6'
+          return (
+            <div
               key={idx}
-              logoUrl={p.subscription.logo_url}
-              name={p.subscription.name}
-              color={p.subscription.color}
-              size="sm"
-              className={cn(p.isPaid && 'opacity-60')}
-            />
-          ))}
-          {remainingCount > 0 && (
-            <span className="text-muted-foreground text-[10px]">+{remainingCount}</span>
-          )}
-        </div>
-      )}
+              className={cn(
+                'flex items-center gap-1.5 truncate rounded-lg border px-2 py-1.5 text-xs font-semibold shadow-sm',
+                p.isPaid || p.isSkipped ? 'opacity-70 grayscale' : ''
+              )}
+              style={{
+                backgroundColor: `${color}20`,
+                borderColor: `${color}30`,
+                color: `${color}`,
+              }}
+            >
+              <span
+                className="h-1.5 w-1.5 shrink-0 rounded-full"
+                style={{ backgroundColor: color }}
+              />
+              <span className="truncate">{p.subscription.name}</span>
+            </div>
+          )
+        })}
 
-      {isToday && (
-        <motion.div
-          layoutId="today-glow"
-          className="bg-primary/10 absolute inset-0 -z-10 rounded-lg"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
-        />
+      {remainingCount > 0 && (
+        <span className="text-muted-foreground pl-1 text-[10px] font-semibold">
+          +{remainingCount} more
+        </span>
       )}
-    </motion.button>
+    </button>
   )
 }

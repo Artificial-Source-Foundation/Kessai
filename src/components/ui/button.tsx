@@ -5,15 +5,13 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
   {
     variants: {
       variant: {
-        default:
-          'bg-primary text-primary-foreground hover:bg-primary-hover hover:-translate-y-0.5 active:translate-y-0',
-        glow: 'bg-primary text-primary-foreground shadow-[0_0_20px_rgba(137,90,246,0.3)] hover:shadow-[0_0_30px_rgba(137,90,246,0.4)] hover:-translate-y-0.5 active:translate-y-0',
-        destructive:
-          'bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:-translate-y-0.5 active:translate-y-0',
+        default: 'bg-primary text-primary-foreground hover:bg-primary-hover',
+        glow: 'bg-primary text-primary-foreground',
+        destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
         outline:
           'border border-border bg-transparent hover:bg-glass-surface-hover hover:border-border-hover',
         secondary:

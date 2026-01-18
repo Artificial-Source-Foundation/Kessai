@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useEffect, useState, useMemo } from 'react'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { format } from 'date-fns'
+import { toast } from 'sonner'
 import { useCategories } from '@/hooks/use-categories'
 import { usePaymentCardStore } from '@/stores/payment-card-store'
 import { pickAndSaveLogo, getLogoDataUrl } from '@/lib/logo-storage'
@@ -68,10 +69,25 @@ export function SubscriptionForm({
       billing_day: null,
       category_id: null,
       color: SUBSCRIPTION_COLORS[0],
+      logo_url: null,
+      card_id: null,
       notes: null,
       next_payment_date: format(new Date(), 'yyyy-MM-dd'),
     },
   })
+
+  // Batch all watched fields into a single subscription to minimize re-renders
+  const watchedFields = useWatch({
+    control: form.control,
+    name: ['color', 'currency', 'billing_cycle', 'category_id', 'card_id'],
+  })
+  const [
+    selectedColor,
+    selectedCurrency,
+    selectedBillingCycle,
+    selectedCategoryId,
+    selectedCardId,
+  ] = watchedFields
 
   useEffect(() => {
     if (subscription) {
@@ -82,7 +98,9 @@ export function SubscriptionForm({
         billing_cycle: subscription.billing_cycle,
         billing_day: subscription.billing_day,
         category_id: subscription.category_id,
+        card_id: subscription.card_id ?? null,
         color: subscription.color || SUBSCRIPTION_COLORS[0],
+        logo_url: subscription.logo_url ?? null,
         notes: subscription.notes,
         next_payment_date: subscription.next_payment_date
           ? subscription.next_payment_date.split('T')[0]
@@ -99,8 +117,7 @@ export function SubscriptionForm({
     }
   }
 
-  const selectedColor = form.watch('color')
-  const currencyOptions = getCurrencyOptions()
+  const currencyOptions = useMemo(() => getCurrencyOptions(), [])
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -110,7 +127,7 @@ export function SubscriptionForm({
           <Input
             id="name"
             placeholder="Netflix, Spotify, etc."
-            className="border-white/10 bg-white/5"
+            className="border-border bg-muted/50"
             {...form.register('name')}
           />
           {form.formState.errors.name && (
@@ -127,7 +144,7 @@ export function SubscriptionForm({
               step="0.01"
               min="0"
               placeholder="9.99"
-              className="border-white/10 bg-white/5"
+              className="border-border bg-muted/50"
               {...form.register('amount', { valueAsNumber: true })}
             />
             {form.formState.errors.amount && (
@@ -138,10 +155,10 @@ export function SubscriptionForm({
           <div className="space-y-2">
             <Label htmlFor="currency">Currency</Label>
             <Select
-              value={form.watch('currency')}
+              value={selectedCurrency || 'USD'}
               onValueChange={(value) => form.setValue('currency', value)}
             >
-              <SelectTrigger className="border-white/10 bg-white/5">
+              <SelectTrigger className="border-border bg-muted/50">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -159,10 +176,10 @@ export function SubscriptionForm({
           <div className="space-y-2">
             <Label htmlFor="billing_cycle">Billing Cycle *</Label>
             <Select
-              value={form.watch('billing_cycle')}
+              value={selectedBillingCycle || 'monthly'}
               onValueChange={(value) => form.setValue('billing_cycle', value as BillingCycle)}
             >
-              <SelectTrigger className="border-white/10 bg-white/5">
+              <SelectTrigger className="border-border bg-muted/50">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -180,7 +197,7 @@ export function SubscriptionForm({
             <Input
               id="next_payment_date"
               type="date"
-              className="border-white/10 bg-white/5"
+              className="border-border bg-muted/50"
               {...form.register('next_payment_date')}
             />
             {form.formState.errors.next_payment_date && (
@@ -194,10 +211,10 @@ export function SubscriptionForm({
         <div className="space-y-2">
           <Label htmlFor="category">Category</Label>
           <Select
-            value={form.watch('category_id') || 'none'}
+            value={selectedCategoryId || 'none'}
             onValueChange={(value) => form.setValue('category_id', value === 'none' ? null : value)}
           >
-            <SelectTrigger className="border-white/10 bg-white/5">
+            <SelectTrigger className="border-border bg-muted/50">
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent>
@@ -223,10 +240,9 @@ export function SubscriptionForm({
                 type="button"
                 onClick={() => form.setValue('color', color)}
                 className={cn(
-                  'h-8 w-8 rounded-lg transition-all',
-                  selectedColor === color
-                    ? 'ring-offset-background scale-110 ring-2 ring-white ring-offset-2'
-                    : 'hover:scale-105'
+                  'h-8 w-8 rounded-lg',
+                  selectedColor === color &&
+                    'ring-primary ring-offset-background ring-2 ring-offset-2'
                 )}
                 style={{ backgroundColor: color }}
               />
@@ -242,7 +258,7 @@ export function SubscriptionForm({
                 <img
                   src={logoPreview}
                   alt="Logo preview"
-                  className="h-12 w-12 rounded-lg border border-white/10 object-cover"
+                  className="border-border h-12 w-12 rounded-lg border object-cover"
                 />
                 <button
                   type="button"
@@ -256,7 +272,7 @@ export function SubscriptionForm({
                 </button>
               </div>
             ) : (
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-white/10 bg-white/5">
+              <div className="border-border bg-muted/50 flex h-12 w-12 items-center justify-center rounded-lg border">
                 <Upload className="text-muted-foreground h-5 w-5" />
               </div>
             )}
@@ -272,8 +288,17 @@ export function SubscriptionForm({
                   if (filename) {
                     form.setValue('logo_url', filename)
                     const dataUrl = await getLogoDataUrl(filename)
-                    if (dataUrl) setLogoPreview(dataUrl)
+                    if (dataUrl) {
+                      setLogoPreview(dataUrl)
+                    } else {
+                      toast.error('Failed to load logo preview')
+                    }
                   }
+                } catch (error) {
+                  console.error('Logo upload failed:', error)
+                  toast.error('Failed to upload logo', {
+                    description: 'Please try again with a different image.',
+                  })
                 } finally {
                   setIsUploadingLogo(false)
                 }
@@ -288,10 +313,10 @@ export function SubscriptionForm({
           <div className="space-y-2">
             <Label htmlFor="card">Payment Card</Label>
             <Select
-              value={form.watch('card_id') || 'none'}
+              value={selectedCardId || 'none'}
               onValueChange={(value) => form.setValue('card_id', value === 'none' ? null : value)}
             >
-              <SelectTrigger className="border-white/10 bg-white/5">
+              <SelectTrigger className="border-border bg-muted/50">
                 <SelectValue placeholder="Select card" />
               </SelectTrigger>
               <SelectContent>
@@ -317,7 +342,7 @@ export function SubscriptionForm({
           <Input
             id="notes"
             placeholder="Optional notes..."
-            className="border-white/10 bg-white/5"
+            className="border-border bg-muted/50"
             {...form.register('notes')}
           />
         </div>

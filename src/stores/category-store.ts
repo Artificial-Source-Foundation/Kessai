@@ -36,15 +36,50 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
     const id = crypto.randomUUID()
     const now = new Date().toISOString()
 
-    await execute(
-      `INSERT INTO categories (id, name, color, icon, is_default, created_at)
-       VALUES (?, ?, ?, ?, 0, ?)`,
-      [id, category.name, category.color, category.icon, now]
-    )
-    await get().fetch()
+    // Create optimistic category object
+    const newCategory: Category = {
+      id,
+      name: category.name,
+      color: category.color,
+      icon: category.icon,
+      is_default: false,
+      created_at: now,
+    }
+
+    // Optimistically add to state (sorted by name)
+    set((state) => ({
+      categories: [...state.categories, newCategory].sort((a, b) => a.name.localeCompare(b.name)),
+    }))
+
+    try {
+      await execute(
+        `INSERT INTO categories (id, name, color, icon, is_default, created_at)
+         VALUES (?, ?, ?, ?, 0, ?)`,
+        [id, category.name, category.color, category.icon, now]
+      )
+    } catch (error) {
+      // Rollback on error
+      set((state) => ({
+        categories: state.categories.filter((c) => c.id !== id),
+      }))
+      console.error('Failed to add category:', error)
+      throw error
+    }
   },
 
   update: async (id, data) => {
+    // Store previous state for rollback
+    const previousCategories = get().categories
+    const category = previousCategories.find((c) => c.id === id)
+    if (!category) return
+
+    // Optimistically update state
+    set((state) => ({
+      categories: state.categories
+        .map((c) => (c.id === id ? { ...c, ...data } : c))
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    }))
+
     const fields: string[] = []
     const values: unknown[] = []
 
@@ -56,8 +91,15 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
     })
 
     values.push(id)
-    await execute(`UPDATE categories SET ${fields.join(', ')} WHERE id = ?`, values)
-    await get().fetch()
+
+    try {
+      await execute(`UPDATE categories SET ${fields.join(', ')} WHERE id = ?`, values)
+    } catch (error) {
+      // Rollback on error
+      set({ categories: previousCategories })
+      console.error('Failed to update category:', error)
+      throw error
+    }
   },
 
   remove: async (id) => {
@@ -66,9 +108,23 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
       throw new Error('Cannot delete default category')
     }
 
-    await execute('UPDATE subscriptions SET category_id = NULL WHERE category_id = ?', [id])
-    await execute('DELETE FROM categories WHERE id = ?', [id])
-    await get().fetch()
+    // Store previous state for rollback
+    const previousCategories = get().categories
+
+    // Optimistically remove from state
+    set((state) => ({
+      categories: state.categories.filter((c) => c.id !== id),
+    }))
+
+    try {
+      await execute('UPDATE subscriptions SET category_id = NULL WHERE category_id = ?', [id])
+      await execute('DELETE FROM categories WHERE id = ?', [id])
+    } catch (error) {
+      // Rollback on error
+      set({ categories: previousCategories })
+      console.error('Failed to remove category:', error)
+      throw error
+    }
   },
 
   getById: (id) => get().categories.find((c) => c.id === id),

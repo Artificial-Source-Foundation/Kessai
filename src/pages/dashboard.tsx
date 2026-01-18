@@ -1,40 +1,47 @@
 import { useEffect } from 'react'
-import { DollarSign, TrendingUp, CreditCard, Calendar, Sparkles } from 'lucide-react'
+import { useShallow } from 'zustand/react/shallow'
+import { DollarSign, CreditCard, CalendarClock, TrendingUp } from 'lucide-react'
 import { useSubscriptionStore } from '@/stores/subscription-store'
 import { useCategoryStore } from '@/stores/category-store'
 import { useSettingsStore } from '@/stores/settings-store'
 import { useDashboardStats } from '@/hooks/use-dashboard-stats'
 import { formatCurrency } from '@/lib/currency'
-import { getUpcomingPayments, formatShortDate, getDaysUntil } from '@/lib/date-utils'
-import { StatCard } from '@/components/data-display/stat-card'
-import { DonutChart, DonutChartLegend } from '@/components/data-display/donut-chart'
-import { AreaChart } from '@/components/data-display/area-chart'
-import { SubscriptionLogo } from '@/components/ui/subscription-logo'
+import { CATEGORY_COLORS } from '@/lib/constants'
+import { getUpcomingPayments } from '@/lib/date-utils'
+import { DonutChart } from '@/components/charts/donut-chart'
+import { AreaChart } from '@/components/charts/area-chart'
+import { StatCard } from '@/components/dashboard/stat-card'
+import { EmptyState } from '@/components/dashboard/empty-state'
+import { UpcomingPaymentRow } from '@/components/dashboard/upcoming-payment-row'
+import { InsightsCard } from '@/components/dashboard/insights-card'
 import type { CurrencyCode } from '@/lib/currency'
 
-const CATEGORY_COLORS: Record<string, string> = {
-  Entertainment: '#a855f7',
-  Software: '#3b82f6',
-  Music: '#22c55e',
-  Health: '#ef4444',
-  Shopping: '#f59e0b',
-  AI: '#14b8a6',
-  Cloud: '#0ea5e9',
-  Productivity: '#6b7280',
-  Development: '#f97316',
-  Security: '#eab308',
-  Other: '#64748b',
-}
-
 export function Dashboard() {
-  const { subscriptions, isLoading, fetch: fetchSubscriptions } = useSubscriptionStore()
-  const { fetch: fetchCategories } = useCategoryStore()
-  const { settings, fetch: fetchSettings } = useSettingsStore()
+  // Use selective subscriptions for better performance
+  const {
+    subscriptions,
+    isLoading,
+    fetch: fetchSubscriptions,
+  } = useSubscriptionStore(
+    useShallow((state) => ({
+      subscriptions: state.subscriptions,
+      isLoading: state.isLoading,
+      fetch: state.fetch,
+    }))
+  )
+  const fetchCategories = useCategoryStore((state) => state.fetch)
+  const { settings, fetch: fetchSettings } = useSettingsStore(
+    useShallow((state) => ({
+      settings: state.settings,
+      fetch: state.fetch,
+    }))
+  )
   const { categorySpending, monthlySpending, totalMonthly, totalYearly, activeCount } =
     useDashboardStats()
 
   const currency = (settings?.currency || 'USD') as CurrencyCode
   const upcomingPayments = getUpcomingPayments(subscriptions, 7)
+  const upcomingTotal = upcomingPayments.reduce((sum, sub) => sum + sub.amount, 0)
 
   useEffect(() => {
     fetchSubscriptions()
@@ -50,159 +57,120 @@ export function Dashboard() {
     )
   }
 
-  const donutSegments = categorySpending.map((cat) => ({
+  const donutSegments = categorySpending.slice(0, 4).map((cat) => ({
     value: cat.amount,
     color: CATEGORY_COLORS[cat.name] || CATEGORY_COLORS.Other,
     label: cat.name,
-  }))
-
-  const areaChartData = monthlySpending.map((item) => ({
-    label: item.month.slice(0, 3),
-    value: item.amount,
+    percentage: totalMonthly > 0 ? Math.round((cat.amount / totalMonthly) * 100) : 0,
   }))
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-foreground text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">Your subscription overview at a glance</p>
-      </div>
+    <div className="flex flex-col gap-8">
+      <header className="flex flex-col gap-1">
+        <h2 className="text-foreground text-3xl font-black tracking-tight">Dashboard</h2>
+        <p className="text-muted-foreground mt-1 text-base">Here's your subscription overview</p>
+      </header>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="stagger-children grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          title="Monthly Spend"
+          label="Monthly Total"
           value={formatCurrency(totalMonthly, currency)}
-          icon={<DollarSign className="h-5 w-5" />}
-          glowColor="rgba(137, 90, 246, 0.4)"
+          icon={DollarSign}
+          iconBg="bg-primary/10"
+          iconColor="text-primary"
         />
         <StatCard
-          title="Yearly Projection"
-          value={formatCurrency(totalYearly, currency)}
-          icon={<TrendingUp className="h-5 w-5" />}
-          glowColor="rgba(6, 182, 212, 0.4)"
-        />
-        <StatCard
-          title="Active Subscriptions"
+          label="Active Subscriptions"
           value={activeCount.toString()}
-          icon={<CreditCard className="h-5 w-5" />}
-          subtitle={`${subscriptions.length - activeCount} paused`}
-          glowColor="rgba(34, 197, 94, 0.4)"
+          subtitle={`Across ${categorySpending.length} categories`}
+          icon={CreditCard}
+          iconBg="bg-accent-cyan/10"
+          iconColor="text-accent-cyan"
         />
-      </div>
+        <StatCard
+          label="Due This Week"
+          value={upcomingPayments.length.toString()}
+          subtitle={
+            upcomingPayments.length > 0
+              ? `${formatCurrency(upcomingTotal, currency)} total`
+              : undefined
+          }
+          subtitleColor="text-accent-orange"
+          icon={CalendarClock}
+          iconBg="bg-accent-orange/10"
+          iconColor="text-accent-orange"
+        />
+        <StatCard
+          label="Yearly Estimate"
+          value={formatCurrency(totalYearly, currency)}
+          subtitle="Based on current plan"
+          icon={TrendingUp}
+          iconBg="bg-muted"
+          iconColor="text-muted-foreground"
+        />
+      </section>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="glass-card p-6">
-          <h2 className="text-foreground mb-6 text-lg font-semibold">Spending by Category</h2>
+      <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="glass-card flex flex-col rounded-2xl p-6">
+          <h3 className="text-foreground mb-6 text-lg font-bold">Spending by Category</h3>
           {donutSegments.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Sparkles className="text-muted-foreground/50 mb-3 h-12 w-12" />
-              <p className="text-muted-foreground">No spending data yet</p>
-            </div>
+            <EmptyState message="No spending data yet" />
           ) : (
-            <div className="flex flex-col items-center gap-6 sm:flex-row sm:justify-around">
-              <DonutChart
-                segments={donutSegments}
-                centerValue={formatCurrency(totalMonthly, currency)}
-                centerLabel="monthly"
-                size={180}
-              />
-              <DonutChartLegend segments={donutSegments} className="min-w-[140px]" />
-            </div>
+            <DonutChart segments={donutSegments} total={totalMonthly} currency={currency} />
           )}
         </div>
 
-        <div className="glass-card p-6">
-          <h2 className="text-foreground mb-6 text-lg font-semibold">Monthly Trend</h2>
-          {areaChartData.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <TrendingUp className="text-muted-foreground/50 mb-3 h-12 w-12" />
-              <p className="text-muted-foreground">No trend data yet</p>
+        <div className="glass-card flex flex-col rounded-2xl p-6">
+          <div className="mb-6 flex items-center justify-between">
+            <h3 className="text-foreground text-lg font-bold">Monthly Spending</h3>
+            <div className="flex gap-2">
+              <button className="bg-primary text-primary-foreground rounded px-2 py-1 text-xs font-medium">
+                6M
+              </button>
+              <button className="text-muted-foreground hover:bg-muted hover:text-foreground rounded px-2 py-1 text-xs font-medium">
+                1Y
+              </button>
             </div>
-          ) : (
-            <AreaChart data={areaChartData} height={200} />
-          )}
-        </div>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="glass-card p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-foreground text-lg font-semibold">Upcoming Payments</h2>
-            <span className="bg-primary/10 text-primary flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium">
-              <Calendar className="h-3 w-3" />
-              Next 7 days
-            </span>
           </div>
+          {monthlySpending.length === 0 ? (
+            <EmptyState message="No trend data yet" />
+          ) : (
+            <div className="relative min-h-[180px] w-full flex-1 px-2 pb-4">
+              <AreaChart data={monthlySpending} />
+              <div className="text-muted-foreground absolute bottom-0 flex w-full justify-between px-1 pb-1 text-[10px] font-medium">
+                {monthlySpending.slice(-6).map((item, i) => (
+                  <span key={i}>{item.monthLabel}</span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="glass-card rounded-2xl p-6 lg:col-span-2">
+          <h3 className="text-foreground mb-6 text-lg font-bold">Upcoming Payments</h3>
           {upcomingPayments.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <span className="mb-2 text-4xl">🎉</span>
               <p className="text-muted-foreground">No payments in the next 7 days</p>
             </div>
           ) : (
-            <div className="space-y-2">
-              {upcomingPayments.slice(0, 5).map((sub) => (
-                <div
-                  key={sub.id}
-                  className="group bg-glass-surface hover:bg-glass-surface-hover flex items-center justify-between rounded-lg p-3 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <SubscriptionLogo
-                      logoUrl={sub.logo_url}
-                      name={sub.name}
-                      color={sub.color}
-                      size="md"
-                    />
-                    <div>
-                      <p className="text-foreground font-medium">{sub.name}</p>
-                      <p className="text-muted-foreground text-sm">
-                        {sub.next_payment_date && formatShortDate(sub.next_payment_date)}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-foreground font-semibold">
-                      {formatCurrency(sub.amount, currency)}
-                    </p>
-                    <p className="text-muted-foreground text-sm">
-                      {sub.next_payment_date && `in ${getDaysUntil(sub.next_payment_date)} days`}
-                    </p>
-                  </div>
-                </div>
+            <div className="flex flex-col gap-3">
+              {upcomingPayments.slice(0, 4).map((sub) => (
+                <UpcomingPaymentRow key={sub.id} subscription={sub} currency={currency} />
               ))}
             </div>
           )}
         </div>
 
-        <div className="glass-card p-6">
-          <h2 className="text-foreground mb-4 text-lg font-semibold">Quick Insights</h2>
-          <div className="space-y-4">
-            {[
-              {
-                label: 'Average per subscription',
-                value:
-                  activeCount > 0
-                    ? formatCurrency(totalMonthly / activeCount, currency)
-                    : formatCurrency(0, currency),
-              },
-              { label: 'Total subscriptions', value: subscriptions.length.toString() },
-              {
-                label: 'Inactive subscriptions',
-                value: (subscriptions.length - activeCount).toString(),
-              },
-              { label: 'Categories used', value: categorySpending.length.toString() },
-              { label: 'Daily average', value: formatCurrency(totalMonthly / 30, currency) },
-            ].map((stat) => (
-              <div
-                key={stat.label}
-                className="border-border/50 flex items-center justify-between border-b pb-3 last:border-0 last:pb-0"
-              >
-                <span className="text-muted-foreground">{stat.label}</span>
-                <span className="text-foreground font-medium">{stat.value}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+        <InsightsCard
+          activeCount={activeCount}
+          totalMonthly={totalMonthly}
+          subscriptionCount={subscriptions.length}
+          currency={currency}
+        />
+      </section>
     </div>
   )
 }

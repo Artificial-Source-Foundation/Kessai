@@ -15,7 +15,7 @@ export const subscriptionSchema = z.object({
     .string()
     .regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color format')
     .nullable(),
-  logo_url: z.string().url().nullable().or(z.literal('')).optional(),
+  logo_url: z.string().nullable().optional(),
   notes: z.string().max(500).nullable(),
   is_active: z.boolean(),
   next_payment_date: z.string().nullable(),
@@ -41,7 +41,7 @@ export const subscriptionFormSchema = z.object({
     .string()
     .regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color')
     .nullable(),
-  logo_url: z.string().url().or(z.literal('')).nullable().optional(),
+  logo_url: z.string().nullable().optional(),
   notes: z.string().max(500).nullable(),
   next_payment_date: z.string().min(1, 'Payment date is required'),
 })

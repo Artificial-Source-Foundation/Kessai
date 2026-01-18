@@ -26,7 +26,8 @@ export async function getLogoDataUrl(filename: string): Promise<string | null> {
   try {
     const dataUrl = await invoke<string>('get_logo_base64', { filename })
     return dataUrl
-  } catch {
+  } catch (error) {
+    console.error('Failed to load logo:', filename, error)
     return null
   }
 }
