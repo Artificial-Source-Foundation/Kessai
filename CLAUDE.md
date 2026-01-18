@@ -13,10 +13,11 @@
 - **Runtime**: Tauri 2.x (Rust backend)
 - **Frontend**: React 19 + TypeScript + Vite 7
 - **Styling**: Tailwind CSS 4 + shadcn/ui
-- **State**: Zustand
+- **State**: Zustand (with useShallow for optimized selectors)
 - **Database**: SQLite via tauri-plugin-sql
 - **Forms**: React Hook Form + Zod
-- **Testing**: Vitest + Testing Library
+- **Dates**: dayjs (with plugins: isSameOrBefore, isSameOrAfter, isToday, isTomorrow, weekOfYear, isBetween)
+- **Testing**: Vitest + Testing Library (101 tests)
 
 ## Key Directories
 
@@ -86,6 +87,9 @@ pnpm format           # Run Prettier
 - Don't use backdrop-filter blur (causes lag)
 - Don't suppress TypeScript errors with `as any`
 - Don't add heavy animations on scroll containers
+- Don't use date-fns (use dayjs instead - smaller bundle)
+- Don't use array index as React keys (use stable IDs)
+- Don't forget useMemo for expensive calculations in hooks
 
 ## Data Storage
 

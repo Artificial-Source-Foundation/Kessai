@@ -3,7 +3,7 @@
 ## Document Context
 
 - **Project**: Subby
-- **Last Updated**: 2026-01-12
+- **Last Updated**: 2026-01-17
 
 ---
 
@@ -52,12 +52,14 @@ Subby follows a local-first architecture with a clear separation between the Tau
 | Layer           | Technology                 | Purpose                          |
 | --------------- | -------------------------- | -------------------------------- |
 | Runtime         | Tauri 2.x                  | Native shell, IPC, system access |
-| Frontend        | React 18 + TypeScript      | UI components                    |
+| Frontend        | React 19 + TypeScript      | UI components                    |
+| Build           | Vite 7                     | Fast dev server and bundling     |
 | Styling         | Tailwind CSS 4 + shadcn/ui | Design system                    |
-| State           | Zustand                    | Client state management          |
+| State           | Zustand + useShallow       | Client state management          |
 | Database        | SQLite                     | Local persistence                |
 | Database Access | tauri-plugin-sql           | SQL from frontend                |
-| Notifications   | tauri-plugin-notification  | System notifications             |
+| Dates           | dayjs                      | Lightweight date manipulation    |
+| Forms           | React Hook Form + Zod      | Form handling and validation     |
 
 ---
 

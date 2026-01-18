@@ -68,6 +68,36 @@ export function SubscriptionCard({ subscription, onEdit }: SubscriptionCardProps
 - Custom hooks go in `hooks/` directory
 - Prefix with `use`
 - Return object for multiple values
+- Use `useMemo` for derived data and expensive calculations
+- Use `useShallow` from Zustand for optimized store selectors
+
+### Performance Best Practices
+
+- **Memoize calculations**: Always wrap derived state in `useMemo`
+- **Stable keys**: Never use array index as React keys; use unique IDs
+- **Optimized selectors**: Use `useShallow` when selecting multiple store values
+
+```typescript
+// Good: Memoized calculations
+const totalMonthly = useMemo(
+  () => subscriptions.reduce((sum, sub) => sum + calculateMonthlyAmount(sub.amount, sub.billing_cycle), 0),
+  [subscriptions]
+)
+
+// Good: Stable keys
+{payments.map((p) => (
+  <PaymentCard key={`${p.subscription.id}-${p.dueDate}`} payment={p} />
+))}
+
+// Good: useShallow for multiple values
+const { subscriptions, isLoading, fetch } = useSubscriptionStore(
+  useShallow((state) => ({
+    subscriptions: state.subscriptions,
+    isLoading: state.isLoading,
+    fetch: state.fetch,
+  }))
+)
+```
 
 ---
 
