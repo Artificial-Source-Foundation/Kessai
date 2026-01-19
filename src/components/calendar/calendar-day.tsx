@@ -1,4 +1,7 @@
+import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
+import { formatCurrency, type CurrencyCode } from '@/lib/currency'
+import { getLogoDataUrl } from '@/lib/logo-storage'
 import type { DayPayment } from '@/hooks/use-calendar-stats'
 
 interface CalendarDayProps {
@@ -8,7 +11,46 @@ interface CalendarDayProps {
   isSelected: boolean
   payments: DayPayment[]
   totalAmount: number
+  currency: CurrencyCode
   onClick: () => void
+}
+
+function PaymentLogo({
+  logoUrl,
+  name,
+  color,
+}: {
+  logoUrl?: string | null
+  name: string
+  color?: string
+}) {
+  const [src, setSrc] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (logoUrl) {
+      getLogoDataUrl(logoUrl).then(setSrc)
+    }
+  }, [logoUrl])
+
+  if (src) {
+    return (
+      <img
+        src={src}
+        alt=""
+        className="h-5 w-5 shrink-0 rounded object-cover"
+        style={{ borderRadius: '3px' }}
+      />
+    )
+  }
+
+  return (
+    <div
+      className="flex h-5 w-5 shrink-0 items-center justify-center text-[9px] font-bold text-white"
+      style={{ backgroundColor: color || '#8b5cf6', borderRadius: '3px' }}
+    >
+      {name.charAt(0).toUpperCase()}
+    </div>
+  )
 }
 
 export function CalendarDay({
@@ -17,10 +59,12 @@ export function CalendarDay({
   isToday,
   isSelected,
   payments,
+  totalAmount,
+  currency,
   onClick,
 }: CalendarDayProps) {
   const hasPayments = payments.length > 0
-  const maxVisible = 2
+  const maxVisible = 3
   const visiblePayments = payments.slice(0, maxVisible)
   const remainingCount = payments.length - maxVisible
 
@@ -28,53 +72,78 @@ export function CalendarDay({
     <button
       onClick={onClick}
       className={cn(
-        'border-border bg-background hover:bg-muted/50 flex min-h-[100px] flex-col gap-1 border p-2 text-left',
-        !isCurrentMonth && 'text-muted-foreground/40',
-        isCurrentMonth && 'text-foreground font-medium',
+        'border-border bg-background hover:bg-muted/50 flex min-h-[120px] flex-col border p-1.5 text-left',
+        !isCurrentMonth && 'text-muted-foreground/40 bg-muted/20',
+        isCurrentMonth && 'text-foreground',
         isToday && 'bg-primary/5',
         isSelected && 'bg-primary/10 ring-primary/60 z-10 ring-2'
       )}
     >
-      <span
-        className={cn(
-          'mb-1',
-          isToday &&
-            'bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-full font-bold'
+      {/* Header: Day number + total */}
+      <div className="mb-1 flex items-center justify-between">
+        <span
+          className={cn(
+            'text-sm font-medium',
+            isToday &&
+              'bg-primary text-primary-foreground flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold'
+          )}
+        >
+          {dayOfMonth}
+        </span>
+        {hasPayments && totalAmount > 0 && (
+          <span className="text-muted-foreground text-[10px] font-semibold">
+            {formatCurrency(totalAmount, currency)}
+          </span>
         )}
-      >
-        {dayOfMonth}
-      </span>
+      </div>
 
-      {hasPayments &&
-        visiblePayments.map((p) => {
-          const color = p.subscription.color || '#8655f6'
+      {/* Payment items */}
+      <div className="flex flex-1 flex-col gap-1">
+        {visiblePayments.map((p) => {
+          const color = p.subscription.color || '#8b5cf6'
+          const isPaidOrSkipped = p.isPaid || p.isSkipped
+
           return (
             <div
               key={`${p.subscription.id}-${p.dueDate}`}
               className={cn(
-                'flex items-center gap-1.5 truncate rounded-lg border px-2 py-1.5 text-xs font-semibold shadow-sm',
-                p.isPaid || p.isSkipped ? 'opacity-70 grayscale' : ''
+                'flex items-center gap-1.5 rounded px-1 py-0.5',
+                isPaidOrSkipped && 'opacity-50'
               )}
               style={{
-                backgroundColor: `${color}20`,
-                borderColor: `${color}30`,
-                color: `${color}`,
+                backgroundColor: `${color}15`,
+                borderRadius: '3px',
               }}
             >
-              <span
-                className="h-1.5 w-1.5 shrink-0 rounded-full"
-                style={{ backgroundColor: color }}
+              <PaymentLogo
+                logoUrl={p.subscription.logo_url}
+                name={p.subscription.name}
+                color={color}
               />
-              <span className="truncate">{p.subscription.name}</span>
+              <div className="flex min-w-0 flex-1 items-center justify-between gap-1">
+                <span
+                  className={cn(
+                    'truncate text-[10px] font-medium',
+                    isPaidOrSkipped && 'line-through'
+                  )}
+                  style={{ color }}
+                >
+                  {p.subscription.name}
+                </span>
+                <span className="shrink-0 text-[9px] font-semibold" style={{ color }}>
+                  {formatCurrency(p.amount, currency)}
+                </span>
+              </div>
             </div>
           )
         })}
 
-      {remainingCount > 0 && (
-        <span className="text-muted-foreground pl-1 text-[10px] font-semibold">
-          +{remainingCount} more
-        </span>
-      )}
+        {remainingCount > 0 && (
+          <span className="text-muted-foreground mt-auto text-[10px] font-medium">
+            +{remainingCount} more
+          </span>
+        )}
+      </div>
     </button>
   )
 }

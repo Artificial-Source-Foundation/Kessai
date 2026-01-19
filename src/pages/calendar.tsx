@@ -180,6 +180,7 @@ export function CalendarPage() {
                 }
                 payments={day.payments}
                 totalAmount={day.totalAmount}
+                currency={currency}
                 onClick={() => setSelectedDate(day.date)}
               />
             ))}

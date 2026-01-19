@@ -12,7 +12,6 @@ import { usePaymentStore } from '@/stores/payment-store'
 import { formatCurrency } from '@/lib/currency'
 import { formatPaymentDate, calculateNextPaymentDate } from '@/lib/date-utils'
 import { BILLING_CYCLE_LABELS, BILLING_CYCLE_SHORT, CATEGORY_BADGE_VARIANTS } from '@/lib/constants'
-import { calculateMonthlyAmount } from '@/types/subscription'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { SubscriptionLogo } from '@/components/ui/subscription-logo'
@@ -71,10 +70,17 @@ export function Subscriptions() {
     return matchesSearch && matchesCategory
   })
 
-  const totalMonthlyCost = useMemo(() => {
+  // Separate totals by billing cycle
+  const monthlySubsTotal = useMemo(() => {
     return subscriptions
-      .filter((sub) => sub.is_active)
-      .reduce((total, sub) => total + calculateMonthlyAmount(sub.amount, sub.billing_cycle), 0)
+      .filter((sub) => sub.is_active && sub.billing_cycle === 'monthly')
+      .reduce((total, sub) => total + sub.amount, 0)
+  }, [subscriptions])
+
+  const yearlySubsTotal = useMemo(() => {
+    return subscriptions
+      .filter((sub) => sub.is_active && sub.billing_cycle === 'yearly')
+      .reduce((total, sub) => total + sub.amount, 0)
   }, [subscriptions])
 
   const handleMarkAsPaid = async (sub: Subscription) => {
@@ -151,11 +157,23 @@ export function Subscriptions() {
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div className="flex flex-col gap-1">
             <h1 className="text-foreground text-3xl font-bold tracking-tight">My Subscriptions</h1>
-            <div className="text-muted-foreground flex items-center gap-2">
-              <span>Total Monthly Cost:</span>
-              <span className="bg-primary/10 text-primary rounded px-2 py-0.5 text-sm font-semibold">
-                {formatCurrency(totalMonthlyCost, currency)}
-              </span>
+            <div className="text-muted-foreground flex flex-wrap items-center gap-3 text-sm">
+              {monthlySubsTotal > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <span>Monthly:</span>
+                  <span className="bg-primary/10 text-primary rounded px-2 py-0.5 font-semibold">
+                    {formatCurrency(monthlySubsTotal, currency)}/mo
+                  </span>
+                </div>
+              )}
+              {yearlySubsTotal > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <span>Yearly:</span>
+                  <span className="bg-accent-cyan/10 text-accent-cyan rounded px-2 py-0.5 font-semibold">
+                    {formatCurrency(yearlySubsTotal, currency)}/yr
+                  </span>
+                </div>
+              )}
             </div>
           </div>
           <Button variant="glow" onClick={() => openSubscriptionDialog()} className="gap-2">

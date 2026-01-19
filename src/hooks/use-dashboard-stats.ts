@@ -112,6 +112,7 @@ export function useDashboardStats() {
     return months
   }, [activeSubscriptions])
 
+  // Total of ALL subscriptions normalized to monthly
   const totalMonthly = useMemo(
     () =>
       activeSubscriptions.reduce(
@@ -122,6 +123,50 @@ export function useDashboardStats() {
   )
 
   const totalYearly = useMemo(() => totalMonthly * 12, [totalMonthly])
+
+  // Separate totals by billing cycle (actual amounts, not normalized)
+  const monthlySubsTotal = useMemo(
+    () =>
+      activeSubscriptions
+        .filter((sub) => sub.billing_cycle === 'monthly')
+        .reduce((sum, sub) => sum + sub.amount, 0),
+    [activeSubscriptions]
+  )
+
+  const yearlySubsTotal = useMemo(
+    () =>
+      activeSubscriptions
+        .filter((sub) => sub.billing_cycle === 'yearly')
+        .reduce((sum, sub) => sum + sub.amount, 0),
+    [activeSubscriptions]
+  )
+
+  const weeklySubsTotal = useMemo(
+    () =>
+      activeSubscriptions
+        .filter((sub) => sub.billing_cycle === 'weekly')
+        .reduce((sum, sub) => sum + sub.amount, 0),
+    [activeSubscriptions]
+  )
+
+  const quarterlySubsTotal = useMemo(
+    () =>
+      activeSubscriptions
+        .filter((sub) => sub.billing_cycle === 'quarterly')
+        .reduce((sum, sub) => sum + sub.amount, 0),
+    [activeSubscriptions]
+  )
+
+  // Counts by billing cycle
+  const monthlySubsCount = useMemo(
+    () => activeSubscriptions.filter((sub) => sub.billing_cycle === 'monthly').length,
+    [activeSubscriptions]
+  )
+
+  const yearlySubsCount = useMemo(
+    () => activeSubscriptions.filter((sub) => sub.billing_cycle === 'yearly').length,
+    [activeSubscriptions]
+  )
 
   const averagePerSubscription = useMemo(
     () => (activeSubscriptions.length > 0 ? totalMonthly / activeSubscriptions.length : 0),
@@ -136,5 +181,12 @@ export function useDashboardStats() {
     averagePerSubscription,
     activeCount: activeSubscriptions.length,
     totalCount: subscriptions.length,
+    // Separate by billing cycle
+    monthlySubsTotal,
+    yearlySubsTotal,
+    weeklySubsTotal,
+    quarterlySubsTotal,
+    monthlySubsCount,
+    yearlySubsCount,
   }
 }

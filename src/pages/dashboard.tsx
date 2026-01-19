@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useShallow } from 'zustand/react/shallow'
-import { DollarSign, CreditCard, CalendarClock, TrendingUp } from 'lucide-react'
+import { CalendarDays, Calendar, CalendarClock, CreditCard } from 'lucide-react'
 import { useSubscriptionStore } from '@/stores/subscription-store'
 import { useCategoryStore } from '@/stores/category-store'
 import { useSettingsStore } from '@/stores/settings-store'
@@ -32,7 +32,15 @@ export function Dashboard() {
       fetch: state.fetch,
     }))
   )
-  const { categorySpending, totalMonthly, totalYearly, activeCount } = useDashboardStats()
+  const {
+    categorySpending,
+    totalMonthly,
+    activeCount,
+    monthlySubsTotal,
+    yearlySubsTotal,
+    monthlySubsCount,
+    yearlySubsCount,
+  } = useDashboardStats()
 
   const currency = (settings?.currency || 'USD') as CurrencyCode
   const upcomingPayments = getUpcomingPayments(subscriptions, 7)
@@ -61,17 +69,18 @@ export function Dashboard() {
 
       <section className="stagger-children grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          label="Monthly Total"
-          value={formatCurrency(totalMonthly, currency)}
-          icon={DollarSign}
+          label="Monthly Subscriptions"
+          value={formatCurrency(monthlySubsTotal, currency)}
+          subtitle={`${monthlySubsCount} subscription${monthlySubsCount !== 1 ? 's' : ''}`}
+          icon={CalendarDays}
           iconBg="bg-primary/10"
           iconColor="text-primary"
         />
         <StatCard
-          label="Active Subscriptions"
-          value={activeCount.toString()}
-          subtitle={`Across ${categorySpending.length} categories`}
-          icon={CreditCard}
+          label="Yearly Subscriptions"
+          value={formatCurrency(yearlySubsTotal, currency)}
+          subtitle={`${yearlySubsCount} subscription${yearlySubsCount !== 1 ? 's' : ''}`}
+          icon={Calendar}
           iconBg="bg-accent-cyan/10"
           iconColor="text-accent-cyan"
         />
@@ -89,10 +98,10 @@ export function Dashboard() {
           iconColor="text-accent-orange"
         />
         <StatCard
-          label="Yearly Estimate"
-          value={formatCurrency(totalYearly, currency)}
-          subtitle="Based on current plan"
-          icon={TrendingUp}
+          label="Active Subscriptions"
+          value={activeCount.toString()}
+          subtitle={`${formatCurrency(totalMonthly, currency)}/mo total`}
+          icon={CreditCard}
           iconBg="bg-muted"
           iconColor="text-muted-foreground"
         />
