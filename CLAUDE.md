@@ -17,7 +17,7 @@
 - **Database**: SQLite via tauri-plugin-sql
 - **Forms**: React Hook Form + Zod
 - **Dates**: dayjs (with plugins: isSameOrBefore, isSameOrAfter, isToday, isTomorrow, weekOfYear, isBetween)
-- **Testing**: Vitest + Testing Library (101 tests)
+- **Testing**: Vitest + Testing Library (136 tests)
 
 ## Key Directories
 

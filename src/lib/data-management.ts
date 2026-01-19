@@ -37,12 +37,19 @@ export async function exportData(): Promise<BackupData> {
   )
 
   const settingsRow = settingsRows[0]
+  let notificationDays: number[]
+  try {
+    notificationDays = settingsRow ? JSON.parse(settingsRow.notification_days_before) : [1, 3, 7]
+  } catch {
+    notificationDays = [1, 3, 7]
+  }
+
   const settings = settingsRow
     ? {
         theme: settingsRow.theme as 'dark' | 'light' | 'system',
         currency: settingsRow.currency,
         notification_enabled: Boolean(settingsRow.notification_enabled),
-        notification_days_before: JSON.parse(settingsRow.notification_days_before),
+        notification_days_before: notificationDays,
       }
     : {
         theme: 'dark' as const,
@@ -98,6 +105,11 @@ export function validateBackupData(data: unknown): data is BackupData {
   if (!Array.isArray(backup.payments)) return false
   if (!backup.settings || typeof backup.settings !== 'object') return false
 
+  // Size limits to prevent DoS via memory exhaustion
+  if (backup.subscriptions.length > 10000) return false
+  if (backup.categories.length > 1000) return false
+  if (backup.payments.length > 100000) return false
+
   return true
 }
 
@@ -110,6 +122,9 @@ export async function importData(
   const db = await getDatabase()
 
   try {
+    // Begin transaction to ensure atomicity
+    await db.execute('BEGIN TRANSACTION')
+
     if (options.clearExisting) {
       await db.execute('DELETE FROM payments')
       await db.execute('DELETE FROM subscriptions')
@@ -135,7 +150,7 @@ export async function importData(
 
     for (const sub of data.subscriptions) {
       await db.execute(
-        `INSERT OR REPLACE INTO subscriptions 
+        `INSERT OR REPLACE INTO subscriptions
          (id, name, amount, currency, billing_cycle, billing_day, next_payment_date, category_id, color, logo_url, notes, is_active, created_at, updated_at)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
@@ -185,6 +200,9 @@ export async function importData(
       ]
     )
 
+    // Commit transaction on success
+    await db.execute('COMMIT')
+
     const subCount = data.subscriptions.length
     const catCount = data.categories.filter((c) => !c.is_default).length
     const payCount = data.payments.length
@@ -194,6 +212,9 @@ export async function importData(
       message: `Imported ${subCount} subscriptions, ${catCount} categories, and ${payCount} payments`,
     }
   } catch (error) {
+    // Rollback transaction on error
+    await db.execute('ROLLBACK')
+
     return {
       success: false,
       message: `Import failed: ${error instanceof Error ? error.message : 'Unknown error'}`,

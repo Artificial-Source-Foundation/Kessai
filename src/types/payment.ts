@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-const paymentSchema = z.object({
+const _paymentSchema = z.object({
   id: z.string(),
   subscription_id: z.string(),
   amount: z.number(),
@@ -11,7 +11,7 @@ const paymentSchema = z.object({
   created_at: z.string().optional(),
 })
 
-export type Payment = z.infer<typeof paymentSchema>
+export type Payment = z.infer<typeof _paymentSchema>
 
 export const paymentFormSchema = z.object({
   subscription_id: z.string().min(1, 'Subscription is required'),

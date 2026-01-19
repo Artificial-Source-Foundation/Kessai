@@ -129,6 +129,21 @@ fn get_logos_dir(app_handle: &tauri::AppHandle) -> PathBuf {
     logos_dir
 }
 
+/// Validates that a filename is safe (no path traversal)
+fn is_valid_logo_filename(filename: &str) -> bool {
+    // Only allow: alphanumeric, dash, underscore, dot, and must end with .webp
+    let valid_chars = filename.chars().all(|c| {
+        c.is_alphanumeric() || c == '-' || c == '_' || c == '.'
+    });
+
+    valid_chars
+        && filename.ends_with(".webp")
+        && !filename.contains("..")
+        && !filename.contains('/')
+        && !filename.contains('\\')
+        && !filename.starts_with('.')
+}
+
 #[tauri::command]
 fn save_logo(app_handle: tauri::AppHandle, source_path: String, subscription_id: String) -> Result<String, String> {
     let logos_dir = get_logos_dir(&app_handle);
@@ -150,18 +165,26 @@ fn save_logo(app_handle: tauri::AppHandle, source_path: String, subscription_id:
 
 #[tauri::command]
 fn get_logo_base64(app_handle: tauri::AppHandle, filename: String) -> Result<String, String> {
+    if !is_valid_logo_filename(&filename) {
+        return Err("Invalid filename".to_string());
+    }
+
     let logos_dir = get_logos_dir(&app_handle);
     let file_path = logos_dir.join(&filename);
-    
+
     let data = fs::read(&file_path)
         .map_err(|e| format!("Failed to read logo: {}", e))?;
-    
+
     let base64_data = BASE64.encode(&data);
     Ok(format!("data:image/webp;base64,{}", base64_data))
 }
 
 #[tauri::command]
 fn delete_logo(app_handle: tauri::AppHandle, filename: String) -> Result<(), String> {
+    if !is_valid_logo_filename(&filename) {
+        return Err("Invalid filename".to_string());
+    }
+
     let logos_dir = get_logos_dir(&app_handle);
     let file_path = logos_dir.join(&filename);
     fs::remove_file(&file_path).ok();

@@ -39,7 +39,8 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
     try {
       const db = await getDatabase()
       const startDate = `${year}-${String(month).padStart(2, '0')}-01`
-      const endDate = `${year}-${String(month + 1).padStart(2, '0')}-01`
+      const endDate =
+        month === 12 ? `${year + 1}-01-01` : `${year}-${String(month + 1).padStart(2, '0')}-01`
 
       const result = await db.select<Payment[]>(
         `SELECT * FROM payments 

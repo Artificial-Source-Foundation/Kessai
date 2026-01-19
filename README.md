@@ -4,8 +4,6 @@
 
 A beautiful, local-first desktop subscription tracker built with Tauri 2, React, and SQLite.
 
-![Subby Dashboard](./screenshots/dashboard.png)
-
 ## Features
 
 - **Dashboard** - Monthly/yearly spending stats, category breakdown donut chart, spending trend chart
@@ -16,29 +14,6 @@ A beautiful, local-first desktop subscription tracker built with Tauri 2, React,
 - **Themes** - Dark/light/system theme support
 - **Multi-currency** - Support for USD, EUR, GBP, and more
 - **100% Offline** - All data stored locally in SQLite, no account required
-
-## Screenshots
-
-<details>
-<summary>View all screenshots</summary>
-
-### Dashboard
-
-![Dashboard](./screenshots/dashboard.png)
-
-### Subscriptions
-
-![Subscriptions](./screenshots/subscriptions.png)
-
-### Calendar
-
-![Calendar](./screenshots/calendar.png)
-
-### Settings
-
-![Settings](./screenshots/settings.png)
-
-</details>
 
 ## Tech Stack
 

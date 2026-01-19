@@ -1,7 +1,6 @@
 import { z } from 'zod'
 
-export const cardTypeSchema = z.enum(['credit', 'debit'])
-export type CardType = z.infer<typeof cardTypeSchema>
+const cardTypeSchema = z.enum(['credit', 'debit'])
 
 export const paymentCardSchema = z.object({
   id: z.string(),

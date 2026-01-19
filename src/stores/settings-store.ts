@@ -33,13 +33,20 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
       if (rows.length > 0) {
         const row = rows[0]
+        let notificationDays: number[]
+        try {
+          notificationDays = JSON.parse(row.notification_days_before)
+        } catch {
+          notificationDays = [1, 3, 7] // Fallback to default
+        }
+
         set({
           settings: {
             id: row.id,
             theme: row.theme,
             currency: row.currency,
             notification_enabled: Boolean(row.notification_enabled),
-            notification_days_before: JSON.parse(row.notification_days_before),
+            notification_days_before: notificationDays,
           },
           isLoading: false,
         })

@@ -60,5 +60,3 @@ export const CATEGORY_ICONS = [
   'credit-card',
   'gift',
 ] as const
-
-export type CategoryIcon = (typeof CATEGORY_ICONS)[number]

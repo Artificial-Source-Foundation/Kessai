@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 const themeSchema = z.enum(['dark', 'light', 'system'])
 
-const settingsSchema = z.object({
+const _settingsSchema = z.object({
   id: z.string(),
   theme: themeSchema,
   currency: z.string().length(3),
@@ -11,7 +11,7 @@ const settingsSchema = z.object({
 })
 
 export type Theme = z.infer<typeof themeSchema>
-export type Settings = z.infer<typeof settingsSchema>
+export type Settings = z.infer<typeof _settingsSchema>
 
 export const DEFAULT_SETTINGS: Omit<Settings, 'id'> = {
   theme: 'dark',

@@ -1,6 +1,9 @@
 import { open } from '@tauri-apps/plugin-dialog'
 import { invoke } from '@tauri-apps/api/core'
 
+// In-memory cache for logo data URLs
+const logoCache = new Map<string, string>()
+
 export async function pickAndSaveLogo(subscriptionId: string): Promise<string | null> {
   const file = await open({
     multiple: false,
@@ -17,27 +20,29 @@ export async function pickAndSaveLogo(subscriptionId: string): Promise<string | 
     subscriptionId,
   })
 
+  // Clear cache for this filename since it was just updated
+  if (filename) {
+    logoCache.delete(filename)
+  }
+
   return filename
 }
 
 export async function getLogoDataUrl(filename: string): Promise<string | null> {
   if (!filename) return null
 
+  // Check cache first
+  if (logoCache.has(filename)) {
+    return logoCache.get(filename)!
+  }
+
   try {
     const dataUrl = await invoke<string>('get_logo_base64', { filename })
+    // Cache the result
+    logoCache.set(filename, dataUrl)
     return dataUrl
   } catch (error) {
     console.error('Failed to load logo:', filename, error)
     return null
-  }
-}
-
-export async function deleteLogo(filename: string): Promise<void> {
-  if (!filename) return
-
-  try {
-    await invoke('delete_logo', { filename })
-  } catch {
-    // Silently ignore deletion errors - logo may not exist
   }
 }
