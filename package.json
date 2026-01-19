@@ -9,8 +9,8 @@
   "scripts": {
     "start": "tauri dev",
     "dev": "vite",
-    "build": "tauri build",
-    "build:web": "tsc && vite build",
+    "build": "tsc && vite build",
+    "build:tauri": "tauri build",
     "preview": "vite preview",
     "tauri": "tauri",
     "lint": "eslint src --max-warnings 0",

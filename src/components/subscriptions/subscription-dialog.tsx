@@ -93,8 +93,8 @@ export function SubscriptionDialog() {
       open={subscriptionDialogOpen}
       onOpenChange={(open) => !open && closeSubscriptionDialog()}
     >
-      <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
-        <SheetHeader className="mb-6">
+      <SheetContent className="flex w-full flex-col overflow-hidden sm:max-w-lg">
+        <SheetHeader className="mb-6 flex-shrink-0">
           <SheetTitle className="text-xl">
             {isEditing ? 'Edit Subscription' : 'Add Subscription'}
           </SheetTitle>
@@ -105,12 +105,15 @@ export function SubscriptionDialog() {
           </SheetDescription>
         </SheetHeader>
 
-        <SubscriptionForm
-          subscription={subscription}
-          onSubmit={handleSubmit}
-          onCancel={closeSubscriptionDialog}
-          isLoading={isLoading}
-        />
+        <div className="flex-1 overflow-y-auto overscroll-contain pr-1">
+          <SubscriptionForm
+            key={editingSubscriptionId || 'new'}
+            subscription={subscription}
+            onSubmit={handleSubmit}
+            onCancel={closeSubscriptionDialog}
+            isLoading={isLoading}
+          />
+        </div>
       </SheetContent>
     </Sheet>
   )

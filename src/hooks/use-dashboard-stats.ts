@@ -90,31 +90,22 @@ export function useDashboardStats() {
     const now = dayjs()
     const months: MonthlySpending[] = []
 
+    // Calculate current monthly total from active subscriptions
+    const currentMonthlyTotal = activeSubscriptions.reduce(
+      (sum, sub) => sum + calculateMonthlyAmount(sub.amount, sub.billing_cycle),
+      0
+    )
+
+    // Generate 6 months of data
+    // Since we don't track historical subscription changes,
+    // we show the projected monthly spending based on current subscriptions
     for (let i = 5; i >= 0; i--) {
       const monthDate = now.subtract(i, 'month')
-      const monthStart = monthDate.startOf('month')
-      const monthEnd = monthDate.endOf('month')
-
-      let total = 0
-
-      activeSubscriptions.forEach((sub) => {
-        if (!sub.next_payment_date) return
-
-        const paymentDate = dayjs(sub.next_payment_date)
-        const monthlyAmount = calculateMonthlyAmount(sub.amount, sub.billing_cycle)
-
-        if (
-          paymentDate.isBetween(monthStart, monthEnd, 'day', '[]') ||
-          paymentDate.isBefore(monthStart)
-        ) {
-          total += monthlyAmount
-        }
-      })
 
       months.push({
         month: monthDate.format('YYYY-MM'),
         monthLabel: monthDate.format('MMM'),
-        amount: Math.round(total * 100) / 100,
+        amount: Math.round(currentMonthlyTotal * 100) / 100,
       })
     }
 

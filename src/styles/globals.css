@@ -314,3 +314,15 @@ body,
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 }
+
+/* GPU-accelerated scrolling for modals/sheets */
+[data-radix-scroll-area-viewport],
+[data-state='open'] > div {
+  transform: translateZ(0);
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Optimize sheet scroll containers */
+.overflow-y-auto {
+  -webkit-overflow-scrolling: touch;
+}

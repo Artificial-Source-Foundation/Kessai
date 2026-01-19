@@ -2,9 +2,10 @@ import { useState, useEffect, useMemo, lazy, Suspense } from 'react'
 import { toast } from 'sonner'
 import dayjs from 'dayjs'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
-import { Plus, Pencil, Trash2, Search, LayoutGrid, List, Power } from 'lucide-react'
+import { Plus, Pencil, Trash2, Search, LayoutGrid, List, Power, Grid3x3 } from 'lucide-react'
 import { useSubscriptions } from '@/hooks/use-subscriptions'
 import { useSubscriptionStore } from '@/stores/subscription-store'
+import { useCategoryStore } from '@/stores/category-store'
 import { useUiStore } from '@/stores/ui-store'
 import { useSettingsStore } from '@/stores/settings-store'
 import { usePaymentStore } from '@/stores/payment-store'
@@ -15,6 +16,8 @@ import { calculateMonthlyAmount } from '@/types/subscription'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { SubscriptionLogo } from '@/components/ui/subscription-logo'
+import { SubscriptionBento } from '@/components/subscriptions/subscription-bento'
+import { CategoryFilter } from '@/components/subscriptions/category-filter'
 import type { BadgeVariant } from '@/components/ui/badge'
 import type { CurrencyCode } from '@/lib/currency'
 import type { Subscription } from '@/types/subscription'
@@ -33,13 +36,15 @@ const ConfirmDialog = lazy(() =>
 
 export function Subscriptions() {
   const { subscriptions, isLoading, remove, toggleActive, getCategory } = useSubscriptions()
+  const categories = useCategoryStore((state) => state.categories)
   const { openSubscriptionDialog } = useUiStore()
   const { settings, fetch: fetchSettings } = useSettingsStore()
   const { markAsPaid } = usePaymentStore()
   const currency = (settings?.currency || 'USD') as CurrencyCode
 
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list')
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'bento'>('list')
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [deleteTarget, setDeleteTarget] = useState<Subscription | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -47,9 +52,24 @@ export function Subscriptions() {
     fetchSettings()
   }, [fetchSettings])
 
-  const filteredSubscriptions = subscriptions.filter((sub) =>
-    sub.name.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  // Calculate subscription counts per category
+  const subscriptionCounts = useMemo(() => {
+    const counts: Record<string, number> = {}
+    subscriptions.forEach((sub) => {
+      if (sub.category_id) {
+        counts[sub.category_id] = (counts[sub.category_id] || 0) + 1
+      }
+    })
+    return counts
+  }, [subscriptions])
+
+  const filteredSubscriptions = subscriptions.filter((sub) => {
+    const matchesSearch = sub.name.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesCategory =
+      selectedCategories.length === 0 ||
+      (sub.category_id && selectedCategories.includes(sub.category_id))
+    return matchesSearch && matchesCategory
+  })
 
   const totalMonthlyCost = useMemo(() => {
     return subscriptions
@@ -145,39 +165,60 @@ export function Subscriptions() {
         </header>
 
         {subscriptions.length > 0 && (
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="relative max-w-sm flex-1">
-              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search subscriptions..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="border-border bg-card text-foreground placeholder-muted-foreground focus:border-primary focus:ring-primary h-10 w-full rounded-lg border pr-4 pl-10 text-sm focus:ring-1 focus:outline-none"
-              />
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="relative max-w-sm flex-1">
+                <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search subscriptions..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="border-border bg-card text-foreground placeholder-muted-foreground focus:border-primary focus:ring-primary h-10 w-full rounded-lg border pr-4 pl-10 text-sm focus:ring-1 focus:outline-none"
+                />
+              </div>
+              <div className="border-border bg-card flex rounded-lg border p-1">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`flex h-8 w-9 items-center justify-center rounded-md ${
+                    viewMode === 'grid'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                  title="Grid view"
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`flex h-8 w-9 items-center justify-center rounded-md ${
+                    viewMode === 'list'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                  title="List view"
+                >
+                  <List className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode('bento')}
+                  className={`flex h-8 w-9 items-center justify-center rounded-md ${
+                    viewMode === 'bento'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                  title="Bento view"
+                >
+                  <Grid3x3 className="h-4 w-4" />
+                </button>
+              </div>
             </div>
-            <div className="border-border bg-card flex rounded-lg border p-1">
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`flex h-8 w-9 items-center justify-center rounded-md ${
-                  viewMode === 'grid'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <LayoutGrid className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`flex h-8 w-9 items-center justify-center rounded-md ${
-                  viewMode === 'list'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <List className="h-4 w-4" />
-              </button>
-            </div>
+            <CategoryFilter
+              categories={categories}
+              selectedIds={selectedCategories}
+              onChange={setSelectedCategories}
+              subscriptionCounts={subscriptionCounts}
+            />
           </div>
         )}
 
@@ -197,8 +238,25 @@ export function Subscriptions() {
         ) : filteredSubscriptions.length === 0 ? (
           <div className="glass-card flex flex-col items-center justify-center py-16">
             <Search className="text-muted-foreground mb-4 h-12 w-12" />
-            <p className="text-muted-foreground">No subscriptions match "{searchQuery}"</p>
+            <p className="text-muted-foreground">
+              No subscriptions match {searchQuery ? `"${searchQuery}"` : 'your filters'}
+            </p>
+            {selectedCategories.length > 0 && (
+              <button
+                onClick={() => setSelectedCategories([])}
+                className="text-primary mt-2 text-sm hover:underline"
+              >
+                Clear filters
+              </button>
+            )}
           </div>
+        ) : viewMode === 'bento' ? (
+          <SubscriptionBento
+            subscriptions={filteredSubscriptions}
+            categories={categories}
+            currency={currency}
+            onEdit={(sub) => openSubscriptionDialog(sub.id)}
+          />
         ) : viewMode === 'grid' ? (
           <div className="stagger-children grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {filteredSubscriptions.map((sub) => {

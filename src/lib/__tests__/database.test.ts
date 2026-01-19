@@ -11,8 +11,7 @@ vi.mock('@tauri-apps/plugin-sql', () => ({
   },
 }))
 
-// Import after mocking
-import { getDatabase, query, execute } from '../database'
+// Dynamic imports are used in tests to reset the singleton
 
 describe('database', () => {
   beforeEach(() => {

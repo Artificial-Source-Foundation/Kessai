@@ -1,15 +1,30 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 import { useCategoryStore } from '@/stores/category-store'
 
 export function useCategories() {
-  const { categories, isLoading, error, fetch, add, update, remove, getById } = useCategoryStore()
+  const { categories, isLoading, error, fetch, add, update, remove, getById } = useCategoryStore(
+    useShallow((state) => ({
+      categories: state.categories,
+      isLoading: state.isLoading,
+      error: state.error,
+      fetch: state.fetch,
+      add: state.add,
+      update: state.update,
+      remove: state.remove,
+      getById: state.getById,
+    }))
+  )
 
+  // Only fetch if categories haven't been loaded yet
   useEffect(() => {
-    fetch()
-  }, [fetch])
+    if (categories.length === 0 && !isLoading) {
+      fetch()
+    }
+  }, [categories.length, isLoading, fetch])
 
-  const defaultCategories = categories.filter((c) => c.is_default)
-  const customCategories = categories.filter((c) => !c.is_default)
+  const defaultCategories = useMemo(() => categories.filter((c) => c.is_default), [categories])
+  const customCategories = useMemo(() => categories.filter((c) => !c.is_default), [categories])
 
   return {
     categories,

@@ -6,12 +6,8 @@ import { useCategoryStore } from '@/stores/category-store'
 import { useSettingsStore } from '@/stores/settings-store'
 import { useDashboardStats } from '@/hooks/use-dashboard-stats'
 import { formatCurrency } from '@/lib/currency'
-import { CATEGORY_COLORS } from '@/lib/constants'
 import { getUpcomingPayments } from '@/lib/date-utils'
-import { DonutChart } from '@/components/charts/donut-chart'
-import { AreaChart } from '@/components/charts/area-chart'
 import { StatCard } from '@/components/dashboard/stat-card'
-import { EmptyState } from '@/components/dashboard/empty-state'
 import { UpcomingPaymentRow } from '@/components/dashboard/upcoming-payment-row'
 import { InsightsCard } from '@/components/dashboard/insights-card'
 import type { CurrencyCode } from '@/lib/currency'
@@ -36,8 +32,7 @@ export function Dashboard() {
       fetch: state.fetch,
     }))
   )
-  const { categorySpending, monthlySpending, totalMonthly, totalYearly, activeCount } =
-    useDashboardStats()
+  const { categorySpending, totalMonthly, totalYearly, activeCount } = useDashboardStats()
 
   const currency = (settings?.currency || 'USD') as CurrencyCode
   const upcomingPayments = getUpcomingPayments(subscriptions, 7)
@@ -56,13 +51,6 @@ export function Dashboard() {
       </div>
     )
   }
-
-  const donutSegments = categorySpending.slice(0, 4).map((cat) => ({
-    value: cat.amount,
-    color: CATEGORY_COLORS[cat.name] || CATEGORY_COLORS.Other,
-    label: cat.name,
-    percentage: totalMonthly > 0 ? Math.round((cat.amount / totalMonthly) * 100) : 0,
-  }))
 
   return (
     <div className="flex flex-col gap-8">
@@ -110,42 +98,40 @@ export function Dashboard() {
         />
       </section>
 
-      <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="glass-card flex flex-col rounded-2xl p-6">
-          <h3 className="text-foreground mb-6 text-lg font-bold">Spending by Category</h3>
-          {donutSegments.length === 0 ? (
-            <EmptyState message="No spending data yet" />
-          ) : (
-            <DonutChart segments={donutSegments} total={totalMonthly} currency={currency} />
-          )}
-        </div>
-
-        <div className="glass-card flex flex-col rounded-2xl p-6">
-          <div className="mb-6 flex items-center justify-between">
-            <h3 className="text-foreground text-lg font-bold">Monthly Spending</h3>
-            <div className="flex gap-2">
-              <button className="bg-primary text-primary-foreground rounded px-2 py-1 text-xs font-medium">
-                6M
-              </button>
-              <button className="text-muted-foreground hover:bg-muted hover:text-foreground rounded px-2 py-1 text-xs font-medium">
-                1Y
-              </button>
-            </div>
-          </div>
-          {monthlySpending.length === 0 ? (
-            <EmptyState message="No trend data yet" />
-          ) : (
-            <div className="relative min-h-[180px] w-full flex-1 px-2 pb-4">
-              <AreaChart data={monthlySpending} />
-              <div className="text-muted-foreground absolute bottom-0 flex w-full justify-between px-1 pb-1 text-[10px] font-medium">
-                {monthlySpending.slice(-6).map((item) => (
-                  <span key={item.month}>{item.monthLabel}</span>
-                ))}
+      {/* Category Breakdown */}
+      {categorySpending.length > 0 && (
+        <section className="glass-card rounded-2xl p-6">
+          <h3 className="text-foreground mb-4 text-lg font-bold">Spending by Category</h3>
+          <div className="space-y-3">
+            {categorySpending.slice(0, 5).map((cat) => (
+              <div key={cat.id} className="flex items-center gap-3">
+                <div
+                  className="h-3 w-3 flex-shrink-0 rounded-full"
+                  style={{ backgroundColor: cat.color }}
+                />
+                <span className="text-foreground min-w-[120px] text-sm font-medium">
+                  {cat.name}
+                </span>
+                <div className="bg-muted relative h-2 flex-1 overflow-hidden rounded-full">
+                  <div
+                    className="absolute inset-y-0 left-0 rounded-full"
+                    style={{
+                      width: `${cat.percentage}%`,
+                      backgroundColor: cat.color,
+                    }}
+                  />
+                </div>
+                <span className="text-muted-foreground min-w-[80px] text-right text-sm">
+                  {formatCurrency(cat.amount, currency)}
+                </span>
+                <span className="text-muted-foreground w-12 text-right text-xs">
+                  {cat.percentage.toFixed(0)}%
+                </span>
               </div>
-            </div>
-          )}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="glass-card rounded-2xl p-6 lg:col-span-2">

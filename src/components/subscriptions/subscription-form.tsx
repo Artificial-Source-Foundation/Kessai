@@ -1,12 +1,13 @@
 import { useEffect, useState, useMemo } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import dayjs from 'dayjs'
 import { toast } from 'sonner'
+import { useShallow } from 'zustand/react/shallow'
 import { useCategories } from '@/hooks/use-categories'
 import { usePaymentCardStore } from '@/stores/payment-card-store'
 import { pickAndSaveLogo, getLogoDataUrl } from '@/lib/logo-storage'
-import { CreditCard, Upload, X } from 'lucide-react'
+import { CreditCard, Upload, X, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -21,7 +22,6 @@ import {
   subscriptionFormSchema,
   SUBSCRIPTION_COLORS,
   type SubscriptionFormData,
-  type BillingCycle,
   type Subscription,
 } from '@/types/subscription'
 import { BILLING_CYCLE_LABELS } from '@/lib/constants'
@@ -42,72 +42,69 @@ export function SubscriptionForm({
   isLoading = false,
 }: SubscriptionFormProps) {
   const { categories } = useCategories()
-  const { cards, fetch: fetchCards } = usePaymentCardStore()
+  const { cards, fetch: fetchCards } = usePaymentCardStore(
+    useShallow((state) => ({
+      cards: state.cards,
+      fetch: state.fetch,
+    }))
+  )
   const isEditing = Boolean(subscription)
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
+  const [isLoadingLogo, setIsLoadingLogo] = useState(Boolean(subscription?.logo_url))
   const [isUploadingLogo, setIsUploadingLogo] = useState(false)
 
+  // Only fetch cards if not already loaded
   useEffect(() => {
-    fetchCards()
-  }, [fetchCards])
+    if (cards.length === 0) {
+      fetchCards()
+    }
+  }, [cards.length, fetchCards])
 
+  // Load logo preview on mount if subscription has a logo
   useEffect(() => {
+    let cancelled = false
     if (subscription?.logo_url) {
-      getLogoDataUrl(subscription.logo_url).then((url) => {
-        if (url) setLogoPreview(url)
-      })
+      setIsLoadingLogo(true)
+      getLogoDataUrl(subscription.logo_url)
+        .then((url) => {
+          if (!cancelled && url) setLogoPreview(url)
+        })
+        .finally(() => {
+          if (!cancelled) setIsLoadingLogo(false)
+        })
+    }
+    return () => {
+      cancelled = true
     }
   }, [subscription?.logo_url])
 
+  // Compute initial form values from subscription (only runs once due to key prop)
+  const initialValues = useMemo<SubscriptionFormData>(
+    () => ({
+      name: subscription?.name ?? '',
+      amount: subscription?.amount ?? 0,
+      currency: subscription?.currency ?? 'USD',
+      billing_cycle: subscription?.billing_cycle ?? 'monthly',
+      billing_day: subscription?.billing_day ?? null,
+      category_id: subscription?.category_id ?? null,
+      card_id: subscription?.card_id ?? null,
+      color: subscription?.color ?? SUBSCRIPTION_COLORS[0],
+      logo_url: subscription?.logo_url ?? null,
+      notes: subscription?.notes ?? null,
+      next_payment_date: subscription?.next_payment_date
+        ? subscription.next_payment_date.split('T')[0]
+        : dayjs().format('YYYY-MM-DD'),
+    }),
+    [subscription]
+  )
+
   const form = useForm<SubscriptionFormData>({
     resolver: zodResolver(subscriptionFormSchema),
-    defaultValues: {
-      name: '',
-      amount: 0,
-      currency: 'USD',
-      billing_cycle: 'monthly',
-      billing_day: null,
-      category_id: null,
-      color: SUBSCRIPTION_COLORS[0],
-      logo_url: null,
-      card_id: null,
-      notes: null,
-      next_payment_date: dayjs().format('YYYY-MM-DD'),
-    },
+    defaultValues: initialValues,
   })
 
-  // Batch all watched fields into a single subscription to minimize re-renders
-  const watchedFields = useWatch({
-    control: form.control,
-    name: ['color', 'currency', 'billing_cycle', 'category_id', 'card_id'],
-  })
-  const [
-    selectedColor,
-    selectedCurrency,
-    selectedBillingCycle,
-    selectedCategoryId,
-    selectedCardId,
-  ] = watchedFields
-
-  useEffect(() => {
-    if (subscription) {
-      form.reset({
-        name: subscription.name,
-        amount: subscription.amount,
-        currency: subscription.currency,
-        billing_cycle: subscription.billing_cycle,
-        billing_day: subscription.billing_day,
-        category_id: subscription.category_id,
-        card_id: subscription.card_id ?? null,
-        color: subscription.color || SUBSCRIPTION_COLORS[0],
-        logo_url: subscription.logo_url ?? null,
-        notes: subscription.notes,
-        next_payment_date: subscription.next_payment_date
-          ? subscription.next_payment_date.split('T')[0]
-          : dayjs().format('YYYY-MM-DD'),
-      })
-    }
-  }, [subscription, form])
+  // Only watch color since it's used for visual feedback
+  const selectedColor = form.watch('color')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -120,7 +117,7 @@ export function SubscriptionForm({
   const currencyOptions = useMemo(() => getCurrencyOptions(), [])
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="transform-gpu space-y-6">
       <div className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="name">Name *</Label>
@@ -154,42 +151,48 @@ export function SubscriptionForm({
 
           <div className="space-y-2">
             <Label htmlFor="currency">Currency</Label>
-            <Select
-              value={selectedCurrency || 'USD'}
-              onValueChange={(value) => form.setValue('currency', value)}
-            >
-              <SelectTrigger className="border-border bg-muted/50">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {currencyOptions.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.value}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Controller
+              control={form.control}
+              name="currency"
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger className="border-border bg-muted/50">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {currencyOptions.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.value}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="billing_cycle">Billing Cycle *</Label>
-            <Select
-              value={selectedBillingCycle || 'monthly'}
-              onValueChange={(value) => form.setValue('billing_cycle', value as BillingCycle)}
-            >
-              <SelectTrigger className="border-border bg-muted/50">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(BILLING_CYCLE_LABELS).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Controller
+              control={form.control}
+              name="billing_cycle"
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger className="border-border bg-muted/50">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(BILLING_CYCLE_LABELS).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </div>
 
           <div className="space-y-2">
@@ -210,25 +213,34 @@ export function SubscriptionForm({
 
         <div className="space-y-2">
           <Label htmlFor="category">Category</Label>
-          <Select
-            value={selectedCategoryId || 'none'}
-            onValueChange={(value) => form.setValue('category_id', value === 'none' ? null : value)}
-          >
-            <SelectTrigger className="border-border bg-muted/50">
-              <SelectValue placeholder="Select category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">No category</SelectItem>
-              {categories.map((cat) => (
-                <SelectItem key={cat.id} value={cat.id}>
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full" style={{ backgroundColor: cat.color }} />
-                    {cat.name}
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Controller
+            control={form.control}
+            name="category_id"
+            render={({ field }) => (
+              <Select
+                value={field.value ?? 'none'}
+                onValueChange={(value) => field.onChange(value === 'none' ? null : value)}
+              >
+                <SelectTrigger className="border-border bg-muted/50">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No category</SelectItem>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="h-3 w-3 rounded-full"
+                          style={{ backgroundColor: cat.color }}
+                        />
+                        {cat.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
         </div>
 
         <div className="space-y-2">
@@ -253,7 +265,11 @@ export function SubscriptionForm({
         <div className="space-y-2">
           <Label>Logo</Label>
           <div className="flex items-center gap-3">
-            {logoPreview ? (
+            {isLoadingLogo ? (
+              <div className="border-border bg-muted/50 flex h-12 w-12 items-center justify-center rounded-lg border">
+                <Loader2 className="text-muted-foreground h-5 w-5 animate-spin" />
+              </div>
+            ) : logoPreview ? (
               <div className="relative">
                 <img
                   src={logoPreview}
@@ -312,28 +328,34 @@ export function SubscriptionForm({
         {cards.length > 0 && (
           <div className="space-y-2">
             <Label htmlFor="card">Payment Card</Label>
-            <Select
-              value={selectedCardId || 'none'}
-              onValueChange={(value) => form.setValue('card_id', value === 'none' ? null : value)}
-            >
-              <SelectTrigger className="border-border bg-muted/50">
-                <SelectValue placeholder="Select card" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">No card</SelectItem>
-                {cards.map((card) => (
-                  <SelectItem key={card.id} value={card.id}>
-                    <div className="flex items-center gap-2">
-                      <CreditCard className="h-4 w-4" style={{ color: card.color }} />
-                      {card.name}
-                      {card.last_four && (
-                        <span className="text-muted-foreground">•••• {card.last_four}</span>
-                      )}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Controller
+              control={form.control}
+              name="card_id"
+              render={({ field }) => (
+                <Select
+                  value={field.value ?? 'none'}
+                  onValueChange={(value) => field.onChange(value === 'none' ? null : value)}
+                >
+                  <SelectTrigger className="border-border bg-muted/50">
+                    <SelectValue placeholder="Select card" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No card</SelectItem>
+                    {cards.map((card) => (
+                      <SelectItem key={card.id} value={card.id}>
+                        <div className="flex items-center gap-2">
+                          <CreditCard className="h-4 w-4" style={{ color: card.color }} />
+                          {card.name}
+                          {card.last_four && (
+                            <span className="text-muted-foreground">•••• {card.last_four}</span>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </div>
         )}
 
