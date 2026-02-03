@@ -32,7 +32,38 @@ A beautiful, local-first desktop subscription tracker built with Tauri 2, React,
 | **Forms**    | React Hook Form + Zod validation |
 | **Charts**   | Custom SVG components            |
 
-## Getting Started
+## Quick Install (Linux)
+
+One command installs everything:
+
+```bash
+git clone https://github.com/newstella/subby.git
+cd subby
+./install.sh
+```
+
+The installer will:
+
+- Install any missing dependencies
+- Build the Subby desktop app
+- Install it system-wide (.deb, .rpm, or AppImage)
+- Optionally set up the Discord reminder bot
+
+To uninstall: `./uninstall.sh`
+
+## Discord Bot
+
+Get subscription reminders in Discord! The bot reads your exported Subby data and sends notifications before payments are due.
+
+Features:
+
+- Daily reminders (1, 3, 7 days before)
+- `/upcoming` - View upcoming payments
+- `/summary` - Monthly spending breakdown
+
+See [packages/discord-bot/README.md](packages/discord-bot/README.md) for setup.
+
+## Development Setup
 
 ### Prerequisites
 
@@ -43,13 +74,13 @@ A beautiful, local-first desktop subscription tracker built with Tauri 2, React,
 **Linux (Debian/Ubuntu)**:
 
 ```bash
-sudo apt install libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+sudo apt install libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 ```
 
-**macOS**: Xcode Command Line Tools  
+**macOS**: Xcode Command Line Tools
 **Windows**: WebView2, Visual Studio Build Tools
 
-### Installation
+### Run from Source
 
 ```bash
 git clone https://github.com/newstella/subby.git
@@ -64,7 +95,7 @@ pnpm tauri dev
 pnpm tauri build
 ```
 
-Binaries will be in `src-tauri/target/release/bundle/`.
+Bundles output to `src-tauri/target/release/bundle/`.
 
 ### Releases (Windows/macOS/Linux)
 
