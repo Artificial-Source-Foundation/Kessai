@@ -131,29 +131,39 @@ export async function importData(
       await db.execute('DELETE FROM categories WHERE is_default = 0')
     }
 
-    for (const category of data.categories) {
-      if (category.is_default) continue
+    // Batch insert categories
+    const categoriesToImport = data.categories.filter((c) => !c.is_default)
+    if (categoriesToImport.length > 0) {
+      const placeholders = categoriesToImport.map(() => '(?, ?, ?, ?, ?, ?)').join(', ')
+      const values: (string | number)[] = []
 
-      await db.execute(
-        `INSERT OR REPLACE INTO categories (id, name, color, icon, is_default, created_at)
-         VALUES (?, ?, ?, ?, ?, ?)`,
-        [
+      for (const category of categoriesToImport) {
+        values.push(
           category.id,
           category.name,
           category.color,
           category.icon,
           0,
-          category.created_at || new Date().toISOString(),
-        ]
+          category.created_at || new Date().toISOString()
+        )
+      }
+
+      await db.execute(
+        `INSERT OR REPLACE INTO categories (id, name, color, icon, is_default, created_at)
+         VALUES ${placeholders}`,
+        values
       )
     }
 
-    for (const sub of data.subscriptions) {
-      await db.execute(
-        `INSERT OR REPLACE INTO subscriptions
-         (id, name, amount, currency, billing_cycle, billing_day, next_payment_date, category_id, color, logo_url, notes, is_active, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
+    // Batch insert subscriptions
+    if (data.subscriptions.length > 0) {
+      const placeholders = data.subscriptions
+        .map(() => '(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+        .join(', ')
+      const values: (string | number | null)[] = []
+
+      for (const sub of data.subscriptions) {
+        values.push(
           sub.id,
           sub.name,
           sub.amount,
@@ -163,29 +173,44 @@ export async function importData(
           sub.next_payment_date,
           sub.category_id,
           sub.color,
-          sub.logo_url,
+          sub.logo_url ?? null,
           sub.notes,
           sub.is_active ? 1 : 0,
           sub.created_at || new Date().toISOString(),
-          sub.updated_at || new Date().toISOString(),
-        ]
+          sub.updated_at || new Date().toISOString()
+        )
+      }
+
+      await db.execute(
+        `INSERT OR REPLACE INTO subscriptions
+         (id, name, amount, currency, billing_cycle, billing_day, next_payment_date, category_id, color, logo_url, notes, is_active, created_at, updated_at)
+         VALUES ${placeholders}`,
+        values
       )
     }
 
-    for (const payment of data.payments) {
-      await db.execute(
-        `INSERT OR REPLACE INTO payments (id, subscription_id, amount, paid_at, due_date, status, notes, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
+    // Batch insert payments
+    if (data.payments.length > 0) {
+      const placeholders = data.payments.map(() => '(?, ?, ?, ?, ?, ?, ?, ?)').join(', ')
+      const values: (string | number | null)[] = []
+
+      for (const payment of data.payments) {
+        values.push(
           payment.id,
           payment.subscription_id,
           payment.amount,
           payment.paid_at,
           payment.due_date,
           payment.status,
-          payment.notes,
-          payment.created_at || new Date().toISOString(),
-        ]
+          payment.notes ?? null,
+          payment.created_at ?? new Date().toISOString()
+        )
+      }
+
+      await db.execute(
+        `INSERT OR REPLACE INTO payments (id, subscription_id, amount, paid_at, due_date, status, notes, created_at)
+         VALUES ${placeholders}`,
+        values
       )
     }
 

@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import type { Category } from '@/types/category'
 
 interface CategoryFilterProps {
@@ -7,7 +8,7 @@ interface CategoryFilterProps {
   subscriptionCounts: Record<string, number>
 }
 
-export function CategoryFilter({
+export const CategoryFilter = memo(function CategoryFilter({
   categories,
   selectedIds,
   onChange,
@@ -77,4 +78,4 @@ export function CategoryFilter({
       })}
     </div>
   )
-}
+})

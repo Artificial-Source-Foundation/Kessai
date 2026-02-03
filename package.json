@@ -22,7 +22,16 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "prepare": "husky"
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "prepare": "husky",
+    "bot": "pnpm --filter @subby/discord-bot",
+    "bot:dev": "pnpm --filter @subby/discord-bot dev",
+    "bot:build": "pnpm --filter @subby/discord-bot build",
+    "bot:start": "pnpm --filter @subby/discord-bot start",
+    "release": "release-it",
+    "release:dry": "release-it --dry-run",
+    "sync-versions": "node scripts/sync-versions.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -49,6 +58,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
+    "@playwright/test": "^1.58.1",
+    "@release-it/conventional-changelog": "^10.0.4",
     "@tailwindcss/vite": "^4.1.18",
     "@tauri-apps/cli": "^2",
     "@testing-library/jest-dom": "^6.9.1",
@@ -67,8 +78,10 @@
     "husky": "^9.1.7",
     "jsdom": "^27.4.0",
     "lint-staged": "^16.2.7",
+    "playwright": "^1.58.1",
     "prettier": "^3.7.4",
     "prettier-plugin-tailwindcss": "^0.7.2",
+    "release-it": "^19.2.4",
     "tailwindcss": "^4.1.18",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.53.0",

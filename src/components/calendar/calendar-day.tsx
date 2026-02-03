@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, memo } from 'react'
 import { cn } from '@/lib/utils'
 import { formatCurrency, type CurrencyCode } from '@/lib/currency'
 import { getLogoDataUrl } from '@/lib/logo-storage'
@@ -15,7 +15,7 @@ interface CalendarDayProps {
   onClick: () => void
 }
 
-function PaymentLogo({
+const PaymentLogo = memo(function PaymentLogo({
   logoUrl,
   name,
   color,
@@ -51,9 +51,9 @@ function PaymentLogo({
       {name.charAt(0).toUpperCase()}
     </div>
   )
-}
+})
 
-export function CalendarDay({
+export const CalendarDay = memo(function CalendarDay({
   dayOfMonth,
   isCurrentMonth,
   isToday,
@@ -146,4 +146,4 @@ export function CalendarDay({
       </div>
     </button>
   )
-}
+})

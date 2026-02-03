@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, lazy, Suspense } from 'react'
 import { toast } from 'sonner'
 import dayjs from 'dayjs'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
-import { Plus, Pencil, Trash2, Search, LayoutGrid, List, Power, Grid3x3 } from 'lucide-react'
+import { Plus, Search, LayoutGrid, List, Grid3x3 } from 'lucide-react'
 import { useSubscriptions } from '@/hooks/use-subscriptions'
 import { useSubscriptionStore } from '@/stores/subscription-store'
 import { useCategoryStore } from '@/stores/category-store'
@@ -10,14 +10,12 @@ import { useUiStore } from '@/stores/ui-store'
 import { useSettingsStore } from '@/stores/settings-store'
 import { usePaymentStore } from '@/stores/payment-store'
 import { formatCurrency } from '@/lib/currency'
-import { formatPaymentDate, calculateNextPaymentDate } from '@/lib/date-utils'
-import { BILLING_CYCLE_LABELS, BILLING_CYCLE_SHORT, CATEGORY_BADGE_VARIANTS } from '@/lib/constants'
+import { calculateNextPaymentDate, formatPaymentDate } from '@/lib/date-utils'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { SubscriptionLogo } from '@/components/ui/subscription-logo'
 import { SubscriptionBento } from '@/components/subscriptions/subscription-bento'
+import { SubscriptionsGridView } from '@/components/subscriptions/subscriptions-grid-view'
+import { SubscriptionsListView } from '@/components/subscriptions/subscriptions-list-view'
 import { CategoryFilter } from '@/components/subscriptions/category-filter'
-import type { BadgeVariant } from '@/components/ui/badge'
 import type { CurrencyCode } from '@/lib/currency'
 import type { Subscription } from '@/types/subscription'
 
@@ -146,11 +144,6 @@ export function Subscriptions() {
     )
   }
 
-  const getCategoryVariant = (categoryName?: string): BadgeVariant => {
-    if (!categoryName) return 'secondary'
-    return (CATEGORY_BADGE_VARIANTS[categoryName] as BadgeVariant) || 'secondary'
-  }
-
   return (
     <>
       <div className="flex h-full flex-col gap-6">
@@ -276,209 +269,26 @@ export function Subscriptions() {
             onEdit={(sub) => openSubscriptionDialog(sub.id)}
           />
         ) : viewMode === 'grid' ? (
-          <div className="stagger-children grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-            {filteredSubscriptions.map((sub) => {
-              const category = getCategory(sub.category_id)
-              return (
-                <div
-                  key={sub.id}
-                  className={`glass-card hover-lift group relative overflow-hidden ${!sub.is_active ? 'opacity-60' : ''}`}
-                >
-                  <div className="bg-card/80 absolute top-2 right-2 z-10 flex gap-1 rounded-lg p-1 opacity-0 backdrop-blur-sm group-hover:opacity-100">
-                    <button
-                      onClick={() => openSubscriptionDialog(sub.id)}
-                      className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-md p-1.5"
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      onClick={() => handleToggleActive(sub)}
-                      className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-md p-1.5"
-                    >
-                      <Power className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      onClick={() => setDeleteTarget(sub)}
-                      className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive rounded-md p-1.5"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-
-                  <div className="flex flex-col items-center p-6 pb-4">
-                    <SubscriptionLogo
-                      logoUrl={sub.logo_url}
-                      name={sub.name}
-                      color={sub.color || category?.color}
-                      size="xl"
-                      className="mb-4 rounded-2xl shadow-lg"
-                    />
-                    <h3 className="text-foreground text-lg font-bold">{sub.name}</h3>
-                    {category && (
-                      <Badge variant={getCategoryVariant(category.name)} size="sm" className="mt-1">
-                        {category.name}
-                      </Badge>
-                    )}
-                  </div>
-
-                  <div className="border-border bg-muted/30 border-t px-6 py-4">
-                    <div className="mb-3 flex items-center justify-between">
-                      <div>
-                        <p className="text-foreground text-2xl font-bold">
-                          {formatCurrency(sub.amount, currency)}
-                        </p>
-                        <p className="text-muted-foreground text-xs">
-                          {BILLING_CYCLE_LABELS[sub.billing_cycle]}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <span
-                            className={`h-2 w-2 rounded-full ${
-                              sub.is_active ? 'bg-emerald-500' : 'bg-amber-500'
-                            }`}
-                          />
-                          <span
-                            className={`text-sm font-medium ${
-                              sub.is_active ? 'text-emerald-500' : 'text-amber-500'
-                            }`}
-                          >
-                            {sub.is_active ? 'Active' : 'Paused'}
-                          </span>
-                        </div>
-                        <p className="text-muted-foreground mt-0.5 text-xs">
-                          {sub.next_payment_date ? formatPaymentDate(sub.next_payment_date) : '-'}
-                        </p>
-                      </div>
-                    </div>
-                    {canMarkAsPaid(sub) && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleMarkAsPaid(sub)}
-                        className="w-full border-emerald-500/30 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
-                      >
-                        Mark as Paid
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+          <SubscriptionsGridView
+            subscriptions={filteredSubscriptions}
+            currency={currency}
+            getCategory={getCategory}
+            onEdit={(sub) => openSubscriptionDialog(sub.id)}
+            onDelete={setDeleteTarget}
+            onToggleActive={handleToggleActive}
+            onMarkAsPaid={handleMarkAsPaid}
+            canMarkAsPaid={canMarkAsPaid}
+          />
         ) : (
-          <div className="glass-card flex flex-1 flex-col overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[600px]">
-                <thead>
-                  <tr className="border-border bg-muted/30 border-b">
-                    <th className="text-muted-foreground px-4 py-3 text-left text-xs font-semibold tracking-wider uppercase">
-                      Service
-                    </th>
-                    <th className="text-muted-foreground px-4 py-3 text-left text-xs font-semibold tracking-wider uppercase">
-                      Cost
-                    </th>
-                    <th className="text-muted-foreground hidden px-4 py-3 text-left text-xs font-semibold tracking-wider uppercase md:table-cell">
-                      Next Payment
-                    </th>
-                    <th className="text-muted-foreground px-4 py-3 text-left text-xs font-semibold tracking-wider uppercase">
-                      Status
-                    </th>
-                    <th className="text-muted-foreground px-4 py-3 text-right text-xs font-semibold tracking-wider uppercase">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-border divide-y">
-                  {filteredSubscriptions.map((sub) => {
-                    const category = getCategory(sub.category_id)
-                    return (
-                      <tr
-                        key={sub.id}
-                        className={`group hover:bg-muted/30 ${!sub.is_active ? 'opacity-60' : ''}`}
-                      >
-                        <td className="px-4 py-4">
-                          <div className="flex items-center gap-3">
-                            <SubscriptionLogo
-                              logoUrl={sub.logo_url}
-                              name={sub.name}
-                              color={sub.color || category?.color}
-                              size="md"
-                              className="shrink-0 rounded-lg"
-                            />
-                            <div className="min-w-0">
-                              <p className="text-foreground truncate font-medium">{sub.name}</p>
-                              {category && (
-                                <Badge variant={getCategoryVariant(category.name)} size="sm">
-                                  {category.name}
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-4">
-                          <p className="text-foreground font-semibold">
-                            {formatCurrency(sub.amount, currency)}
-                          </p>
-                          <p className="text-muted-foreground text-xs">
-                            {BILLING_CYCLE_SHORT[sub.billing_cycle]}
-                          </p>
-                        </td>
-                        <td className="hidden px-4 py-4 md:table-cell">
-                          <p className="text-muted-foreground text-sm">
-                            {sub.next_payment_date ? formatPaymentDate(sub.next_payment_date) : '-'}
-                          </p>
-                        </td>
-                        <td className="px-4 py-4">
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={`h-2 w-2 rounded-full ${
-                                sub.is_active ? 'bg-emerald-500' : 'bg-amber-500'
-                              }`}
-                            />
-                            <span
-                              className={`text-sm font-medium ${
-                                sub.is_active ? 'text-emerald-500' : 'text-amber-500'
-                              }`}
-                            >
-                              {sub.is_active ? 'Active' : 'Paused'}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-4">
-                          <div className="flex items-center justify-end gap-1">
-                            <button
-                              onClick={() => openSubscriptionDialog(sub.id)}
-                              className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-lg p-2 opacity-0 group-hover:opacity-100"
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </button>
-                            <button
-                              onClick={() => handleToggleActive(sub)}
-                              className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-lg p-2 opacity-0 group-hover:opacity-100"
-                            >
-                              <Power className="h-4 w-4" />
-                            </button>
-                            <button
-                              onClick={() => setDeleteTarget(sub)}
-                              className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive rounded-lg p-2 opacity-0 group-hover:opacity-100"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-            <div className="border-border bg-muted/30 mt-auto border-t px-4 py-3">
-              <p className="text-muted-foreground text-sm">
-                {filteredSubscriptions.length} of {subscriptions.length} subscriptions
-              </p>
-            </div>
-          </div>
+          <SubscriptionsListView
+            subscriptions={filteredSubscriptions}
+            totalCount={subscriptions.length}
+            currency={currency}
+            getCategory={getCategory}
+            onEdit={(sub) => openSubscriptionDialog(sub.id)}
+            onDelete={setDeleteTarget}
+            onToggleActive={handleToggleActive}
+          />
         )}
       </div>
 

@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Check, X, Edit2, SkipForward } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatCurrency, type CurrencyCode } from '@/lib/currency'
@@ -16,7 +17,7 @@ interface SubscriptionCardProps {
   onEdit: () => void
 }
 
-export function SubscriptionCard({
+export const SubscriptionCard = memo(function SubscriptionCard({
   subscription,
   amount,
   isPaid,
@@ -93,4 +94,4 @@ export function SubscriptionCard({
       </div>
     </div>
   )
-}
+})

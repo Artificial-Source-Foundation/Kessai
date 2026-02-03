@@ -2,6 +2,11 @@
 
 > Know where your money flows
 
+[![CI](https://github.com/newstella/subby/actions/workflows/ci.yml/badge.svg)](https://github.com/newstella/subby/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Version](https://img.shields.io/badge/version-0.1.0-green.svg)](https://github.com/newstella/subby/releases)
+[![codecov](https://codecov.io/gh/newstella/subby/branch/master/graph/badge.svg)](https://codecov.io/gh/newstella/subby)
+
 A beautiful, local-first desktop subscription tracker built with Tauri 2, React, and SQLite.
 
 ## Features
@@ -31,8 +36,8 @@ A beautiful, local-first desktop subscription tracker built with Tauri 2, React,
 
 ### Prerequisites
 
-- Node.js 18+
-- pnpm 8+
+- Node.js 18+ (22 recommended)
+- pnpm 9+
 - Rust (via [rustup](https://rustup.rs/))
 
 **Linux (Debian/Ubuntu)**:
