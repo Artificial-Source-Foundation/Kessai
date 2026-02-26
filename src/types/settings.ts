@@ -8,6 +8,7 @@ const _settingsSchema = z.object({
   currency: z.string().length(3),
   notification_enabled: z.boolean(),
   notification_days_before: z.array(z.number()),
+  monthly_budget: z.number().nullable().optional(),
 })
 
 export type Theme = z.infer<typeof themeSchema>
@@ -18,4 +19,5 @@ export const DEFAULT_SETTINGS: Omit<Settings, 'id'> = {
   currency: 'USD',
   notification_enabled: true,
   notification_days_before: [1, 3, 7],
+  monthly_budget: null,
 }

@@ -18,6 +18,7 @@ import { SubscriptionsListView } from '@/components/subscriptions/subscriptions-
 import { CategoryFilter } from '@/components/subscriptions/category-filter'
 import { SubscriptionsSkeleton } from '@/components/subscriptions/subscriptions-skeleton'
 import type { CurrencyCode } from '@/lib/currency'
+import { isBillableStatus } from '@/types/subscription'
 import type { Subscription } from '@/types/subscription'
 
 dayjs.extend(isSameOrBefore)
@@ -88,14 +89,14 @@ export function Subscriptions() {
   // Separate totals by billing cycle
   const monthlySubsTotal = useMemo(() => {
     return subscriptions
-      .filter((sub) => sub.is_active && sub.billing_cycle === 'monthly')
-      .reduce((total, sub) => total + sub.amount, 0)
+      .filter((sub) => isBillableStatus(sub.status) && sub.billing_cycle === 'monthly')
+      .reduce((total, sub) => total + sub.amount / Math.max(sub.shared_count, 1), 0)
   }, [subscriptions])
 
   const yearlySubsTotal = useMemo(() => {
     return subscriptions
-      .filter((sub) => sub.is_active && sub.billing_cycle === 'yearly')
-      .reduce((total, sub) => total + sub.amount, 0)
+      .filter((sub) => isBillableStatus(sub.status) && sub.billing_cycle === 'yearly')
+      .reduce((total, sub) => total + sub.amount / Math.max(sub.shared_count, 1), 0)
   }, [subscriptions])
 
   const handleMarkAsPaid = async (sub: Subscription) => {
@@ -120,7 +121,7 @@ export function Subscriptions() {
   }
 
   const canMarkAsPaid = (sub: Subscription): boolean => {
-    if (!sub.next_payment_date || !sub.is_active) return false
+    if (!sub.next_payment_date || !isBillableStatus(sub.status)) return false
     const paymentDate = dayjs(sub.next_payment_date).startOf('day')
     const today = dayjs().startOf('day')
     return paymentDate.isSameOrBefore(today)

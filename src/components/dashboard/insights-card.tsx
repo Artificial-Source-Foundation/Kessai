@@ -5,15 +5,17 @@ import { formatCurrency, type CurrencyCode } from '@/lib/currency'
 interface InsightsCardProps {
   activeCount: number
   totalMonthly: number
-  subscriptionCount: number
   currency: CurrencyCode
+  sharedSubscriptionCount?: number
+  sharingSavingsMonthly?: number
 }
 
 export const InsightsCard = memo(function InsightsCard({
   activeCount,
   totalMonthly,
-  subscriptionCount,
   currency,
+  sharedSubscriptionCount = 0,
+  sharingSavingsMonthly = 0,
 }: InsightsCardProps) {
   return (
     <div className="glass-card border-primary/20 flex w-full flex-col p-6 lg:w-[340px] lg:shrink-0">
@@ -55,18 +57,37 @@ export const InsightsCard = memo(function InsightsCard({
             </>
           }
         />
+        {sharedSubscriptionCount > 0 && sharingSavingsMonthly > 0 && (
+          <>
+            <div className="bg-border h-px w-full" />
+            <InsightItem
+              color="bg-primary"
+              title="Sharing Savings"
+              description={
+                <>
+                  Sharing {sharedSubscriptionCount} subscription
+                  {sharedSubscriptionCount !== 1 ? 's' : ''} saves you{' '}
+                  <span className="text-foreground font-bold">
+                    {formatCurrency(sharingSavingsMonthly, currency)}/mo
+                  </span>
+                  .
+                </>
+              }
+            />
+          </>
+        )}
       </div>
       <div className="mt-auto pt-5">
         <div className="border-border rounded-lg border bg-white/[0.03] p-4">
           <p className="text-muted-foreground mb-1 font-[family-name:var(--font-mono)] text-[10px] tracking-wider uppercase">
-            Total Active
+            Projected Annual
           </p>
           <div className="flex items-end gap-2">
             <span className="text-foreground font-[family-name:var(--font-heading)] text-xl font-bold">
-              {subscriptionCount}
+              {formatCurrency(totalMonthly * 12, currency)}
             </span>
             <span className="text-muted-foreground mb-1 font-[family-name:var(--font-mono)] text-[10px]">
-              subscriptions
+              /year
             </span>
           </div>
         </div>

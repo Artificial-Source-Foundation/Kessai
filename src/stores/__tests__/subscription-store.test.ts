@@ -14,6 +14,8 @@ const mockSubscriptions = [
     logo_url: null,
     notes: null,
     is_active: true,
+    status: 'active' as const,
+    shared_count: 1,
     next_payment_date: '2024-02-15',
     created_at: '2024-01-01T00:00:00.000Z',
     updated_at: '2024-01-01T00:00:00.000Z',
@@ -30,6 +32,8 @@ const mockSubscriptions = [
     logo_url: null,
     notes: null,
     is_active: true,
+    status: 'active' as const,
+    shared_count: 1,
     next_payment_date: '2024-02-20',
     created_at: '2024-01-01T00:00:00.000Z',
     updated_at: '2024-01-01T00:00:00.000Z',
@@ -114,6 +118,8 @@ describe('useSubscriptionStore', () => {
         logo_url: null,
         notes: null,
         is_active: true,
+        status: 'active' as const,
+        shared_count: 1,
         next_payment_date: '2024-02-25',
       }
 
@@ -138,6 +144,8 @@ describe('useSubscriptionStore', () => {
         logo_url: null,
         notes: null,
         is_active: true,
+        status: 'active' as const,
+        shared_count: 1,
         next_payment_date: '2024-02-25',
       }
 

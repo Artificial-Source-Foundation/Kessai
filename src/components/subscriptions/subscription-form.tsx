@@ -6,8 +6,9 @@ import { toast } from 'sonner'
 import { useShallow } from 'zustand/react/shallow'
 import { useCategories } from '@/hooks/use-categories'
 import { usePaymentCardStore } from '@/stores/payment-card-store'
+import { usePriceHistory } from '@/hooks/use-price-history'
 import { pickAndSaveLogo, getLogoDataUrl } from '@/lib/logo-storage'
-import { CreditCard, Upload, X, Loader2 } from 'lucide-react'
+import { CreditCard, Upload, X, Loader2, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -18,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { PriceHistoryTimeline } from '@/components/subscriptions/price-history-timeline'
 import {
   subscriptionFormSchema,
   SUBSCRIPTION_COLORS,
@@ -26,10 +28,13 @@ import {
 } from '@/types/subscription'
 import { BILLING_CYCLE_LABELS } from '@/lib/constants'
 import { getCurrencyOptions } from '@/lib/currency'
+import type { CurrencyCode } from '@/lib/currency'
 import { cn } from '@/lib/utils'
+import type { SubscriptionTemplate } from '@/data/subscription-templates'
 
 type SubscriptionFormProps = {
   subscription?: Subscription | null
+  template?: SubscriptionTemplate | null
   onSubmit: (data: SubscriptionFormData) => Promise<void>
   onCancel: () => void
   isLoading?: boolean
@@ -37,6 +42,7 @@ type SubscriptionFormProps = {
 
 export function SubscriptionForm({
   subscription,
+  template,
   onSubmit,
   onCancel,
   isLoading = false,
@@ -52,6 +58,9 @@ export function SubscriptionForm({
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
   const [isLoadingLogo, setIsLoadingLogo] = useState(Boolean(subscription?.logo_url))
   const [isUploadingLogo, setIsUploadingLogo] = useState(false)
+  const [showPriceHistory, setShowPriceHistory] = useState(false)
+
+  const { changes: priceHistory } = usePriceHistory(subscription?.id)
 
   // Only fetch cards if not already loaded
   useEffect(() => {
@@ -78,25 +87,71 @@ export function SubscriptionForm({
     }
   }, [subscription?.logo_url])
 
-  // Compute initial form values from subscription (only runs once due to key prop)
-  const initialValues = useMemo<SubscriptionFormData>(
-    () => ({
-      name: subscription?.name ?? '',
-      amount: subscription?.amount ?? 0,
-      currency: subscription?.currency ?? 'USD',
-      billing_cycle: subscription?.billing_cycle ?? 'monthly',
-      billing_day: subscription?.billing_day ?? null,
-      category_id: subscription?.category_id ?? null,
-      card_id: subscription?.card_id ?? null,
-      color: subscription?.color ?? SUBSCRIPTION_COLORS[0],
-      logo_url: subscription?.logo_url ?? null,
-      notes: subscription?.notes ?? null,
-      next_payment_date: subscription?.next_payment_date
-        ? subscription.next_payment_date.split('T')[0]
-        : dayjs().format('YYYY-MM-DD'),
-    }),
-    [subscription]
-  )
+  // Compute initial form values from subscription or template (only runs once due to key prop)
+  const initialValues = useMemo<SubscriptionFormData>(() => {
+    if (subscription) {
+      return {
+        name: subscription.name,
+        amount: subscription.amount,
+        currency: subscription.currency,
+        billing_cycle: subscription.billing_cycle,
+        billing_day: subscription.billing_day ?? null,
+        category_id: subscription.category_id ?? null,
+        card_id: subscription.card_id ?? null,
+        color: subscription.color ?? SUBSCRIPTION_COLORS[0],
+        logo_url: subscription.logo_url ?? null,
+        notes: subscription.notes ?? null,
+        next_payment_date: subscription.next_payment_date
+          ? subscription.next_payment_date.split('T')[0]
+          : dayjs().format('YYYY-MM-DD'),
+        is_trial: subscription.status === 'trial',
+        trial_end_date: subscription.trial_end_date ?? null,
+        shared_count: subscription.shared_count ?? 1,
+      }
+    }
+
+    if (template) {
+      // template.category may be a category ID (matched by dialog) or a name
+      const categoryId = categories.find((c) => c.id === template.category)
+        ? template.category
+        : (categories.find((c) => c.name.toLowerCase() === template.category.toLowerCase())?.id ??
+          null)
+
+      return {
+        name: template.name,
+        amount: template.defaultAmount ?? 0,
+        currency: template.currency,
+        billing_cycle: template.defaultBillingCycle,
+        billing_day: null,
+        category_id: categoryId,
+        card_id: null,
+        color: template.color,
+        logo_url: null,
+        notes: null,
+        next_payment_date: dayjs().format('YYYY-MM-DD'),
+        is_trial: false,
+        trial_end_date: null,
+        shared_count: 1,
+      }
+    }
+
+    return {
+      name: '',
+      amount: 0,
+      currency: 'USD',
+      billing_cycle: 'monthly',
+      billing_day: null,
+      category_id: null,
+      card_id: null,
+      color: SUBSCRIPTION_COLORS[0],
+      logo_url: null,
+      notes: null,
+      next_payment_date: dayjs().format('YYYY-MM-DD'),
+      is_trial: false,
+      trial_end_date: null,
+      shared_count: 1,
+    }
+  }, [subscription, template, categories])
 
   const form = useForm<SubscriptionFormData>({
     resolver: zodResolver(subscriptionFormSchema),
@@ -105,6 +160,8 @@ export function SubscriptionForm({
 
   // Only watch color since it's used for visual feedback
   const selectedColor = form.watch('color')
+  const isTrial = form.watch('is_trial')
+  const sharedCount = form.watch('shared_count')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -243,6 +300,73 @@ export function SubscriptionForm({
           />
         </div>
 
+        {/* Free Trial Toggle */}
+        <div className="border-border rounded-lg border bg-white/[0.02] p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="is_trial" className="cursor-pointer">
+                Start as Free Trial
+              </Label>
+            </div>
+            <Controller
+              control={form.control}
+              name="is_trial"
+              render={({ field }) => (
+                <button
+                  type="button"
+                  role="switch"
+                  id="is_trial"
+                  aria-checked={field.value}
+                  onClick={() => field.onChange(!field.value)}
+                  className={cn(
+                    'relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors',
+                    field.value ? 'bg-blue-500' : 'bg-muted'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'pointer-events-none block h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-transform',
+                      field.value ? 'translate-x-4.5' : 'translate-x-0.5'
+                    )}
+                  />
+                </button>
+              )}
+            />
+          </div>
+          {isTrial && (
+            <div className="mt-3 space-y-2">
+              <Label htmlFor="trial_end_date">Trial End Date</Label>
+              <Input
+                id="trial_end_date"
+                type="date"
+                className="border-border bg-muted/50"
+                {...form.register('trial_end_date')}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Shared Subscription */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Users className="text-muted-foreground h-4 w-4" />
+            <Label htmlFor="shared_count">Shared Among</Label>
+          </div>
+          <div className="flex items-center gap-3">
+            <Input
+              id="shared_count"
+              type="number"
+              min="1"
+              max="99"
+              className="border-border bg-muted/50 w-20"
+              {...form.register('shared_count', { valueAsNumber: true })}
+            />
+            <span className="text-muted-foreground text-sm">
+              {sharedCount > 1 ? `Your share: 1/${sharedCount}` : 'Just me'}
+            </span>
+          </div>
+        </div>
+
         <div className="space-y-2">
           <Label>Color</Label>
           <div className="flex flex-wrap gap-2">
@@ -370,6 +494,28 @@ export function SubscriptionForm({
             {...form.register('notes')}
           />
         </div>
+
+        {/* Price History (edit mode only) */}
+        {isEditing && priceHistory.length > 0 && (
+          <div className="space-y-2">
+            <button
+              type="button"
+              onClick={() => setShowPriceHistory(!showPriceHistory)}
+              className="text-muted-foreground hover:text-foreground text-sm transition-colors"
+            >
+              {showPriceHistory ? 'Hide' : 'Show'} price history ({priceHistory.length} change
+              {priceHistory.length !== 1 ? 's' : ''})
+            </button>
+            {showPriceHistory && (
+              <div className="border-border rounded-lg border bg-white/[0.02] p-4">
+                <PriceHistoryTimeline
+                  changes={priceHistory}
+                  currency={(subscription?.currency || 'USD') as CurrencyCode}
+                />
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="flex gap-3 pt-4">

@@ -4,6 +4,7 @@ import { invoke } from '@tauri-apps/api/core'
 import type { Subscription } from '@/types/subscription'
 import type { Category } from '@/types/category'
 import type { Payment } from '@/types/payment'
+import type { PriceChange } from '@/types/price-history'
 import type { Settings } from '@/types/settings'
 
 interface BackupData {
@@ -12,6 +13,7 @@ interface BackupData {
   subscriptions: Subscription[]
   categories: Category[]
   payments: Payment[]
+  price_history?: PriceChange[]
   settings: Omit<Settings, 'id'>
 }
 

@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { toast } from 'sonner'
 import { useShallow } from 'zustand/react/shallow'
+import { ArrowLeft } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -9,14 +10,20 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { SubscriptionForm } from './subscription-form'
+import { TemplatePicker } from './template-picker'
 import { useSubscriptionStore } from '@/stores/subscription-store'
+import { useCategoryStore } from '@/stores/category-store'
 import { useUiStore } from '@/stores/ui-store'
 import type { SubscriptionFormData } from '@/types/subscription'
+import type { SubscriptionTemplate } from '@/data/subscription-templates'
+
+type DialogPhase = 'picker' | 'form'
 
 export function SubscriptionDialog() {
   const [isLoading, setIsLoading] = useState(false)
+  const [phase, setPhase] = useState<DialogPhase>('picker')
+  const [selectedTemplate, setSelectedTemplate] = useState<SubscriptionTemplate | null>(null)
 
-  // Use selective subscriptions for better performance
   const { subscriptions, add, update } = useSubscriptionStore(
     useShallow((state) => ({
       subscriptions: state.subscriptions,
@@ -24,6 +31,7 @@ export function SubscriptionDialog() {
       update: state.update,
     }))
   )
+  const categories = useCategoryStore((state) => state.categories)
   const { subscriptionDialogOpen, editingSubscriptionId, closeSubscriptionDialog } = useUiStore(
     useShallow((state) => ({
       subscriptionDialogOpen: state.subscriptionDialogOpen,
@@ -37,6 +45,37 @@ export function SubscriptionDialog() {
     : null
 
   const isEditing = Boolean(editingSubscriptionId)
+
+  const handleClose = useCallback(() => {
+    closeSubscriptionDialog()
+    // Reset phase after dialog closes
+    setTimeout(() => {
+      setPhase('picker')
+      setSelectedTemplate(null)
+    }, 200)
+  }, [closeSubscriptionDialog])
+
+  const handleSelectTemplate = useCallback(
+    (template: SubscriptionTemplate) => {
+      // Match template category to existing categories by name
+      const matchedCategory = categories.find(
+        (c) => c.name.toLowerCase() === template.category.toLowerCase()
+      )
+      setSelectedTemplate({ ...template, category: matchedCategory?.id || template.category })
+      setPhase('form')
+    },
+    [categories]
+  )
+
+  const handleStartFromScratch = useCallback(() => {
+    setSelectedTemplate(null)
+    setPhase('form')
+  }, [])
+
+  const handleBackToPicker = useCallback(() => {
+    setSelectedTemplate(null)
+    setPhase('picker')
+  }, [])
 
   const handleSubmit = async (data: SubscriptionFormData) => {
     setIsLoading(true)
@@ -54,6 +93,9 @@ export function SubscriptionDialog() {
           logo_url: data.logo_url ?? null,
           notes: data.notes,
           next_payment_date: data.next_payment_date,
+          status: data.is_trial ? 'trial' : undefined,
+          trial_end_date: data.is_trial ? (data.trial_end_date ?? null) : null,
+          shared_count: data.shared_count,
         })
         toast.success('Subscription updated', {
           description: `${data.name} has been updated successfully.`,
@@ -72,12 +114,15 @@ export function SubscriptionDialog() {
           notes: data.notes,
           is_active: true,
           next_payment_date: data.next_payment_date,
+          status: data.is_trial ? 'trial' : 'active',
+          trial_end_date: data.is_trial ? (data.trial_end_date ?? null) : null,
+          shared_count: data.shared_count,
         })
         toast.success('Subscription added', {
           description: `${data.name} has been added to your subscriptions.`,
         })
       }
-      closeSubscriptionDialog()
+      handleClose()
     } catch (error) {
       toast.error('Error', {
         description: `Failed to ${isEditing ? 'update' : 'add'} subscription. Please try again.`,
@@ -88,32 +133,57 @@ export function SubscriptionDialog() {
     }
   }
 
+  // Editing always goes straight to form
+  const showPicker = !isEditing && phase === 'picker'
+
   return (
-    <Dialog
-      open={subscriptionDialogOpen}
-      onOpenChange={(open) => !open && closeSubscriptionDialog()}
-    >
+    <Dialog open={subscriptionDialogOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="flex max-h-[90vh] w-full flex-col overflow-hidden sm:max-w-2xl">
         <DialogHeader>
+          {!isEditing && phase === 'form' && (
+            <button
+              onClick={handleBackToPicker}
+              className="text-muted-foreground hover:text-foreground mb-1 flex w-fit items-center gap-1 text-sm transition-colors"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Back to templates
+            </button>
+          )}
           <DialogTitle className="text-xl">
-            {isEditing ? 'Edit Subscription' : 'Add Subscription'}
+            {isEditing
+              ? 'Edit Subscription'
+              : showPicker
+                ? 'Add Subscription'
+                : selectedTemplate
+                  ? `Add ${selectedTemplate.name}`
+                  : 'Add Subscription'}
           </DialogTitle>
           <DialogDescription>
             {isEditing
               ? 'Update the details of your subscription below.'
-              : 'Fill in the details to track a new subscription.'}
+              : showPicker
+                ? 'Choose a service or start from scratch.'
+                : 'Fill in the details to track a new subscription.'}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto overscroll-contain pr-1">
-          <SubscriptionForm
-            key={editingSubscriptionId || 'new'}
-            subscription={subscription}
-            onSubmit={handleSubmit}
-            onCancel={closeSubscriptionDialog}
-            isLoading={isLoading}
+        {showPicker ? (
+          <TemplatePicker
+            onSelect={handleSelectTemplate}
+            onStartFromScratch={handleStartFromScratch}
           />
-        </div>
+        ) : (
+          <div className="flex-1 overflow-y-auto overscroll-contain pr-1">
+            <SubscriptionForm
+              key={editingSubscriptionId || selectedTemplate?.id || 'new'}
+              subscription={subscription}
+              template={selectedTemplate}
+              onSubmit={handleSubmit}
+              onCancel={handleClose}
+              isLoading={isLoading}
+            />
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   )

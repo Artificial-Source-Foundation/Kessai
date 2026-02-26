@@ -2,24 +2,34 @@ import { useEffect, useMemo } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useSubscriptionStore } from '@/stores/subscription-store'
 import { useCategoryStore } from '@/stores/category-store'
-import { calculateMonthlyAmount } from '@/types/subscription'
+import { calculateUserMonthlyAmount, isBillableStatus } from '@/types/subscription'
 import type { Subscription } from '@/types/subscription'
 
 export function useSubscriptions() {
   // Use selective subscriptions for better performance
-  const { subscriptions, isLoading, error, fetch, add, update, remove, toggleActive } =
-    useSubscriptionStore(
-      useShallow((state) => ({
-        subscriptions: state.subscriptions,
-        isLoading: state.isLoading,
-        error: state.error,
-        fetch: state.fetch,
-        add: state.add,
-        update: state.update,
-        remove: state.remove,
-        toggleActive: state.toggleActive,
-      }))
-    )
+  const {
+    subscriptions,
+    isLoading,
+    error,
+    fetch,
+    add,
+    update,
+    remove,
+    toggleActive,
+    transitionStatus,
+  } = useSubscriptionStore(
+    useShallow((state) => ({
+      subscriptions: state.subscriptions,
+      isLoading: state.isLoading,
+      error: state.error,
+      fetch: state.fetch,
+      add: state.add,
+      update: state.update,
+      remove: state.remove,
+      toggleActive: state.toggleActive,
+      transitionStatus: state.transitionStatus,
+    }))
+  )
 
   const { categories, fetch: fetchCategories } = useCategoryStore(
     useShallow((state) => ({
@@ -34,14 +44,15 @@ export function useSubscriptions() {
   }, [fetch, fetchCategories])
 
   const activeSubscriptions = useMemo(
-    () => subscriptions.filter((s) => s.is_active),
+    () => subscriptions.filter((s) => isBillableStatus(s.status)),
     [subscriptions]
   )
 
   const totalMonthly = useMemo(
     () =>
       activeSubscriptions.reduce(
-        (sum, sub) => sum + calculateMonthlyAmount(sub.amount, sub.billing_cycle),
+        (sum, sub) =>
+          sum + calculateUserMonthlyAmount(sub.amount, sub.billing_cycle, sub.shared_count),
         0
       ),
     [activeSubscriptions]
@@ -67,6 +78,7 @@ export function useSubscriptions() {
     update,
     remove,
     toggleActive,
+    transitionStatus,
     getCategory,
     getSubscriptionWithCategory,
     refresh: fetch,

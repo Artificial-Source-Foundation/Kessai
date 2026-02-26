@@ -1,10 +1,13 @@
 import { memo } from 'react'
-import { Pencil, Trash2, Power } from 'lucide-react'
+import { Pencil, Trash2, Power, Users } from 'lucide-react'
 import { formatCurrency } from '@/lib/currency'
 import { formatPaymentDate } from '@/lib/date-utils'
 import { BILLING_CYCLE_SHORT, CATEGORY_BADGE_VARIANTS } from '@/lib/constants'
+import { isBillableStatus } from '@/types/subscription'
 import { Badge } from '@/components/ui/badge'
 import { SubscriptionLogo } from '@/components/ui/subscription-logo'
+import { StatusBadge } from '@/components/subscriptions/status-badge'
+import { TrialCountdown } from '@/components/subscriptions/trial-countdown'
 import type { BadgeVariant } from '@/components/ui/badge'
 import type { CurrencyCode } from '@/lib/currency'
 import type { Subscription } from '@/types/subscription'
@@ -60,10 +63,11 @@ export const SubscriptionsListView = memo(function SubscriptionsListView({
           <tbody className="divide-border divide-y">
             {subscriptions.map((sub) => {
               const category = getCategory(sub.category_id)
+              const billable = isBillableStatus(sub.status)
               return (
                 <tr
                   key={sub.id}
-                  className={`group hover:bg-muted/35 transition-colors ${!sub.is_active ? 'opacity-60' : ''}`}
+                  className={`group hover:bg-muted/35 transition-colors ${!billable ? 'opacity-60' : ''}`}
                 >
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-3">
@@ -76,20 +80,37 @@ export const SubscriptionsListView = memo(function SubscriptionsListView({
                       />
                       <div className="min-w-0">
                         <p className="text-foreground truncate font-medium">{sub.name}</p>
-                        {category && (
-                          <Badge variant={getCategoryVariant(category.name)} size="sm">
-                            {category.name}
-                          </Badge>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {category && (
+                            <Badge variant={getCategoryVariant(category.name)} size="sm">
+                              {category.name}
+                            </Badge>
+                          )}
+                          {sub.shared_count > 1 && (
+                            <span className="text-muted-foreground flex items-center gap-0.5 font-[family-name:var(--font-mono)] text-[10px]">
+                              <Users className="h-3 w-3" />
+                              {sub.shared_count}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </td>
                   <td className="px-4 py-4">
                     <p className="text-foreground font-[family-name:var(--font-heading)] font-semibold">
-                      {formatCurrency(sub.amount, currency)}
+                      {formatCurrency(
+                        sub.shared_count > 1 ? sub.amount / sub.shared_count : sub.amount,
+                        currency
+                      )}
                     </p>
                     <p className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px] tracking-wider uppercase">
                       {BILLING_CYCLE_SHORT[sub.billing_cycle]}
+                      {sub.shared_count > 1 && (
+                        <span className="text-muted-foreground/60">
+                          {' '}
+                          ({formatCurrency(sub.amount, currency)} total)
+                        </span>
+                      )}
                     </p>
                   </td>
                   <td className="hidden px-4 py-4 md:table-cell">
@@ -98,19 +119,11 @@ export const SubscriptionsListView = memo(function SubscriptionsListView({
                     </p>
                   </td>
                   <td className="px-4 py-4">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`h-2 w-2 rounded-full ${
-                          sub.is_active ? 'bg-success' : 'bg-warning'
-                        }`}
-                      />
-                      <span
-                        className={`text-sm font-medium ${
-                          sub.is_active ? 'text-success' : 'text-warning'
-                        }`}
-                      >
-                        {sub.is_active ? 'Active' : 'Paused'}
-                      </span>
+                    <div className="flex flex-col gap-1">
+                      <StatusBadge status={sub.status} />
+                      {sub.status === 'trial' && (
+                        <TrialCountdown trialEndDate={sub.trial_end_date} />
+                      )}
                     </div>
                   </td>
                   <td className="px-4 py-4">
@@ -124,7 +137,7 @@ export const SubscriptionsListView = memo(function SubscriptionsListView({
                       </button>
                       <button
                         onClick={() => onToggleActive(sub)}
-                        aria-label={sub.is_active ? `Pause ${sub.name}` : `Activate ${sub.name}`}
+                        aria-label={billable ? `Pause ${sub.name}` : `Activate ${sub.name}`}
                         className="text-muted-foreground hover:bg-accent hover:text-foreground rounded-lg p-2 opacity-0 transition-[opacity,background-color,color] group-hover:opacity-100 focus:opacity-100"
                       >
                         <Power className="h-4 w-4" />

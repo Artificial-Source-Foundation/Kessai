@@ -1,7 +1,12 @@
 import { useState, useEffect, useMemo, useRef, memo } from 'react'
 import { formatCurrency, type CurrencyCode } from '@/lib/currency'
 import { getLogoDataUrl } from '@/lib/logo-storage'
-import { calculateMonthlyAmount, type Subscription } from '@/types/subscription'
+import {
+  calculateMonthlyAmount,
+  isBillableStatus,
+  STATUS_LABELS,
+  type Subscription,
+} from '@/types/subscription'
 import type { Category } from '@/types/category'
 
 interface SubscriptionBentoProps {
@@ -285,14 +290,14 @@ const BentoTile = memo(function BentoTile({
         )}
       </div>
 
-      {/* Inactive overlay */}
-      {!subscription.is_active && (
+      {/* Non-billable overlay */}
+      {!isBillableStatus(subscription.status) && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/60">
           <span
             className="bg-black/60 px-2 py-0.5 text-xs font-medium text-white"
             style={{ borderRadius: '3px' }}
           >
-            Paused
+            {STATUS_LABELS[subscription.status] || 'Inactive'}
           </span>
         </div>
       )}

@@ -1,10 +1,14 @@
+import { useState } from 'react'
 import { useSettings } from '@/hooks/use-settings'
 import { useTheme } from '@/components/theme-provider'
 import { useSubscriptionStore } from '@/stores/subscription-store'
 import { useCategoryStore } from '@/stores/category-store'
+import { useSettingsStore } from '@/stores/settings-store'
 import { getCurrencyOptions } from '@/lib/currency'
-import { Moon, Sun, Monitor } from 'lucide-react'
+import { Moon, Sun, Monitor, Wallet } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -24,6 +28,9 @@ export function SettingsPage() {
   const { theme, setTheme } = useTheme()
   const { fetch: refetchSubscriptions } = useSubscriptionStore()
   const { fetch: refetchCategories } = useCategoryStore()
+  const { setBudget } = useSettingsStore()
+  const [budgetInput, setBudgetInput] = useState('')
+  const [isSavingBudget, setIsSavingBudget] = useState(false)
 
   const handleDataChanged = () => {
     refetchSettings()
@@ -100,6 +107,72 @@ export function SettingsPage() {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+        </div>
+
+        <div className="glass-card flex flex-col gap-6 p-6">
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2">
+              <Wallet className="text-primary h-5 w-5" />
+              <h2 className="text-foreground text-lg font-bold">Budget</h2>
+            </div>
+            <p className="text-muted-foreground text-sm">Set a monthly spending limit</p>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <Label htmlFor="monthly_budget">
+              Monthly Budget{' '}
+              {settings.monthly_budget ? `(${settings.currency} ${settings.monthly_budget})` : ''}
+            </Label>
+            <div className="flex items-center gap-3">
+              <Input
+                id="monthly_budget"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder={
+                  settings.monthly_budget ? String(settings.monthly_budget) : 'e.g. 100.00'
+                }
+                value={budgetInput}
+                onChange={(e) => setBudgetInput(e.target.value)}
+                className="border-border bg-muted/50 w-40"
+              />
+              <Button
+                size="sm"
+                disabled={isSavingBudget || !budgetInput}
+                onClick={async () => {
+                  const val = parseFloat(budgetInput)
+                  if (isNaN(val) || val < 0) return
+                  setIsSavingBudget(true)
+                  try {
+                    await setBudget(val > 0 ? val : null)
+                    setBudgetInput('')
+                  } finally {
+                    setIsSavingBudget(false)
+                  }
+                }}
+              >
+                {isSavingBudget ? 'Saving...' : 'Set'}
+              </Button>
+              {settings.monthly_budget !== null && settings.monthly_budget !== undefined && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={isSavingBudget}
+                  onClick={async () => {
+                    setIsSavingBudget(true)
+                    try {
+                      await setBudget(null)
+                      setBudgetInput('')
+                    } finally {
+                      setIsSavingBudget(false)
+                    }
+                  }}
+                >
+                  Clear
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 

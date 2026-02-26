@@ -1,6 +1,6 @@
-import { useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { useShallow } from 'zustand/react/shallow'
-import { CalendarDays, Calendar, CalendarClock, CreditCard } from 'lucide-react'
+import { CalendarDays, Calendar, CalendarClock, CreditCard, FlaskConical } from 'lucide-react'
 import { useSubscriptionStore } from '@/stores/subscription-store'
 import { useCategoryStore } from '@/stores/category-store'
 import { useSettingsStore } from '@/stores/settings-store'
@@ -10,8 +10,17 @@ import { getUpcomingPayments } from '@/lib/date-utils'
 import { StatCard } from '@/components/dashboard/stat-card'
 import { UpcomingPaymentRow } from '@/components/dashboard/upcoming-payment-row'
 import { InsightsCard } from '@/components/dashboard/insights-card'
+import { TrialsWidget } from '@/components/dashboard/trials-widget'
+import { BudgetWidget } from '@/components/dashboard/budget-widget'
 import { DashboardSkeleton } from '@/components/dashboard/dashboard-skeleton'
+import { Button } from '@/components/ui/button'
 import type { CurrencyCode } from '@/lib/currency'
+
+const WhatIfSimulator = lazy(() =>
+  import('@/components/dashboard/what-if-simulator').then((m) => ({
+    default: m.WhatIfSimulator,
+  }))
+)
 
 export function Dashboard() {
   // Use selective subscriptions for better performance
@@ -41,9 +50,15 @@ export function Dashboard() {
     yearlySubsTotal,
     monthlySubsCount,
     yearlySubsCount,
+    trialCount,
+    expiringTrials,
+    sharedSubscriptionCount,
+    sharingSavingsMonthly,
   } = useDashboardStats()
 
+  const [whatIfOpen, setWhatIfOpen] = useState(false)
   const currency = (settings?.currency || 'USD') as CurrencyCode
+  const monthlyBudget = settings?.monthly_budget ?? null
   const upcomingPayments = getUpcomingPayments(subscriptions, 7)
   const upcomingTotal = upcomingPayments.reduce((sum, sub) => sum + sub.amount, 0)
 
@@ -59,9 +74,17 @@ export function Dashboard() {
 
   return (
     <div className="animate-fade-in-up flex flex-col space-y-6">
-      <header className="flex flex-col gap-1">
-        <h2 className="text-2xl font-bold tracking-tight">Dashboard</h2>
-        <p className="text-muted-foreground text-sm">Here's your subscription overview</p>
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-2xl font-bold tracking-tight">Dashboard</h2>
+          <p className="text-muted-foreground text-sm">Here's your subscription overview</p>
+        </div>
+        {activeCount > 0 && (
+          <Button variant="outline" size="sm" onClick={() => setWhatIfOpen(true)} className="gap-2">
+            <FlaskConical className="h-3.5 w-3.5" />
+            What If...
+          </Button>
+        )}
       </header>
 
       <section className="stagger-children grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
@@ -103,6 +126,14 @@ export function Dashboard() {
           iconColor="text-muted-foreground"
         />
       </section>
+
+      {/* Budget Widget */}
+      {monthlyBudget !== null && monthlyBudget > 0 && (
+        <BudgetWidget budget={monthlyBudget} currentSpend={totalMonthly} currency={currency} />
+      )}
+
+      {/* Trials Widget */}
+      <TrialsWidget expiringTrials={expiringTrials} trialCount={trialCount} />
 
       {/* Category Breakdown */}
       {categorySpending.length > 0 && (
@@ -159,10 +190,15 @@ export function Dashboard() {
         <InsightsCard
           activeCount={activeCount}
           totalMonthly={totalMonthly}
-          subscriptionCount={subscriptions.length}
           currency={currency}
+          sharedSubscriptionCount={sharedSubscriptionCount}
+          sharingSavingsMonthly={sharingSavingsMonthly}
         />
       </section>
+
+      <Suspense fallback={null}>
+        <WhatIfSimulator open={whatIfOpen} onOpenChange={setWhatIfOpen} currency={currency} />
+      </Suspense>
     </div>
   )
 }

@@ -13,6 +13,7 @@ type SettingsState = {
   setTheme: (theme: Theme) => Promise<void>
   setCurrency: (currency: string) => Promise<void>
   setNotifications: (enabled: boolean, daysBefore?: number[]) => Promise<void>
+  setBudget: (budget: number | null) => Promise<void>
 }
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
@@ -65,5 +66,9 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       notification_enabled: enabled,
       ...(daysBefore && { notification_days_before: daysBefore }),
     })
+  },
+
+  setBudget: async (budget) => {
+    await get().update({ monthly_budget: budget })
   },
 }))

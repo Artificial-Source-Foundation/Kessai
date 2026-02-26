@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { invoke } from '@tauri-apps/api/core'
-import type { Subscription, NewSubscription } from '@/types/subscription'
+import type { Subscription, NewSubscription, SubscriptionStatus } from '@/types/subscription'
 
 type SubscriptionState = {
   subscriptions: Subscription[]
@@ -12,6 +12,14 @@ type SubscriptionState = {
   update: (id: string, data: Partial<Subscription>) => Promise<void>
   remove: (id: string) => Promise<void>
   toggleActive: (id: string) => Promise<void>
+  transitionStatus: (id: string, status: SubscriptionStatus) => Promise<void>
+}
+
+const sortByPaymentDate = (a: Subscription, b: Subscription) => {
+  if (!a.next_payment_date && !b.next_payment_date) return 0
+  if (!a.next_payment_date) return 1
+  if (!b.next_payment_date) return -1
+  return new Date(a.next_payment_date).getTime() - new Date(b.next_payment_date).getTime()
 }
 
 export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
@@ -47,17 +55,16 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
       is_active: sub.is_active ?? true,
       next_payment_date: sub.next_payment_date,
       card_id: sub.card_id || null,
+      status: sub.status ?? 'active',
+      trial_end_date: sub.trial_end_date ?? null,
+      status_changed_at: now,
+      shared_count: sub.shared_count ?? 1,
       created_at: now,
       updated_at: now,
     }
 
     set((state) => ({
-      subscriptions: [...state.subscriptions, newSubscription].sort((a, b) => {
-        if (!a.next_payment_date && !b.next_payment_date) return 0
-        if (!a.next_payment_date) return 1
-        if (!b.next_payment_date) return -1
-        return new Date(a.next_payment_date).getTime() - new Date(b.next_payment_date).getTime()
-      }),
+      subscriptions: [...state.subscriptions, newSubscription].sort(sortByPaymentDate),
     }))
 
     try {
@@ -66,12 +73,7 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
       set((state) => ({
         subscriptions: state.subscriptions
           .map((s) => (s.id === optimisticId ? created : s))
-          .sort((a, b) => {
-            if (!a.next_payment_date && !b.next_payment_date) return 0
-            if (!a.next_payment_date) return 1
-            if (!b.next_payment_date) return -1
-            return new Date(a.next_payment_date).getTime() - new Date(b.next_payment_date).getTime()
-          }),
+          .sort(sortByPaymentDate),
       }))
     } catch (error) {
       // Rollback
@@ -92,12 +94,7 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
     set((state) => ({
       subscriptions: state.subscriptions
         .map((s) => (s.id === id ? { ...s, ...data, updated_at: new Date().toISOString() } : s))
-        .sort((a, b) => {
-          if (!a.next_payment_date && !b.next_payment_date) return 0
-          if (!a.next_payment_date) return 1
-          if (!b.next_payment_date) return -1
-          return new Date(a.next_payment_date).getTime() - new Date(b.next_payment_date).getTime()
-        }),
+        .sort(sortByPaymentDate),
     }))
 
     try {
@@ -105,12 +102,7 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
       set((state) => ({
         subscriptions: state.subscriptions
           .map((s) => (s.id === id ? updated : s))
-          .sort((a, b) => {
-            if (!a.next_payment_date && !b.next_payment_date) return 0
-            if (!a.next_payment_date) return 1
-            if (!b.next_payment_date) return -1
-            return new Date(a.next_payment_date).getTime() - new Date(b.next_payment_date).getTime()
-          }),
+          .sort(sortByPaymentDate),
       }))
     } catch (error) {
       set({ subscriptions: previousSubscriptions })
@@ -155,6 +147,28 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
     } catch (error) {
       set({ subscriptions: previousSubscriptions })
       console.error('Failed to toggle subscription:', error)
+      throw error
+    }
+  },
+
+  transitionStatus: async (id, status) => {
+    const previousSubscriptions = get().subscriptions
+
+    set((state) => ({
+      subscriptions: state.subscriptions.map((s) => (s.id === id ? { ...s, status } : s)),
+    }))
+
+    try {
+      const updated = await invoke<Subscription>('transition_subscription_status', {
+        id,
+        status,
+      })
+      set((state) => ({
+        subscriptions: state.subscriptions.map((s) => (s.id === id ? updated : s)),
+      }))
+    } catch (error) {
+      set({ subscriptions: previousSubscriptions })
+      console.error('Failed to transition status:', error)
       throw error
     }
   },
