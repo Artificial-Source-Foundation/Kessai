@@ -37,6 +37,9 @@
 | `src/types/`                    | TypeScript type definitions with Zod                  |
 | `src/lib/`                      | Utilities (database, currency, date, data-management) |
 | `src/test/`                     | Test setup                                            |
+| `crates/subby-core/`            | Shared Rust business logic library                    |
+| `crates/subby-mcp/`             | MCP server + CLI binary                               |
+| `packages/discord-bot/`         | Discord reminder bot                                  |
 | `docs/`                         | Project documentation                                 |
 
 ## MVP Features (Complete)
@@ -97,12 +100,16 @@
 ## Common Commands
 
 ```bash
-pnpm tauri dev        # Run app in dev mode
-pnpm tauri build      # Build for production
-pnpm test             # Run tests
-pnpm lint             # Run ESLint
-pnpm format           # Run Prettier
-pnpm check            # Lint + typecheck + format check
+pnpm tauri dev          # Run app in dev mode
+pnpm tauri build        # Build for production
+pnpm test               # Run tests
+pnpm test:run           # Run tests once
+pnpm test:coverage      # Run tests with coverage
+pnpm lint               # Run ESLint
+pnpm format             # Run Prettier
+pnpm check              # Lint + typecheck + format check
+cargo test --workspace  # Run Rust tests
+cargo build -p subby-mcp  # Build MCP server + CLI
 ```
 
 ## Code Style

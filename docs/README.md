@@ -21,6 +21,7 @@ This directory is organized by audience: onboarding, architecture, implementatio
 - [Testing](./guides/testing.md)
 - [Adding Migrations](./guides/adding-migrations.md)
 - [Backup Format](./guides/backup-format.md)
+- [MCP Setup](./guides/mcp-setup.md)
 - [Troubleshooting](./troubleshooting.md)
 
 ## Reference
