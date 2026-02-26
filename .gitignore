@@ -15,7 +15,8 @@ pnpm-debug.log*
 lerna-debug.log*
 
 # IDE
-.vscode/
+.vscode/*
+!.vscode/extensions.json
 .idea/
 *.suo
 *.ntvs*

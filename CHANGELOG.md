@@ -23,6 +23,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dashboard layout updated with tighter spacing and structural hierarchy
 - Settings page updated with Space Mono labels and improved card layout
 
+### Added
+
+- Test coverage for settings store, payment card store, UI store, data management, category/payment-card type schemas
+- Rust tests for non-existent subscription deletion, import merge mode, export structure validation
+- CI: Rust test job, coverage thresholds, dependency audit step
+- VS Code recommended extensions configuration
+- Expanded testing guide with IPC mocking patterns and E2E fixtures documentation
+
+### Fixed
+
+- Fixed all GitHub URLs from `ASF/Subby` to `AI-Strategic-Forum/Subby`
+- Fixed `act()` warnings in calendar stats tests
+- Removed `@ts-expect-error` for `process.env` in vite.config.ts (now properly typed)
+
+### Removed
+
+- Removed dead files: `react.svg` (unused Vite boilerplate), `sheet.tsx` (unused Sheet component)
+- Removed `stitch-designs` from ESLint ignores (directory does not exist)
+
 ## [0.1.0] - 2025-01-19
 
 ### Added

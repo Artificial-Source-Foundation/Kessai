@@ -331,4 +331,84 @@ mod tests {
         assert_eq!(subs.len(), 1);
         assert_eq!(subs[0].name, "Test Sub");
     }
+
+    #[test]
+    fn test_delete_nonexistent_subscription_returns_error() {
+        let tmp = tempfile::NamedTempFile::new().unwrap();
+        let core = SubbyCore::new(tmp.path()).unwrap();
+
+        let result = core.subscriptions().delete("nonexistent-id");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_data_import_merge_without_clear() {
+        let tmp = tempfile::NamedTempFile::new().unwrap();
+        let core = SubbyCore::new(tmp.path()).unwrap();
+
+        // Create a subscription in source DB
+        core.subscriptions()
+            .create(models::NewSubscription {
+                name: "Source Sub".to_string(),
+                amount: 5.0,
+                currency: "USD".to_string(),
+                billing_cycle: models::BillingCycle::Monthly,
+                billing_day: None,
+                category_id: None,
+                card_id: None,
+                color: None,
+                logo_url: None,
+                notes: None,
+                is_active: true,
+                next_payment_date: None,
+            })
+            .unwrap();
+
+        let backup = core.data_management().export_data().unwrap();
+
+        // Create target DB with its own subscription
+        let tmp2 = tempfile::NamedTempFile::new().unwrap();
+        let core2 = SubbyCore::new(tmp2.path()).unwrap();
+
+        core2
+            .subscriptions()
+            .create(models::NewSubscription {
+                name: "Existing Sub".to_string(),
+                amount: 20.0,
+                currency: "USD".to_string(),
+                billing_cycle: models::BillingCycle::Monthly,
+                billing_day: None,
+                category_id: None,
+                card_id: None,
+                color: None,
+                logo_url: None,
+                notes: None,
+                is_active: true,
+                next_payment_date: None,
+            })
+            .unwrap();
+
+        // Import WITHOUT clearing — should merge
+        let result = core2.data_management().import_data(backup, false).unwrap();
+        assert!(result.success);
+
+        let subs = core2.subscriptions().list().unwrap();
+        // Should have both: existing + imported
+        assert_eq!(subs.len(), 2);
+    }
+
+    #[test]
+    fn test_data_export_produces_valid_structure() {
+        let tmp = tempfile::NamedTempFile::new().unwrap();
+        let core = SubbyCore::new(tmp.path()).unwrap();
+
+        let backup = core.data_management().export_data().unwrap();
+
+        assert_eq!(backup.version, "1.0.0");
+        assert!(!backup.exported_at.is_empty());
+        assert_eq!(backup.categories.len(), 9); // default categories
+        assert!(backup.subscriptions.is_empty());
+        assert!(backup.payments.is_empty());
+        assert_eq!(backup.settings.currency, "USD");
+    }
 }

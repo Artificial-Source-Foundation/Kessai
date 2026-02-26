@@ -6,7 +6,7 @@ Subby ships as a Tauri desktop app and can also be installed from source.
 
 Download the latest release artifacts from:
 
-- `https://github.com/ASF/Subby/releases`
+- `https://github.com/AI-Strategic-Forum/Subby/releases`
 
 Platform artifacts currently produced include Linux (`.deb`, `.rpm`, `.AppImage`), macOS (`.dmg`, `.app.tar.gz`), and Windows (`.msi`, `.exe`).
 

@@ -6,11 +6,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ASF/Subby.git"
+    "url": "https://github.com/AI-Strategic-Forum/Subby.git"
   },
-  "homepage": "https://github.com/ASF/Subby/tree/main/packages/discord-bot",
+  "homepage": "https://github.com/AI-Strategic-Forum/Subby/tree/main/packages/discord-bot",
   "bugs": {
-    "url": "https://github.com/ASF/Subby/issues"
+    "url": "https://github.com/AI-Strategic-Forum/Subby/issues"
   },
   "keywords": [
     "discord",

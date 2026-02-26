@@ -21,7 +21,7 @@ Use GitHub repository transfer from personal namespace to `ASF/Subby`.
 4. Update local remote URL:
 
 ```bash
-git remote set-url origin https://github.com/ASF/Subby.git
+git remote set-url origin https://github.com/AI-Strategic-Forum/Subby.git
 git remote -v
 ```
 

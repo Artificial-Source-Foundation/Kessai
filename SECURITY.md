@@ -29,7 +29,7 @@ If you discover a security vulnerability, please report it responsibly:
 
 1. **Do NOT open a public issue** for security vulnerabilities
 2. Email security concerns to the maintainer security contact listed in repository settings, or
-3. Open a [private security advisory](https://github.com/ASF/Subby/security/advisories/new) on GitHub
+3. Open a [private security advisory](https://github.com/AI-Strategic-Forum/Subby/security/advisories/new) on GitHub
 
 ### What to Include
 

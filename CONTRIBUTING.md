@@ -4,7 +4,7 @@ Thank you for your interest in contributing to Subby! This document provides gui
 
 ## Reporting Bugs
 
-1. Check existing [Issues](https://github.com/ASF/Subby/issues) to avoid duplicates
+1. Check existing [Issues](https://github.com/AI-Strategic-Forum/Subby/issues) to avoid duplicates
 2. Use the "bug" label
 3. Include:
    - OS and version
@@ -23,7 +23,7 @@ Thank you for your interest in contributing to Subby! This document provides gui
 ### Setup
 
 ```bash
-git clone https://github.com/ASF/Subby.git
+git clone https://github.com/AI-Strategic-Forum/Subby.git
 cd subby
 pnpm install
 pnpm tauri dev
@@ -38,8 +38,11 @@ See the [Development section](README.md#development) in the README for prerequis
 3. Make your changes
 4. Run checks:
    ```bash
-   pnpm check        # lint + typecheck + format check
-   pnpm test:run     # Run tests once
+   pnpm check             # lint + typecheck + format check
+   pnpm test:run          # Unit tests (once)
+   pnpm test:coverage     # Unit tests with coverage
+   cargo test --workspace # Rust tests
+   pnpm test:e2e          # E2E tests (requires dev server)
    ```
 5. Commit with conventional commits
 6. Push and open a PR

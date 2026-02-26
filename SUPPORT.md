@@ -2,8 +2,8 @@
 
 ## Where to Get Help
 
-- Usage issues and bugs: `https://github.com/ASF/Subby/issues`
-- Feature requests: `https://github.com/ASF/Subby/issues`
+- Usage issues and bugs: `https://github.com/AI-Strategic-Forum/Subby/issues`
+- Feature requests: `https://github.com/AI-Strategic-Forum/Subby/issues`
 - Security concerns: see `SECURITY.md`
 
 ## Before Opening an Issue

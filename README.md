@@ -18,16 +18,16 @@
   <a href="https://opensource.org/licenses/MIT">
     <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT">
   </a>
-  <a href="https://github.com/ASF/Subby/releases">
-    <img src="https://img.shields.io/github/v/release/ASF/Subby?display_name=tag" alt="Latest Release">
+  <a href="https://github.com/AI-Strategic-Forum/Subby/releases">
+    <img src="https://img.shields.io/github/v/release/AI-Strategic-Forum/Subby?display_name=tag" alt="Latest Release">
   </a>
 </p>
 
 <p align="center">
   <a href="#features">Features</a> •
-  <a href="#screenshots">Screenshots</a> •
   <a href="#installation">Installation</a> •
-  <a href="#discord-bot">Discord Bot</a> •
+  <a href="#cli-usage">CLI</a> •
+  <a href="#ai-integration-mcp">MCP</a> •
   <a href="#development">Development</a> •
   <a href="#contributing">Contributing</a>
 </p>
@@ -86,7 +86,7 @@ sudo apt install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patc
 **Step 2:** Clone and install
 
 ```bash
-git clone https://github.com/ASF/Subby.git
+git clone https://github.com/AI-Strategic-Forum/Subby.git
 cd subby
 ./install.sh
 ```
@@ -136,7 +136,7 @@ Find "Subby" in your application menu, or run `subby` from the terminal.
 
 ### Download Pre-built Binaries
 
-If you don't want to build from source, download from [GitHub Releases](https://github.com/ASF/Subby/releases):
+If you don't want to build from source, download from [GitHub Releases](https://github.com/AI-Strategic-Forum/Subby/releases):
 
 | Platform                  | File                         | How to Install                        |
 | ------------------------- | ---------------------------- | ------------------------------------- |
@@ -216,7 +216,7 @@ sudo apt install libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchel
 ### Run from Source
 
 ```bash
-git clone https://github.com/ASF/Subby.git
+git clone https://github.com/AI-Strategic-Forum/Subby.git
 cd subby
 pnpm install
 pnpm tauri dev
@@ -258,6 +258,91 @@ subby/
 └── docs/                   # Documentation
 ```
 
+## CLI Usage
+
+Subby includes a command-line interface for managing subscriptions from the terminal. The CLI binary is the same as the MCP server (`subby-mcp`).
+
+### Build
+
+```bash
+cargo build --release -p subby-mcp
+```
+
+### Commands
+
+```bash
+subby-mcp list                              # List all subscriptions
+subby-mcp add "Netflix" 15.99 monthly 2026-03-15
+subby-mcp update <id> --amount 17.99
+subby-mcp remove <id>
+subby-mcp toggle <id>                       # Pause/resume
+subby-mcp pay <sub-id> 2026-03-15 15.99     # Record payment
+subby-mcp skip <sub-id> 2026-03-15 15.99    # Skip payment
+subby-mcp categories                        # List categories
+subby-mcp add-category "Education" "#4f46e5" book
+subby-mcp upcoming --days 14                # Upcoming payments
+subby-mcp stats                             # Dashboard statistics
+subby-mcp export --output backup.json       # Export data
+subby-mcp import backup.json --clear        # Import data
+```
+
+The CLI shares the same database as the desktop app. Use `--db-path` or set `SUBBY_DB_PATH` to specify a custom database location.
+
+## AI Integration (MCP)
+
+Subby includes an [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server that lets AI assistants like Claude manage your subscriptions.
+
+### Build
+
+```bash
+cargo build --release -p subby-mcp
+```
+
+### Claude Desktop Configuration
+
+Add to your Claude Desktop `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "subby": {
+      "command": "/path/to/subby-mcp",
+      "args": []
+    }
+  }
+}
+```
+
+### Available Tools
+
+| Tool | Description |
+|------|-------------|
+| `add_subscription` | Add a new subscription |
+| `update_subscription` | Update an existing subscription |
+| `remove_subscription` | Delete a subscription |
+| `toggle_subscription` | Pause/resume a subscription |
+| `mark_payment_paid` | Record a payment as paid |
+| `skip_payment` | Skip a payment |
+| `add_category` | Create a new category |
+| `get_upcoming_payments` | Get upcoming payments within N days |
+| `get_spending_by_category` | Spending breakdown by category |
+| `export_data` | Export all data as JSON |
+| `import_data` | Import from JSON backup |
+
+### Available Resources
+
+| URI | Description |
+|-----|-------------|
+| `subby://subscriptions` | All subscriptions |
+| `subby://categories` | All categories |
+| `subby://settings` | Current settings |
+| `subby://cards` | Payment cards |
+| `subby://stats/dashboard` | Spending totals |
+| `subby://subscriptions/{id}` | Single subscription |
+| `subby://payments/{year}/{month}` | Monthly payments |
+
+See the [MCP Setup Guide](docs/guides/mcp-setup.md) for detailed configuration.
+
 ## Data Storage
 
 Your data stays on your device:
@@ -293,5 +378,5 @@ Contributions are welcome! Please read the [Contributing](CONTRIBUTING.md) guide
 ---
 
 <p align="center">
-  Maintained by <a href="https://github.com/ASF">ASF</a>
+  Maintained by <a href="https://github.com/AI-Strategic-Forum">AI Strategic Forum</a>
 </p>

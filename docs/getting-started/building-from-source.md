@@ -14,7 +14,7 @@ sudo apt install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patc
 ## Setup
 
 ```bash
-git clone https://github.com/ASF/Subby.git
+git clone https://github.com/AI-Strategic-Forum/Subby.git
 cd subby
 pnpm install
 pnpm tauri dev

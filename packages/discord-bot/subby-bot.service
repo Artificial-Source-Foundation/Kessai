@@ -1,6 +1,6 @@
 [Unit]
 Description=Subby Discord Bot - Subscription reminder notifications
-Documentation=https://github.com/ASF/Subby
+Documentation=https://github.com/AI-Strategic-Forum/Subby
 After=network-online.target
 Wants=network-online.target
 

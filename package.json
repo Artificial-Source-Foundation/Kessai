@@ -7,11 +7,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ASF/Subby.git"
+    "url": "https://github.com/AI-Strategic-Forum/Subby.git"
   },
-  "homepage": "https://github.com/ASF/Subby",
+  "homepage": "https://github.com/AI-Strategic-Forum/Subby",
   "bugs": {
-    "url": "https://github.com/ASF/Subby/issues"
+    "url": "https://github.com/AI-Strategic-Forum/Subby/issues"
   },
   "keywords": [
     "tauri",

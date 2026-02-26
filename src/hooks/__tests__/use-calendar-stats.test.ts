@@ -103,15 +103,21 @@ describe('useCalendarStats', () => {
     })
   })
 
-  it('returns calendar days for the month', () => {
+  it('returns calendar days for the month', async () => {
     const { result } = renderHook(() => useCalendarStats(currentDate))
 
-    // February 2024 has 29 days (leap year)
-    expect(result.current.calendarDays).toHaveLength(29)
+    await waitFor(() => {
+      // February 2024 has 29 days (leap year)
+      expect(result.current.calendarDays).toHaveLength(29)
+    })
   })
 
-  it('each calendar day has correct structure', () => {
+  it('each calendar day has correct structure', async () => {
     const { result } = renderHook(() => useCalendarStats(currentDate))
+
+    await waitFor(() => {
+      expect(result.current.calendarDays.length).toBeGreaterThan(0)
+    })
 
     result.current.calendarDays.forEach((day) => {
       expect(day).toHaveProperty('date')
@@ -125,8 +131,12 @@ describe('useCalendarStats', () => {
     })
   })
 
-  it('calculates month stats', () => {
+  it('calculates month stats', async () => {
     const { result } = renderHook(() => useCalendarStats(currentDate))
+
+    await waitFor(() => {
+      expect(result.current.monthStats).toBeDefined()
+    })
 
     const { monthStats } = result.current
 
@@ -138,8 +148,12 @@ describe('useCalendarStats', () => {
     expect(monthStats).toHaveProperty('comparisonToPrevMonth')
   })
 
-  it('excludes inactive subscriptions from payments', () => {
+  it('excludes inactive subscriptions from payments', async () => {
     const { result } = renderHook(() => useCalendarStats(currentDate))
+
+    await waitFor(() => {
+      expect(result.current.calendarDays.length).toBeGreaterThan(0)
+    })
 
     // Adobe CC is inactive, so it shouldn't appear
     const allPayments = result.current.calendarDays.flatMap((d) => d.payments)
@@ -148,8 +162,12 @@ describe('useCalendarStats', () => {
     expect(adobePayment).toBeUndefined()
   })
 
-  it('assigns payments to correct days based on billing_day', () => {
+  it('assigns payments to correct days based on billing_day', async () => {
     const { result } = renderHook(() => useCalendarStats(currentDate))
+
+    await waitFor(() => {
+      expect(result.current.calendarDays.length).toBeGreaterThan(0)
+    })
 
     // Netflix has billing_day 15
     const day15 = result.current.calendarDays.find((d) => d.dayOfMonth === 15)
@@ -164,8 +182,12 @@ describe('useCalendarStats', () => {
     expect(spotifyPayment?.amount).toBe(9.99)
   })
 
-  it('getPaymentsForDate returns correct payments', () => {
+  it('getPaymentsForDate returns correct payments', async () => {
     const { result } = renderHook(() => useCalendarStats(currentDate))
+
+    await waitFor(() => {
+      expect(result.current.calendarDays.length).toBeGreaterThan(0)
+    })
 
     const payments = result.current.getPaymentsForDate(new Date(2024, 1, 15))
     const netflixPayment = payments.find((p) => p.subscription.name === 'Netflix')
@@ -173,8 +195,12 @@ describe('useCalendarStats', () => {
     expect(netflixPayment).toBeDefined()
   })
 
-  it('returns empty payments for days without subscriptions', () => {
+  it('returns empty payments for days without subscriptions', async () => {
     const { result } = renderHook(() => useCalendarStats(currentDate))
+
+    await waitFor(() => {
+      expect(result.current.calendarDays.length).toBeGreaterThan(0)
+    })
 
     // Day 1 should have no payments
     const day1 = result.current.calendarDays.find((d) => d.dayOfMonth === 1)
@@ -182,7 +208,7 @@ describe('useCalendarStats', () => {
     expect(day1?.totalAmount).toBe(0)
   })
 
-  it('handles month with no active subscriptions', () => {
+  it('handles month with no active subscriptions', async () => {
     // Set all subscriptions to inactive
     useSubscriptionStore.setState({
       subscriptions: mockSubscriptions.map((s) => ({ ...s, is_active: false })),
@@ -191,6 +217,10 @@ describe('useCalendarStats', () => {
     })
 
     const { result } = renderHook(() => useCalendarStats(currentDate))
+
+    await waitFor(() => {
+      expect(result.current.monthStats).toBeDefined()
+    })
 
     expect(result.current.monthStats.totalAmount).toBe(0)
     expect(result.current.monthStats.paymentCount).toBe(0)
