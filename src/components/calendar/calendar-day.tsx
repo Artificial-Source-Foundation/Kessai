@@ -77,7 +77,7 @@ export const CalendarDay = memo(function CalendarDay({
       onClick={onClick}
       aria-label={ariaLabel}
       className={cn(
-        'border-border bg-background flex min-h-[100px] flex-col border p-2 text-left hover:bg-[var(--color-subtle-overlay)]',
+        'border-border bg-background flex min-h-[60px] flex-col border p-1 text-left hover:bg-[var(--color-subtle-overlay)] sm:min-h-[100px] sm:p-2',
         !isCurrentMonth && 'text-muted-foreground/40 bg-muted/50',
         isCurrentMonth && 'text-foreground',
         isToday && 'bg-primary/5',

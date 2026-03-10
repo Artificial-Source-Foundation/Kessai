@@ -196,7 +196,7 @@ export function Subscriptions() {
         {subscriptions.length > 0 && (
           <div className="flex flex-col gap-4">
             <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="relative w-[360px] max-w-full">
+              <div className="relative w-full sm:w-[360px] sm:max-w-full">
                 <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
                 <input
                   type="text"

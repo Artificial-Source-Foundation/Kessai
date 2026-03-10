@@ -163,7 +163,7 @@ export function CalendarPage() {
             {Array.from({ length: firstDayOffset }).map((_, i) => (
               <div
                 key={`empty-${i}`}
-                className="border-border flex min-h-[100px] flex-col gap-1 border bg-white/[0.01] p-2"
+                className="border-border flex min-h-[60px] flex-col gap-1 border bg-white/[0.01] p-1 sm:min-h-[100px] sm:p-2"
               />
             ))}
 

@@ -9,6 +9,7 @@ import {
   PanelLeft,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useMediaQuery } from '@/hooks/use-media-query'
 
 const SIDEBAR_WIDTH = 240
 const SIDEBAR_COLLAPSED_WIDTH = 60
@@ -31,6 +32,11 @@ export function Sidebar() {
     }
   })
 
+  const isDesktop = useMediaQuery('(min-width: 1024px)')
+
+  // On tablet (md to lg), always show collapsed; on desktop, respect user preference
+  const isCollapsed = !isDesktop || collapsed
+
   useEffect(() => {
     try {
       localStorage.setItem(SIDEBAR_KEY, String(collapsed))
@@ -41,12 +47,14 @@ export function Sidebar() {
 
   return (
     <aside
-      className="glass-sidebar flex h-screen flex-col transition-all duration-200"
-      style={{ width: collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH }}
+      className="glass-sidebar hidden h-screen flex-col transition-all duration-200 md:flex"
+      style={{
+        width: isCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH,
+      }}
     >
       {/* Header */}
       <div className="flex h-14 items-center justify-between px-4">
-        {!collapsed && (
+        {!isCollapsed && (
           <div className="flex items-center gap-2">
             <img
               src="/icon-transparent.png"
@@ -58,13 +66,15 @@ export function Sidebar() {
             </span>
           </div>
         )}
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          className="text-muted-foreground hover:text-foreground rounded-lg p-1.5 hover:bg-[var(--color-subtle-overlay)]"
-        >
-          {collapsed ? <PanelLeft size={18} /> : <PanelLeftClose size={18} />}
-        </button>
+        {isDesktop && (
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            className="text-muted-foreground hover:text-foreground rounded-lg p-1.5 hover:bg-[var(--color-subtle-overlay)]"
+          >
+            {collapsed ? <PanelLeft size={18} /> : <PanelLeftClose size={18} />}
+          </button>
+        )}
       </div>
 
       {/* Navigation */}
@@ -77,7 +87,7 @@ export function Sidebar() {
             className={({ isActive }) => cn('sidebar-link', isActive && 'sidebar-link-active')}
           >
             <Icon size={18} />
-            {!collapsed && <span>{label}</span>}
+            {!isCollapsed && <span>{label}</span>}
           </NavLink>
         ))}
       </nav>

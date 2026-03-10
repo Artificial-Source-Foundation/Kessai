@@ -1,0 +1,40 @@
+import { NavLink } from 'react-router-dom'
+import { LayoutDashboard, CreditCard, Calendar, Settings } from 'lucide-react'
+import { cn } from '@/lib/utils'
+
+const tabs = [
+  { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/subscriptions', icon: CreditCard, label: 'Subs' },
+  { to: '/calendar', icon: Calendar, label: 'Calendar' },
+  { to: '/settings', icon: Settings, label: 'Settings' },
+]
+
+export function BottomTabBar() {
+  return (
+    <nav
+      aria-label="Mobile navigation"
+      className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pt-1 pb-3 md:hidden"
+    >
+      <div className="flex w-full max-w-md items-center justify-around rounded-full border border-white/[0.06] bg-white/[0.04] px-2 py-1.5 backdrop-blur-xl">
+        {tabs.map(({ to, icon: Icon, label }) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={to === '/'}
+            className={({ isActive }) =>
+              cn(
+                'flex flex-col items-center gap-0.5 rounded-full px-4 py-1.5 transition-colors duration-150',
+                isActive ? 'bg-primary text-[#1a1a1a]' : 'active:text-foreground text-[#888]'
+              )
+            }
+          >
+            <Icon size={18} />
+            <span className="font-[family-name:var(--font-mono)] text-[9px] font-normal tracking-[1.5px] uppercase">
+              {label}
+            </span>
+          </NavLink>
+        ))}
+      </div>
+    </nav>
+  )
+}
