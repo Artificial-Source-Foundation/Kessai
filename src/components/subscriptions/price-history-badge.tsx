@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, memo } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 import dayjs from 'dayjs'
 import { TrendingUp, TrendingDown } from 'lucide-react'
 import { usePriceHistoryStore } from '@/stores/price-history-store'
@@ -19,7 +20,9 @@ export const PriceHistoryBadge = memo(function PriceHistoryBadge({
   const [showPopover, setShowPopover] = useState(false)
   const popoverRef = useRef<HTMLDivElement>(null)
   const badgeRef = useRef<HTMLButtonElement>(null)
-  const { getLatest, fetchBySubscription } = usePriceHistoryStore()
+  const { getLatest, fetchBySubscription } = usePriceHistoryStore(
+    useShallow((s) => ({ getLatest: s.getLatest, fetchBySubscription: s.fetchBySubscription }))
+  )
 
   useEffect(() => {
     getLatest(subscriptionId).then(setLatest)
@@ -92,7 +95,7 @@ export const PriceHistoryBadge = memo(function PriceHistoryBadge({
                 return (
                   <div
                     key={entry.id}
-                    className="border-border flex items-center justify-between rounded-lg border bg-white/[0.02] px-3 py-2"
+                    className="border-border flex items-center justify-between rounded-lg border bg-[var(--color-subtle-overlay)] px-3 py-2"
                   >
                     <div className="flex flex-col gap-0.5">
                       <div className="flex items-center gap-2">

@@ -26,9 +26,6 @@ const SettingsPage = lazy(() =>
 export default function App() {
   // Preload exchange rates on startup for multi-currency support
   useEffect(() => {
-    const unsubSettings = useSettingsStore.subscribe((state) => state.settings)
-    const unsubSubs = useSubscriptionStore.subscribe((state) => state.subscriptions)
-
     const loadRates = () => {
       const settings = useSettingsStore.getState().settings
       const subs = useSubscriptionStore.getState().subscriptions
@@ -41,6 +38,9 @@ export default function App() {
         preloadRates([...currencies])
       }
     }
+
+    const unsubSettings = useSettingsStore.subscribe(loadRates)
+    const unsubSubs = useSubscriptionStore.subscribe(loadRates)
 
     // Initial load after a short delay to let stores hydrate
     const timer = setTimeout(loadRates, 500)

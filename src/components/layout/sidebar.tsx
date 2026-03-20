@@ -61,21 +61,24 @@ export function Sidebar() {
           isCollapsed ? 'justify-center px-0' : 'justify-between px-4'
         )}
       >
-        <div
-          className={cn(
-            'flex items-center gap-2 overflow-hidden transition-opacity duration-200',
-            isCollapsed ? 'w-0 opacity-0' : 'opacity-100'
-          )}
-        >
+        {isCollapsed ? (
           <img
             src="/icon-transparent.png"
             alt="Subby"
             className="h-7 w-7 shrink-0 object-contain"
           />
-          <span className="gradient-text font-heading text-lg font-bold tracking-tight whitespace-nowrap">
-            Subby
-          </span>
-        </div>
+        ) : (
+          <div className="flex items-center gap-2 overflow-hidden">
+            <img
+              src="/icon-transparent.png"
+              alt="Subby"
+              className="h-7 w-7 shrink-0 object-contain"
+            />
+            <span className="gradient-text font-heading text-lg font-bold tracking-tight whitespace-nowrap">
+              Subby
+            </span>
+          </div>
+        )}
         {isDesktop && (
           <button
             onClick={() => setCollapsed(!collapsed)}

@@ -175,13 +175,19 @@ impl DataManagementService {
                 .unwrap_or_else(|_| "[1,3,7]".to_string());
 
             tx.execute(
-                "UPDATE settings SET theme = ?1, currency = ?2, notification_enabled = ?3, notification_days_before = ?4, monthly_budget = ?5 WHERE id = 'singleton'",
+                "UPDATE settings SET theme = ?1, currency = ?2, notification_enabled = ?3, notification_days_before = ?4, monthly_budget = ?5, notification_advance_days = ?6, notification_time = ?7, reduce_motion = ?8, enable_transitions = ?9, enable_hover_effects = ?10, animation_speed = ?11 WHERE id = 'singleton'",
                 params![
                     theme,
                     data.settings.currency,
                     if data.settings.notification_enabled { 1 } else { 0 },
                     notification_days,
                     data.settings.monthly_budget,
+                    data.settings.notification_advance_days,
+                    data.settings.notification_time,
+                    if data.settings.reduce_motion { 1 } else { 0 },
+                    if data.settings.enable_transitions { 1 } else { 0 },
+                    if data.settings.enable_hover_effects { 1 } else { 0 },
+                    data.settings.animation_speed,
                 ],
             )?;
 

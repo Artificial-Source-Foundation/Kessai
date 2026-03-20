@@ -45,8 +45,33 @@ pub struct BackupSettings {
     pub currency: String,
     pub notification_enabled: bool,
     pub notification_days_before: Vec<i32>,
+    #[serde(default = "default_notification_advance_days")]
+    pub notification_advance_days: i32,
+    #[serde(default = "default_notification_time")]
+    pub notification_time: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub monthly_budget: Option<f64>,
+    #[serde(default)]
+    pub reduce_motion: bool,
+    #[serde(default = "default_true")]
+    pub enable_transitions: bool,
+    #[serde(default = "default_true")]
+    pub enable_hover_effects: bool,
+    #[serde(default = "default_animation_speed")]
+    pub animation_speed: String,
+}
+
+fn default_notification_advance_days() -> i32 {
+    1
+}
+fn default_notification_time() -> String {
+    "09:00".to_string()
+}
+fn default_true() -> bool {
+    true
+}
+fn default_animation_speed() -> String {
+    "normal".to_string()
 }
 
 impl From<&Settings> for BackupSettings {
@@ -56,7 +81,13 @@ impl From<&Settings> for BackupSettings {
             currency: s.currency.clone(),
             notification_enabled: s.notification_enabled,
             notification_days_before: s.notification_days_before.clone(),
+            notification_advance_days: s.notification_advance_days,
+            notification_time: s.notification_time.clone(),
             monthly_budget: s.monthly_budget,
+            reduce_motion: s.reduce_motion,
+            enable_transitions: s.enable_transitions,
+            enable_hover_effects: s.enable_hover_effects,
+            animation_speed: s.animation_speed.as_str().to_string(),
         }
     }
 }

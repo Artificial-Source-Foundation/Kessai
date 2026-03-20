@@ -40,7 +40,7 @@ export const SubscriptionsGridView = memo(function SubscriptionsGridView({
   canMarkAsPaid,
 }: SubscriptionsGridViewProps) {
   return (
-    <div className="stagger-children grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+    <div className="stagger-children grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
       {subscriptions.map((sub) => {
         const category = getCategory(sub.category_id)
         return (

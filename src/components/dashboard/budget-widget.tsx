@@ -25,10 +25,10 @@ export const BudgetWidget = memo(function BudgetWidget({
   }, [budget, currentSpend])
 
   const barColor =
-    level === 'over' ? 'bg-red-500' : level === 'warning' ? 'bg-amber-500' : 'bg-emerald-500'
+    level === 'over' ? 'bg-destructive' : level === 'warning' ? 'bg-warning' : 'bg-success'
 
   const textColor =
-    level === 'over' ? 'text-red-400' : level === 'warning' ? 'text-amber-400' : 'text-emerald-400'
+    level === 'over' ? 'text-destructive' : level === 'warning' ? 'text-warning' : 'text-success'
 
   return (
     <div className="glass-card w-full p-6">

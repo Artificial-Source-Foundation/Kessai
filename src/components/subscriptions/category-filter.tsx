@@ -39,7 +39,7 @@ export const CategoryFilter = memo(function CategoryFilter({
       <button
         onClick={handleClearAll}
         aria-pressed={selectedIds.length === 0}
-        className={`rounded-full border px-3 py-1.5 font-[family-name:var(--font-mono)] text-[11px] tracking-wider uppercase transition-colors ${
+        className={`rounded-none border px-3 py-1.5 font-[family-name:var(--font-mono)] text-[11px] tracking-wider uppercase transition-colors ${
           selectedIds.length === 0
             ? 'bg-primary text-primary-foreground border-primary'
             : 'text-muted-foreground border-border hover:border-border-hover hover:text-foreground bg-transparent'
@@ -58,7 +58,7 @@ export const CategoryFilter = memo(function CategoryFilter({
             key={category.id}
             onClick={() => handleToggle(category.id)}
             aria-pressed={isSelected}
-            className={`flex items-center gap-2 rounded-full border px-3 py-1.5 font-[family-name:var(--font-mono)] text-[11px] tracking-wider uppercase transition-colors ${
+            className={`flex items-center gap-2 rounded-none border px-3 py-1.5 font-[family-name:var(--font-mono)] text-[11px] tracking-wider uppercase transition-colors ${
               isSelected
                 ? 'bg-primary text-primary-foreground border-primary'
                 : 'text-muted-foreground border-border hover:border-border-hover hover:text-foreground bg-transparent'

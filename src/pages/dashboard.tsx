@@ -83,7 +83,7 @@ export function Dashboard() {
   }
 
   return (
-    <div className="animate-fade-in-up flex flex-col space-y-6">
+    <div className="animate-fade-in-up flex min-h-full flex-col space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex flex-col gap-1">
           <h2 className="text-2xl font-bold tracking-tight">Dashboard</h2>
@@ -159,7 +159,7 @@ export function Dashboard() {
                 <span className="text-foreground min-w-[120px] font-[family-name:var(--font-mono)] text-xs">
                   {cat.name}
                 </span>
-                <div className="relative h-1.5 flex-1 overflow-hidden rounded-sm bg-white/[0.04]">
+                <div className="relative h-1.5 flex-1 overflow-hidden rounded-sm bg-[var(--color-subtle-overlay)]">
                   <div
                     className="absolute inset-y-0 left-0 rounded-sm"
                     style={{

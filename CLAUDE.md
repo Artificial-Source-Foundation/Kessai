@@ -32,9 +32,6 @@
 | `src/components/subscriptions/` | Subscription CRUD                                     |
 | `src/components/settings/`      | Settings components                                   |
 | `src/components/layout/`        | Layout components (sidebar, app shell)                |
-| `src/components/skeletons/`     | Skeleton loading state components                     |
-| `src/components/payment-cards/` | Payment card management                               |
-| `src/components/charts/`        | Chart components (donut, trend)                       |
 | `src/pages/`                    | Route-level page components                           |
 | `src/hooks/`                    | Custom React hooks                                    |
 | `src/stores/`                   | Zustand state stores                                  |

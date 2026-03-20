@@ -366,7 +366,7 @@ function FormatInfo({
   description: string
 }) {
   return (
-    <div className="border-border flex items-start gap-3 rounded-lg border bg-white/[0.02] px-3 py-2.5">
+    <div className="border-border flex items-start gap-3 rounded-lg border bg-[var(--color-subtle-overlay)] px-3 py-2.5">
       <span className="text-muted-foreground mt-0.5">{icon}</span>
       <div>
         <p className="text-foreground text-xs font-medium">{title}</p>
@@ -403,7 +403,7 @@ function MappingStep({
 
   return (
     <div className="flex flex-col gap-5 py-4">
-      <div className="border-border rounded-lg border bg-white/[0.02] p-3">
+      <div className="border-border rounded-lg border bg-[var(--color-subtle-overlay)] p-3">
         <div className="flex items-start gap-2">
           <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-400" />
           <p className="text-muted-foreground text-xs">
@@ -430,7 +430,7 @@ function MappingStep({
               >
                 <option value="">-- Not mapped --</option>
                 {headers.map((header, i) => (
-                  <option key={i} value={i}>
+                  <option key={`col-${header}-${i}`} value={i}>
                     {header}
                   </option>
                 ))}
@@ -503,7 +503,7 @@ function PreviewStep({
           </p>
           <div className="max-h-20 overflow-y-auto">
             {result.errors.slice(0, 5).map((err, i) => (
-              <p key={i} className="text-muted-foreground text-[11px]">
+              <p key={`error-${i}-${err.slice(0, 20)}`} className="text-muted-foreground text-[11px]">
                 {err}
               </p>
             ))}
@@ -518,7 +518,7 @@ function PreviewStep({
 
       {/* Duplicate handling */}
       {duplicateCount > 0 && (
-        <div className="border-border rounded-lg border bg-white/[0.02] p-3">
+        <div className="border-border rounded-lg border bg-[var(--color-subtle-overlay)] p-3">
           <p className="text-foreground mb-2 text-xs font-medium">
             {duplicateCount} duplicate{duplicateCount !== 1 ? 's' : ''} found
           </p>
@@ -552,7 +552,7 @@ function PreviewStep({
         <div className="overflow-x-auto">
           <table className="w-full min-w-[500px]">
             <thead>
-              <tr className="border-border border-b bg-white/[0.02]">
+              <tr className="border-border border-b bg-[var(--color-subtle-overlay)]">
                 <th className="w-10 px-3 py-2.5">
                   <button
                     onClick={onToggleAll}
@@ -588,9 +588,9 @@ function PreviewStep({
 
                 return (
                   <tr
-                    key={i}
+                    key={`sub-${i}-${sub.name}`}
                     className={`transition-colors ${
-                      isSelected ? 'bg-white/[0.02]' : 'opacity-40'
+                      isSelected ? 'bg-[var(--color-subtle-overlay)]' : 'opacity-40'
                     } ${isDuplicate ? 'bg-amber-500/5' : ''}`}
                   >
                     <td className="px-3 py-2.5">

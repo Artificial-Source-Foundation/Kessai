@@ -274,6 +274,9 @@ export function SubscriptionForm({
           </p>
         )}
 
+        {/* ── Billing ───────────────────────────────────────── */}
+        <div className="border-border border-t pt-4 mt-4" />
+
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="billing_cycle">Billing Cycle *</Label>
@@ -344,6 +347,9 @@ export function SubscriptionForm({
             )}
           />
         </div>
+
+        {/* ── Advanced ──────────────────────────────────────── */}
+        <div className="border-border border-t pt-4 mt-4" />
 
         {/* Free Trial Toggle */}
         <div className="border-border rounded-lg border bg-[var(--color-subtle-overlay)] p-4">

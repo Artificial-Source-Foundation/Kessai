@@ -390,10 +390,13 @@ export function SubscriptionBento({
     })
   }, [sortedSubscriptions, containerSize, getConvertedAmount])
 
-  const getCategory = (categoryId: string | null) => {
-    if (!categoryId) return undefined
-    return categories.find((c) => c.id === categoryId)
-  }
+  const getCategory = useCallback(
+    (categoryId: string | null) => {
+      if (!categoryId) return undefined
+      return categories.find((c) => c.id === categoryId)
+    },
+    [categories]
+  )
 
   if (subscriptions.length === 0) {
     return (

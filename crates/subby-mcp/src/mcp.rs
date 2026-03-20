@@ -588,6 +588,9 @@ impl ServerHandler for SubbyMcp {
                 }
                 let year: i32 = parts[0].parse().map_err(|_| mcp_err("Invalid year"))?;
                 let month: u32 = parts[1].parse().map_err(|_| mcp_err("Invalid month"))?;
+                if month == 0 || month > 12 {
+                    return Err(mcp_err("Month must be 1-12"));
+                }
                 let payments = self
                     .core
                     .payments()
