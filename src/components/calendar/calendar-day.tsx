@@ -136,7 +136,7 @@ export const CalendarDay = memo(function CalendarDay({
                   {p.subscription.name}
                 </span>
                 <span
-                  className="shrink-0 font-[family-name:var(--font-mono)] text-[8px] font-bold"
+                  className="hidden shrink-0 font-[family-name:var(--font-mono)] text-[8px] font-bold sm:inline"
                   style={{ color }}
                 >
                   {formatCurrency(p.amount, currency)}

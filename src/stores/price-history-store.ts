@@ -29,8 +29,13 @@ export const usePriceHistoryStore = create<PriceHistoryState>((set) => ({
   },
 
   fetchBySubscription: async (subscriptionId: string) => {
-    const changes = await invoke<PriceChange[]>('list_price_history', { subscriptionId })
-    return changes
+    try {
+      const changes = await invoke<PriceChange[]>('list_price_history', { subscriptionId })
+      return changes
+    } catch (e) {
+      console.error('Failed to fetch price history for subscription:', e)
+      return []
+    }
   },
 
   getLatest: async (subscriptionId: string) => {

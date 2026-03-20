@@ -62,6 +62,7 @@ blob-report/
 .continue/
 .claude/
 .worktrees/
+.swarm/
 
 # Package manager
 .pnpm-store/

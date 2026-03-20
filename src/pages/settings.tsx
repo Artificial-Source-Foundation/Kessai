@@ -67,7 +67,7 @@ export function SettingsPage() {
         <p className="text-muted-foreground text-sm">Customize your Subby experience</p>
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid auto-rows-fr gap-6 lg:grid-cols-2">
         <div className="glass-card flex flex-col gap-6 p-6">
           <div className="flex flex-col gap-1">
             <h2 className="text-foreground text-lg font-bold">Appearance</h2>

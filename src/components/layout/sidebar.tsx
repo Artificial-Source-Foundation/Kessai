@@ -47,25 +47,35 @@ export function Sidebar() {
 
   return (
     <aside
-      className="glass-sidebar hidden h-screen flex-col transition-all duration-200 md:flex"
+      className="glass-sidebar hidden h-screen flex-col md:flex"
       style={{
         width: isCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH,
+        minWidth: isCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH,
+        transition: 'width 0.25s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
       }}
     >
       {/* Header */}
-      <div className="flex h-14 items-center justify-between px-4">
-        {!isCollapsed && (
-          <div className="flex items-center gap-2">
-            <img
-              src="/icon-transparent.png"
-              alt="Subby"
-              className="h-7 w-7 shrink-0 object-contain"
-            />
-            <span className="gradient-text font-heading text-lg font-bold tracking-tight">
-              Subby
-            </span>
-          </div>
+      <div
+        className={cn(
+          'flex h-14 items-center',
+          isCollapsed ? 'justify-center px-0' : 'justify-between px-4'
         )}
+      >
+        <div
+          className={cn(
+            'flex items-center gap-2 overflow-hidden transition-opacity duration-200',
+            isCollapsed ? 'w-0 opacity-0' : 'opacity-100'
+          )}
+        >
+          <img
+            src="/icon-transparent.png"
+            alt="Subby"
+            className="h-7 w-7 shrink-0 object-contain"
+          />
+          <span className="gradient-text font-heading text-lg font-bold tracking-tight whitespace-nowrap">
+            Subby
+          </span>
+        </div>
         {isDesktop && (
           <button
             onClick={() => setCollapsed(!collapsed)}
@@ -84,10 +94,27 @@ export function Sidebar() {
             key={to}
             to={to}
             end={to === '/'}
-            className={({ isActive }) => cn('sidebar-link', isActive && 'sidebar-link-active')}
+            className={({ isActive }) =>
+              cn(
+                'sidebar-link',
+                isCollapsed && 'sidebar-link-collapsed',
+                isActive && (isCollapsed ? 'sidebar-link-active-collapsed' : 'sidebar-link-active')
+              )
+            }
+            title={isCollapsed ? label : undefined}
           >
-            <Icon size={18} />
-            {!isCollapsed && <span>{label}</span>}
+            <Icon size={18} className="shrink-0" />
+            <span
+              className={cn(
+                'whitespace-nowrap transition-opacity duration-200',
+                isCollapsed ? 'w-0 overflow-hidden opacity-0' : 'opacity-100'
+              )}
+            >
+              {label}
+            </span>
+            {isCollapsed && (
+              <span className="sidebar-tooltip">{label}</span>
+            )}
           </NavLink>
         ))}
       </nav>

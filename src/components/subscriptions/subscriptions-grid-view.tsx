@@ -48,7 +48,7 @@ export const SubscriptionsGridView = memo(function SubscriptionsGridView({
             key={sub.id}
             className={`glass-card hover-lift group relative overflow-hidden ${!sub.is_active ? 'opacity-60' : ''}`}
           >
-            <div className="bg-card/90 absolute top-2 right-2 z-10 flex gap-1 rounded-lg p-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+            <div className="absolute top-2 right-2 z-10 flex gap-1 rounded-lg bg-[var(--color-surface-elevated)] p-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
               <button
                 onClick={() => onEdit(sub)}
                 aria-label={`Edit ${sub.name}`}
@@ -96,7 +96,7 @@ export const SubscriptionsGridView = memo(function SubscriptionsGridView({
                   {sub.name}
                 </h3>
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <p className="text-dimmed font-[family-name:var(--font-mono)] text-[10px] tracking-wider uppercase">
+                  <p className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px] tracking-wider uppercase">
                     {BILLING_CYCLE_LABELS[sub.billing_cycle]}
                   </p>
                   {sub.status === 'trial' && (
@@ -112,7 +112,7 @@ export const SubscriptionsGridView = memo(function SubscriptionsGridView({
                     <p className="text-foreground font-[family-name:var(--font-heading)] text-[28px] leading-none font-bold">
                       {formatCurrency(sub.amount, (sub.currency || currency) as CurrencyCode)}
                     </p>
-                    <span className="text-dimmed font-[family-name:var(--font-mono)] text-xs">
+                    <span className="text-muted-foreground font-[family-name:var(--font-mono)] text-xs">
                       /{sub.billing_cycle === 'yearly' ? 'yr' : 'mo'}
                     </span>
                   </div>

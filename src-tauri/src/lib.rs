@@ -48,6 +48,12 @@ fn save_logo(
 ) -> Result<String, String> {
     let logos_dir = get_logos_dir(&app_handle);
     let filename = format!("{}.webp", subscription_id);
+
+    // Validate filename to prevent path traversal
+    if !is_valid_logo_filename(&filename) {
+        return Err("Invalid subscription ID for logo filename".to_string());
+    }
+
     let dest_path = logos_dir.join(&filename);
 
     let img = ImageReader::open(&source_path)

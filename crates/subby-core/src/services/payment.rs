@@ -23,7 +23,7 @@ impl PaymentService {
              FROM payments ORDER BY paid_at DESC",
         )?;
 
-        let rows = stmt.query_map([], |row| Self::map_payment(row))?;
+        let rows = stmt.query_map([], Self::map_payment)?;
         Ok(rows.collect::<std::result::Result<Vec<_>, _>>()?)
     }
 
@@ -44,7 +44,7 @@ impl PaymentService {
              ORDER BY due_date ASC",
         )?;
 
-        let rows = stmt.query_map(params![start_date, end_date], |row| Self::map_payment(row))?;
+        let rows = stmt.query_map(params![start_date, end_date], Self::map_payment)?;
         Ok(rows.collect::<std::result::Result<Vec<_>, _>>()?)
     }
 
@@ -56,7 +56,7 @@ impl PaymentService {
              FROM payments WHERE subscription_id = ?1 ORDER BY paid_at DESC",
         )?;
 
-        let rows = stmt.query_map(params![subscription_id], |row| Self::map_payment(row))?;
+        let rows = stmt.query_map(params![subscription_id], Self::map_payment)?;
         Ok(rows.collect::<std::result::Result<Vec<_>, _>>()?)
     }
 
@@ -243,7 +243,7 @@ impl PaymentService {
             "SELECT id, subscription_id, amount, paid_at, due_date, status, notes, created_at
              FROM payments WHERE id = ?1",
             params![id],
-            |row| Self::map_payment(row),
+            Self::map_payment,
         )
         .map_err(|e| match e {
             rusqlite::Error::QueryReturnedNoRows => {

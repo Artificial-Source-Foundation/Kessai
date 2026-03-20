@@ -21,7 +21,7 @@ impl PaymentCardService {
              FROM payment_cards ORDER BY name",
         )?;
 
-        let rows = stmt.query_map([], |row| Self::map_card(row))?;
+        let rows = stmt.query_map([], Self::map_card)?;
         Ok(rows.collect::<std::result::Result<Vec<_>, _>>()?)
     }
 
@@ -32,7 +32,7 @@ impl PaymentCardService {
             "SELECT id, name, card_type, last_four, color, credit_limit, created_at
              FROM payment_cards WHERE id = ?1",
             params![id],
-            |row| Self::map_card(row),
+            Self::map_card,
         )
         .map_err(|e| match e {
             rusqlite::Error::QueryReturnedNoRows => {

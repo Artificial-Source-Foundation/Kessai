@@ -137,25 +137,25 @@ export const SubscriptionsListView = memo(function SubscriptionsListView({
                     </div>
                   </td>
                   <td className="px-4 py-4">
-                    <div className="flex items-center justify-end gap-1">
+                    <div className="flex items-center justify-end gap-1 md:opacity-0 md:transition-[opacity] md:group-hover:opacity-100 md:focus-within:opacity-100">
                       <button
                         onClick={() => onEdit(sub)}
                         aria-label={`Edit ${sub.name}`}
-                        className="text-muted-foreground hover:bg-accent hover:text-foreground rounded-lg p-2 opacity-0 transition-[opacity,background-color,color] group-hover:opacity-100 focus:opacity-100"
+                        className="text-muted-foreground hover:bg-accent hover:text-foreground rounded-lg p-2 transition-colors"
                       >
                         <Pencil className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => onToggleActive(sub)}
                         aria-label={sub.is_active ? `Pause ${sub.name}` : `Activate ${sub.name}`}
-                        className="text-muted-foreground hover:bg-accent hover:text-foreground rounded-lg p-2 opacity-0 transition-[opacity,background-color,color] group-hover:opacity-100 focus:opacity-100"
+                        className="text-muted-foreground hover:bg-accent hover:text-foreground rounded-lg p-2 transition-colors"
                       >
                         <Power className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => onDelete(sub)}
                         aria-label={`Delete ${sub.name}`}
-                        className="text-muted-foreground hover:bg-destructive/15 hover:text-destructive rounded-lg p-2 opacity-0 transition-[opacity,background-color,color] group-hover:opacity-100 focus:opacity-100"
+                        className="text-muted-foreground hover:bg-destructive/15 hover:text-destructive rounded-lg p-2 transition-colors"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -168,7 +168,7 @@ export const SubscriptionsListView = memo(function SubscriptionsListView({
         </table>
       </div>
       <div className="border-border mt-auto border-t bg-white/[0.02] px-4 py-3">
-        <p className="text-dimmed font-[family-name:var(--font-mono)] text-[11px]">
+        <p className="text-muted-foreground font-[family-name:var(--font-mono)] text-[11px]">
           {subscriptions.length} of {totalCount} subscriptions
         </p>
       </div>

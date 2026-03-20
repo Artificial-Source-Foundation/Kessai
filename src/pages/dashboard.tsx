@@ -97,7 +97,7 @@ export function Dashboard() {
         )}
       </header>
 
-      <section className="stagger-children grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
+      <section className="stagger-children grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5 lg:grid-cols-4 xl:gap-6">
         <StatCard
           label="Monthly Subscriptions"
           value={formatCurrency(monthlySubsTotal, currency)}

@@ -331,7 +331,7 @@ function UploadStep({
       />
 
       <div className="flex flex-col gap-3">
-        <p className="text-dimmed font-[family-name:var(--font-mono)] text-[10px] tracking-wider uppercase">
+        <p className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px] tracking-wider uppercase">
           Supported Formats
         </p>
         <div className="flex flex-col gap-2">
@@ -485,7 +485,7 @@ function PreviewStep({
     <div className="flex flex-col gap-4 py-2">
       {/* Source badge */}
       <div className="flex items-center gap-3">
-        <span className="text-dimmed font-[family-name:var(--font-mono)] text-[10px] tracking-wider uppercase">
+        <span className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px] tracking-wider uppercase">
           Source
         </span>
         <span className="bg-primary/10 text-primary rounded px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] font-medium tracking-wider uppercase">

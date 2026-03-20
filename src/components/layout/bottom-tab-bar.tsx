@@ -15,7 +15,7 @@ export function BottomTabBar() {
       aria-label="Mobile navigation"
       className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pt-1 pb-3 md:hidden"
     >
-      <div className="flex w-full max-w-md items-center justify-around rounded-full border border-white/[0.06] bg-white/[0.04] px-2 py-1.5 backdrop-blur-xl">
+      <div className="border-border bg-card flex w-full max-w-md items-center justify-around rounded-full border px-2 py-1.5 backdrop-blur-xl">
         {tabs.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
@@ -24,7 +24,9 @@ export function BottomTabBar() {
             className={({ isActive }) =>
               cn(
                 'flex flex-col items-center gap-0.5 rounded-full px-4 py-1.5 transition-colors duration-150',
-                isActive ? 'bg-primary text-[#1a1a1a]' : 'active:text-foreground text-[#888]'
+                isActive
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground active:text-foreground'
               )
             }
           >

@@ -30,29 +30,48 @@ export const usePaymentCardStore = create<PaymentCardState>((set, get) => ({
   },
 
   add: async (data) => {
-    const card = await invoke<PaymentCard>('create_payment_card', {
-      data: {
-        name: data.name,
-        card_type: data.card_type,
-        last_four: data.last_four || null,
-        color: data.color,
-        credit_limit: data.credit_limit || null,
-      },
-    })
-    set((state) => ({ cards: [...state.cards, card] }))
-    return card
+    try {
+      const card = await invoke<PaymentCard>('create_payment_card', {
+        data: {
+          name: data.name,
+          card_type: data.card_type,
+          last_four: data.last_four || null,
+          color: data.color,
+          credit_limit: data.credit_limit || null,
+        },
+      })
+      set((state) => ({ cards: [...state.cards, card] }))
+      return card
+    } catch (error) {
+      console.error('Failed to add payment card:', error)
+      throw error
+    }
   },
 
   update: async (id, data) => {
-    const updated = await invoke<PaymentCard>('update_payment_card', { id, data })
-    set((state) => ({
-      cards: state.cards.map((c) => (c.id === id ? updated : c)),
-    }))
+    const previousCards = get().cards
+    try {
+      const updated = await invoke<PaymentCard>('update_payment_card', { id, data })
+      set((state) => ({
+        cards: state.cards.map((c) => (c.id === id ? updated : c)),
+      }))
+    } catch (error) {
+      set({ cards: previousCards })
+      console.error('Failed to update payment card:', error)
+      throw error
+    }
   },
 
   remove: async (id) => {
-    await invoke('delete_payment_card', { id })
+    const previousCards = get().cards
     set((state) => ({ cards: state.cards.filter((c) => c.id !== id) }))
+    try {
+      await invoke('delete_payment_card', { id })
+    } catch (error) {
+      set({ cards: previousCards })
+      console.error('Failed to remove payment card:', error)
+      throw error
+    }
   },
 
   getCard: (id) => {

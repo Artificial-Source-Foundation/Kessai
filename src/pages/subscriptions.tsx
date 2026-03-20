@@ -321,7 +321,7 @@ export function Subscriptions() {
                 </Select>
               </div>
               <div
-                className="border-border flex rounded-lg border bg-[#111111] p-1"
+                className="border-border flex rounded-lg border bg-[var(--color-surface-elevated)] p-1"
                 role="group"
                 aria-label="View mode"
               >
@@ -373,8 +373,8 @@ export function Subscriptions() {
         )}
 
         {subscriptions.length === 0 ? (
-          <div className="glass-card flex flex-col items-center justify-center py-16">
-            <div className="bg-primary/10 mb-4 rounded-full p-4">
+          <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-[var(--color-border-hover)] bg-[var(--color-card)] py-16 backdrop-blur-xl">
+            <div className="bg-primary/10 mb-4 animate-pulse rounded-full p-4">
               <Plus className="text-primary h-8 w-8" />
             </div>
             <h2 className="text-foreground mb-2 text-xl font-semibold">No subscriptions yet</h2>

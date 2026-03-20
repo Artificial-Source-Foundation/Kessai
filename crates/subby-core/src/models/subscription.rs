@@ -32,6 +32,7 @@ impl BillingCycle {
         }
     }
 
+    #[allow(clippy::should_implement_trait)]
     pub fn from_str(s: &str) -> Option<Self> {
         match s {
             "weekly" => Some(BillingCycle::Weekly),
@@ -67,6 +68,7 @@ impl SubscriptionStatus {
         }
     }
 
+    #[allow(clippy::should_implement_trait)]
     pub fn from_str(s: &str) -> Option<Self> {
         match s {
             "trial" => Some(SubscriptionStatus::Trial),

@@ -267,6 +267,10 @@ fn table_exists(conn: &Connection, table: &str) -> bool {
 }
 
 fn column_exists(conn: &Connection, table: &str, column: &str) -> bool {
+    // Validate table name to prevent SQL injection (PRAGMA does not support parameters)
+    if !table.chars().all(|c| c.is_alphanumeric() || c == '_') {
+        return false;
+    }
     let sql = format!("PRAGMA table_info({})", table);
     let mut stmt = match conn.prepare(&sql) {
         Ok(s) => s,
@@ -276,11 +280,9 @@ fn column_exists(conn: &Connection, table: &str, column: &str) -> bool {
         Ok(r) => r,
         Err(_) => return false,
     };
-    for name in rows {
-        if let Ok(name) = name {
-            if name == column {
-                return true;
-            }
+    for name in rows.flatten() {
+        if name == column {
+            return true;
         }
     }
     false

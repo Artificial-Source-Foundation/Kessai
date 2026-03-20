@@ -75,7 +75,7 @@ export const PriceHistoryBadge = memo(function PriceHistoryBadge({
       {showPopover && (
         <div
           ref={popoverRef}
-          className="border-border absolute top-full right-0 z-50 mt-2 w-72 rounded-xl border bg-[#0a0a0a] p-4 shadow-xl"
+          className="border-border bg-popover text-popover-foreground absolute top-full right-0 z-50 mt-2 w-72 rounded-xl border p-4 shadow-xl"
         >
           <h4 className="text-foreground mb-3 font-[family-name:var(--font-heading)] text-sm font-bold">
             Price History
@@ -104,7 +104,7 @@ export const PriceHistoryBadge = memo(function PriceHistoryBadge({
                           {formatCurrency(entry.new_amount, currency)}
                         </span>
                       </div>
-                      <span className="text-dimmed font-[family-name:var(--font-mono)] text-[9px]">
+                      <span className="text-muted-foreground font-[family-name:var(--font-mono)] text-[9px]">
                         {dayjs(entry.changed_at).format('MMM D, YYYY')}
                       </span>
                     </div>

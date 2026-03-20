@@ -144,7 +144,7 @@ export function NotificationSettings({
         <>
           {/* Advance notice selector */}
           <div className="flex flex-col gap-3">
-            <span className="text-dimmed font-[family-name:var(--font-mono)] text-[10px] tracking-widest uppercase">
+            <span className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px] tracking-widest uppercase">
               Advance Notice
             </span>
             <Select
@@ -169,7 +169,7 @@ export function NotificationSettings({
 
           {/* Time picker */}
           <div className="flex flex-col gap-3">
-            <span className="text-dimmed font-[family-name:var(--font-mono)] text-[10px] tracking-widest uppercase">
+            <span className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px] tracking-widest uppercase">
               Notification Time
             </span>
             <Input

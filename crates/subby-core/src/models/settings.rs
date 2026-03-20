@@ -17,6 +17,7 @@ impl Theme {
         }
     }
 
+    #[allow(clippy::should_implement_trait)]
     pub fn from_str(s: &str) -> Option<Self> {
         match s {
             "dark" => Some(Theme::Dark),
@@ -44,6 +45,7 @@ impl AnimationSpeed {
         }
     }
 
+    #[allow(clippy::should_implement_trait)]
     pub fn from_str(s: &str) -> Option<Self> {
         match s {
             "slow" => Some(AnimationSpeed::Slow),

@@ -87,7 +87,7 @@ function CustomTooltipContent({
   const monthLabel = dayjs(dataPoint.month + '-01').format('MMMM YYYY')
 
   return (
-    <div className="rounded-lg border border-white/[0.06] bg-[#0a0a0a] px-3 py-2 shadow-lg">
+    <div className="glass-card px-3 py-2 shadow-lg">
       <p className="text-muted-foreground mb-1 font-[family-name:var(--font-mono)] text-[10px] tracking-wider uppercase">
         {monthLabel}
       </p>
@@ -196,7 +196,7 @@ export const SpendingTrends = memo(function SpendingTrends({ currency }: Spendin
                 <stop offset="100%" stopColor="#bf5af2" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--grid-line-color)" vertical={false} />
             <XAxis
               dataKey="label"
               axisLine={false}

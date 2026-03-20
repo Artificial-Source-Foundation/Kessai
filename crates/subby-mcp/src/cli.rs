@@ -220,6 +220,7 @@ fn cmd_list(core: &SubbyCore) -> anyhow::Result<()> {
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 fn cmd_add(
     core: &SubbyCore,
     name: String,

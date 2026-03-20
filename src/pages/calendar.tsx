@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import dayjs from 'dayjs'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { CalendarDay } from '@/components/calendar/calendar-day'
 import { CalendarDayPanel } from '@/components/calendar/calendar-day-panel'
 import { MonthSummaryHeader } from '@/components/calendar/month-summary-header'
@@ -11,7 +12,8 @@ import { useSettingsStore } from '@/stores/settings-store'
 import type { CurrencyCode } from '@/lib/currency'
 import type { Subscription } from '@/types/subscription'
 
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const WEEKDAYS_SHORT = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+const WEEKDAYS_FULL = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 export function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -149,21 +151,22 @@ export function CalendarPage() {
 
         <div className="glass-card flex flex-1 flex-col overflow-hidden p-1">
           <div className="border-border grid grid-cols-7 border-b">
-            {WEEKDAYS.map((day) => (
+            {WEEKDAYS_FULL.map((day, i) => (
               <div
                 key={day}
                 className="text-muted-foreground py-3 text-center font-[family-name:var(--font-mono)] text-[10px] font-normal tracking-widest uppercase"
               >
-                {day}
+                <span className="hidden sm:inline">{day}</span>
+                <span className="sm:hidden">{WEEKDAYS_SHORT[i]}</span>
               </div>
             ))}
           </div>
 
-          <div className="grid flex-1 grid-cols-7 grid-rows-5 overflow-y-auto">
+          <div className="grid flex-1 grid-cols-7 auto-rows-fr overflow-y-auto">
             {Array.from({ length: firstDayOffset }).map((_, i) => (
               <div
                 key={`empty-${i}`}
-                className="border-border flex min-h-[60px] flex-col gap-1 border bg-white/[0.01] p-1 sm:min-h-[100px] sm:p-2"
+                className="border-border flex min-h-[60px] flex-col gap-1 border bg-[var(--color-subtle-overlay)] p-1 sm:min-h-[100px] sm:p-2"
               />
             ))}
 
@@ -186,16 +189,30 @@ export function CalendarPage() {
         </div>
       </div>
 
-      <CalendarDayPanel
-        isOpen={selectedDate !== null}
-        selectedDate={selectedDate}
-        payments={selectedPayments}
-        currency={currency}
-        onClose={() => setSelectedDate(null)}
-        onMarkPaid={handleMarkPaid}
-        onSkip={handleSkip}
-        onEdit={handleEdit}
-      />
+      {/* On small screens, overlay the panel; on lg+, it sits beside the calendar */}
+      {selectedDate !== null && (
+        <button
+          type="button"
+          aria-label="Close panel"
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onClick={() => setSelectedDate(null)}
+        />
+      )}
+      <div className={cn(
+        'fixed inset-y-0 right-0 z-50 w-full max-w-[380px] transition-transform duration-300 lg:static lg:z-auto lg:translate-x-0 lg:transition-none',
+        selectedDate !== null ? 'translate-x-0' : 'translate-x-full lg:hidden'
+      )}>
+        <CalendarDayPanel
+          isOpen={selectedDate !== null}
+          selectedDate={selectedDate}
+          payments={selectedPayments}
+          currency={currency}
+          onClose={() => setSelectedDate(null)}
+          onMarkPaid={handleMarkPaid}
+          onSkip={handleSkip}
+          onEdit={handleEdit}
+        />
+      </div>
     </div>
   )
 }

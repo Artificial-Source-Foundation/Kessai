@@ -32,7 +32,7 @@ export const PriceChangesCard = memo(function PriceChangesCard({
         <h3 className="text-foreground font-[family-name:var(--font-heading)] text-lg font-bold">
           Recent Price Changes
         </h3>
-        <span className="text-dimmed font-[family-name:var(--font-mono)] text-[10px] tracking-wider uppercase">
+        <span className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px] tracking-wider uppercase">
           Last 90 days
         </span>
       </div>
@@ -46,7 +46,7 @@ export const PriceChangesCard = memo(function PriceChangesCard({
           return (
             <div
               key={change.id}
-              className="border-border flex items-center justify-between rounded-lg border bg-white/[0.02] px-4 py-3"
+              className="border-border flex items-center justify-between rounded-lg border bg-[var(--color-subtle-overlay)] px-4 py-3"
             >
               <div className="flex flex-col gap-1">
                 <span className="text-foreground text-sm font-medium">
@@ -77,7 +77,7 @@ export const PriceChangesCard = memo(function PriceChangesCard({
                   {isIncrease ? '+' : '-'}
                   {percentage.toFixed(0)}%
                 </div>
-                <span className="text-dimmed font-[family-name:var(--font-mono)] text-[10px]">
+                <span className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px]">
                   {dayjs(change.changed_at).format('MMM D, YYYY')}
                 </span>
               </div>
