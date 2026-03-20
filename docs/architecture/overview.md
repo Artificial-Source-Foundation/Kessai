@@ -8,13 +8,13 @@ Subby is a local-first desktop app built with a Tauri backend and React frontend
 - Frontend: React 19 + TypeScript + Vite
 - Styling: Tailwind CSS + shadcn/ui
 - State: Zustand
-- Data: SQLite via `tauri-plugin-sql`
+- Data: SQLite via rusqlite (subby-core crate)
 - Validation: Zod + React Hook Form
 
 ## High-Level Flow
 
 1. React UI triggers store actions
-2. Stores use typed DB helpers in `src/lib/database.ts`
+2. Stores use Tauri IPC invoke() to call Rust backend commands
 3. SQL executes through Tauri plugin on local SQLite
 4. Dashboard and calendar derive metrics from subscriptions + payments
 
@@ -38,11 +38,11 @@ Subby uses an ASF brutalist glassmorphic design language:
 
 - **Typography**: 3-font system — Space Grotesk (headings), Outfit (body/UI), Space Mono (labels/data)
 - **Colors**: Void black (#0a0a0a) background, Plasma Violet (#bf5af2) accent, glass-transparent surfaces
-- **Cards**: `rgba(255,255,255,0.02)` background with `rgba(255,255,255,0.06)` hairline borders
+- **Cards**: `rgba(10, 10, 10, 0.6)` background with `rgba(255,255,255,0.06)` hairline borders
 - **Modals**: Centered Dialog modals (not slide-out sheets) with size tiers: `max-w-2xl` (forms), `max-w-lg` (medium), `max-w-md` (confirmations)
 - **Buttons**: Sharp 0px radius for primary actions (brutalist), rounded for secondary
 
-Fonts are loaded via Google Fonts in `index.html` and mapped to CSS custom properties in `src/styles/globals.css`.
+Fonts are self-hosted via @font-face in `src/styles/globals.css`.
 
 ## Related Docs
 

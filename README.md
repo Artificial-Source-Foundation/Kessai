@@ -191,7 +191,7 @@ See the [Discord Bot README](packages/discord-bot/README.md) for detailed setup.
 | **Frontend** | [React 19](https://react.dev/) + TypeScript + [Vite](https://vitejs.dev/)        |
 | **Styling**  | [Tailwind CSS 4](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/) |
 | **State**    | [Zustand](https://zustand-demo.pmnd.rs/)                                         |
-| **Database** | SQLite via [tauri-plugin-sql](https://github.com/tauri-apps/plugins-workspace)   |
+| **Database** | SQLite via [rusqlite](https://github.com/rusqlite/rusqlite)                      |
 | **Forms**    | [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/)        |
 | **Testing**  | [Vitest](https://vitest.dev/) + [Testing Library](https://testing-library.com/) + [Playwright](https://playwright.dev/) |
 
@@ -251,8 +251,11 @@ subby/
 │   ├── types/              # TypeScript types
 │   └── lib/                # Utilities
 ├── src-tauri/              # Rust backend
-│   ├── src/                # Tauri commands and inline migrations
+│   ├── src/                # Tauri commands
 │   └── tauri.conf.json     # App config and bundling
+├── crates/
+│   ├── subby-core/         # Shared Rust business logic and migrations
+│   └── subby-mcp/          # MCP server + CLI binary
 ├── packages/
 │   └── discord-bot/        # Discord reminder bot
 └── docs/                   # Documentation

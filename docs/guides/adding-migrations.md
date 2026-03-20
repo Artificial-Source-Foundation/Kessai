@@ -1,6 +1,6 @@
 # Adding Migrations
 
-Migrations are defined inline in `src-tauri/src/lib.rs`.
+Migrations are defined inline in `crates/subby-core/src/migrations.rs`.
 
 ## Process
 

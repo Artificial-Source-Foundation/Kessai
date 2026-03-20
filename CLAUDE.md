@@ -14,7 +14,7 @@
 - **Frontend**: React 19 + TypeScript + Vite 7
 - **Styling**: Tailwind CSS 4 + shadcn/ui
 - **State**: Zustand (with useShallow for optimized selectors)
-- **Database**: SQLite via tauri-plugin-sql
+- **Database**: SQLite via rusqlite (subby-core crate)
 - **Forms**: React Hook Form + Zod
 - **Dates**: dayjs (with plugins: isSameOrBefore, isSameOrAfter, isToday, isTomorrow, weekOfYear, isBetween)
 - **Testing**: Vitest + Testing Library + Playwright (E2E)
@@ -80,7 +80,7 @@
 
 - **Headings**: Space Grotesk (600, 700) — `font-[family-name:var(--font-heading)]`
 - **Body/UI**: Outfit (400, 500, 600) — `font-[family-name:var(--font-sans)]`
-- **Labels/Data**: Space Mono (400, 600) — `font-[family-name:var(--font-mono)]`
+- **Labels/Data**: Space Mono (400, 700) — `font-[family-name:var(--font-mono)]`
 
 ### Color Tokens (Dark Mode)
 
@@ -128,7 +128,7 @@ cargo test --workspace  # Run Rust tests
 cargo build -p subby-mcp  # Build MCP server + CLI
 pnpm test:e2e           # Run Playwright E2E tests
 pnpm typecheck          # Run TypeScript type checking
-pnpm start              # Start Vite dev server (frontend only)
+pnpm start              # Alias for tauri dev
 pnpm lint:fix           # Run ESLint with auto-fix
 ```
 
@@ -154,9 +154,9 @@ pnpm lint:fix           # Run ESLint with auto-fix
 ### Database Operations
 
 ```typescript
-import { db } from '@/lib/database'
-const results = await db.select<T[]>('SELECT * FROM table')
-await db.execute('INSERT INTO table VALUES (?)', [value])
+import { invoke } from '@tauri-apps/api/core'
+const results = await invoke<T[]>('list_subscriptions')
+await invoke('create_subscription', { data: newSub })
 ```
 
 ### Zustand Stores
