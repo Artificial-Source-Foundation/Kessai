@@ -6,7 +6,7 @@
 
 **Subby** is a local-first desktop subscription tracker built with Tauri 2, React, TypeScript, and SQLite. It features a clean, performant UI with light/dark theme support.
 
-**Status**: MVP Complete (v0.1.0)
+**Status**: Post-MVP (v0.2.0)
 
 ## Tech Stack Quick Reference
 

@@ -237,7 +237,7 @@ export function SettingsPage() {
                 Version
               </span>
               <span className="text-foreground font-[family-name:var(--font-mono)] text-sm font-bold">
-                0.1.0
+                0.2.0
               </span>
             </div>
             <div className="flex items-center justify-between">

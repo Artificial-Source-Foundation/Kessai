@@ -1,6 +1,6 @@
 [package]
 name = "subby"
-version = "0.1.0"
+version = "0.2.0"
 description = "Know where your money flows - Personal subscription tracker"
 authors = ["ASF", "Andrés (NewStella)"]
 license = "MIT"
