@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useSubscriptionStore } from '@/stores/subscription-store'
 import { useCategoryStore } from '@/stores/category-store'
@@ -58,12 +58,18 @@ export function useSubscriptions() {
 
   const totalYearly = useMemo(() => totalMonthly * 12, [totalMonthly])
 
-  const getCategory = (categoryId: string | null) => categories.find((c) => c.id === categoryId)
+  const getCategory = useCallback(
+    (categoryId: string | null) => categories.find((c) => c.id === categoryId),
+    [categories]
+  )
 
-  const getSubscriptionWithCategory = (sub: Subscription) => ({
-    ...sub,
-    category: getCategory(sub.category_id),
-  })
+  const getSubscriptionWithCategory = useCallback(
+    (sub: Subscription) => ({
+      ...sub,
+      category: getCategory(sub.category_id),
+    }),
+    [getCategory]
+  )
 
   return {
     subscriptions,

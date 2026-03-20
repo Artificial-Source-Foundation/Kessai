@@ -202,17 +202,26 @@ export function useCalendarStats(currentDate: Date) {
     }
   }, [calendarDays, prevMonthPayments])
 
-  const getPaymentsForDate = (date: Date): DayPayment[] => {
-    const targetDate = dayjs(date)
-    const day = calendarDays.find((d) => dayjs(d.date).isSame(targetDate, 'day'))
-    return day?.payments || []
-  }
+  const getPaymentsForDate = useMemo(
+    () =>
+      (date: Date): DayPayment[] => {
+        const targetDate = dayjs(date)
+        const day = calendarDays.find((d) => dayjs(d.date).isSame(targetDate, 'day'))
+        return day?.payments || []
+      },
+    [calendarDays]
+  )
+
+  const refetchPayments = useMemo(
+    () => () => fetchPaymentsByMonth(year, month).then(setPayments),
+    [fetchPaymentsByMonth, year, month]
+  )
 
   return {
     calendarDays,
     monthStats,
     getPaymentsForDate,
     getPaymentsForDay,
-    refetchPayments: () => fetchPaymentsByMonth(year, month).then(setPayments),
+    refetchPayments,
   }
 }
