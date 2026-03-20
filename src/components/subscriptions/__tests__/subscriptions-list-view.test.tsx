@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { SubscriptionsListView } from '../subscriptions-list-view'
 import { usePriceHistoryStore } from '@/stores/price-history-store'
 import type { Subscription } from '@/types/subscription'
@@ -151,5 +151,113 @@ describe('SubscriptionsListView', () => {
     )
 
     expect(screen.getByText('Paused')).toBeInTheDocument()
+  })
+
+  it('calls onEdit when edit button is clicked', () => {
+    const onEdit = vi.fn()
+    const subs = [makeSub({ id: 'sub-1', name: 'Netflix' })]
+
+    render(
+      <SubscriptionsListView
+        {...defaultProps}
+        onEdit={onEdit}
+        subscriptions={subs}
+        totalCount={1}
+        getCategory={() => undefined}
+      />
+    )
+
+    const editBtn = screen.getByLabelText('Edit Netflix')
+    fireEvent.click(editBtn)
+
+    expect(onEdit).toHaveBeenCalledWith(subs[0])
+  })
+
+  it('calls onDelete when delete button is clicked', () => {
+    const onDelete = vi.fn()
+    const subs = [makeSub({ id: 'sub-1', name: 'Netflix' })]
+
+    render(
+      <SubscriptionsListView
+        {...defaultProps}
+        onDelete={onDelete}
+        subscriptions={subs}
+        totalCount={1}
+        getCategory={() => undefined}
+      />
+    )
+
+    const deleteBtn = screen.getByLabelText('Delete Netflix')
+    fireEvent.click(deleteBtn)
+
+    expect(onDelete).toHaveBeenCalledWith(subs[0])
+  })
+
+  it('calls onToggleActive when power button is clicked', () => {
+    const onToggleActive = vi.fn()
+    const subs = [makeSub({ id: 'sub-1', name: 'Netflix' })]
+
+    render(
+      <SubscriptionsListView
+        {...defaultProps}
+        onToggleActive={onToggleActive}
+        subscriptions={subs}
+        totalCount={1}
+        getCategory={() => undefined}
+      />
+    )
+
+    const pauseBtn = screen.getByLabelText('Pause Netflix')
+    fireEvent.click(pauseBtn)
+
+    expect(onToggleActive).toHaveBeenCalledWith(subs[0])
+  })
+
+  it('shows Activate label for inactive subscription toggle button', () => {
+    const subs = [makeSub({ id: 'sub-1', name: 'Netflix', is_active: false })]
+
+    render(
+      <SubscriptionsListView
+        {...defaultProps}
+        subscriptions={subs}
+        totalCount={1}
+        getCategory={() => undefined}
+      />
+    )
+
+    expect(screen.getByLabelText('Activate Netflix')).toBeInTheDocument()
+  })
+
+  it('applies opacity-60 class on inactive subscription row', () => {
+    const subs = [makeSub({ id: 'sub-1', name: 'Netflix', is_active: false })]
+
+    render(
+      <SubscriptionsListView
+        {...defaultProps}
+        subscriptions={subs}
+        totalCount={1}
+        getCategory={() => undefined}
+      />
+    )
+
+    // The tr containing Netflix should have opacity-60
+    const row = screen.getByText('Netflix').closest('tr')
+    expect(row).toHaveClass('opacity-60')
+  })
+
+  it('does not apply opacity-60 on active subscription row', () => {
+    const subs = [makeSub({ id: 'sub-1', name: 'Netflix', is_active: true })]
+
+    render(
+      <SubscriptionsListView
+        {...defaultProps}
+        subscriptions={subs}
+        totalCount={1}
+        getCategory={() => undefined}
+      />
+    )
+
+    const row = screen.getByText('Netflix').closest('tr')
+    expect(row).not.toHaveClass('opacity-60')
   })
 })

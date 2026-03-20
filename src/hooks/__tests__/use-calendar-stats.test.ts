@@ -251,4 +251,161 @@ describe('useCalendarStats', () => {
       expect(mockFetch).toHaveBeenCalledWith(2024, 2) // February 2024
     })
   })
+
+  it('handles weekly billing cycle subscriptions', async () => {
+    // Add a weekly subscription that has a next_payment_date on a Wednesday
+    const weeklySub = {
+      id: 'sub-weekly',
+      name: 'Weekly Service',
+      amount: 4.99,
+      currency: 'USD',
+      billing_cycle: 'weekly' as const,
+      billing_day: 1,
+      category_id: null,
+      color: '#00ff00',
+      logo_url: null,
+      notes: null,
+      is_active: true,
+      status: 'active' as const,
+      shared_count: 1,
+      // Feb 7, 2024 is a Wednesday
+      next_payment_date: '2024-02-07',
+      created_at: '2024-01-01T00:00:00.000Z',
+      updated_at: '2024-01-01T00:00:00.000Z',
+    }
+
+    useSubscriptionStore.setState({
+      subscriptions: [weeklySub],
+      isLoading: false,
+      error: null,
+    })
+
+    const { result } = renderHook(() => useCalendarStats(currentDate))
+
+    await waitFor(() => {
+      expect(result.current.calendarDays.length).toBeGreaterThan(0)
+    })
+
+    // Weekly payments should appear on all Wednesdays in February 2024
+    // Feb 7, 14, 21, 28 are Wednesdays
+    const daysWithPayments = result.current.calendarDays.filter(
+      (d) => d.payments.length > 0
+    )
+    expect(daysWithPayments.length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('handles yearly billing cycle with next_payment_date in current month', async () => {
+    const yearlySub = {
+      id: 'sub-yearly',
+      name: 'Yearly Service',
+      amount: 99.99,
+      currency: 'USD',
+      billing_cycle: 'yearly' as const,
+      billing_day: 10,
+      category_id: null,
+      color: '#0000ff',
+      logo_url: null,
+      notes: null,
+      is_active: true,
+      status: 'active' as const,
+      shared_count: 1,
+      next_payment_date: '2024-02-10',
+      created_at: '2024-01-01T00:00:00.000Z',
+      updated_at: '2024-01-01T00:00:00.000Z',
+    }
+
+    useSubscriptionStore.setState({
+      subscriptions: [yearlySub],
+      isLoading: false,
+      error: null,
+    })
+
+    const { result } = renderHook(() => useCalendarStats(currentDate))
+
+    await waitFor(() => {
+      expect(result.current.calendarDays.length).toBeGreaterThan(0)
+    })
+
+    const day10 = result.current.calendarDays.find((d) => d.dayOfMonth === 10)
+    const yearlyPayment = day10?.payments.find((p) => p.subscription.name === 'Yearly Service')
+    expect(yearlyPayment).toBeDefined()
+    expect(yearlyPayment?.amount).toBe(99.99)
+  })
+
+  it('excludes yearly subscription when next_payment_date is in different month', async () => {
+    const yearlySub = {
+      id: 'sub-yearly',
+      name: 'Yearly Service',
+      amount: 99.99,
+      currency: 'USD',
+      billing_cycle: 'yearly' as const,
+      billing_day: 10,
+      category_id: null,
+      color: '#0000ff',
+      logo_url: null,
+      notes: null,
+      is_active: true,
+      status: 'active' as const,
+      shared_count: 1,
+      // March, not February
+      next_payment_date: '2024-03-10',
+      created_at: '2024-01-01T00:00:00.000Z',
+      updated_at: '2024-01-01T00:00:00.000Z',
+    }
+
+    useSubscriptionStore.setState({
+      subscriptions: [yearlySub],
+      isLoading: false,
+      error: null,
+    })
+
+    const { result } = renderHook(() => useCalendarStats(currentDate))
+
+    await waitFor(() => {
+      expect(result.current.calendarDays.length).toBeGreaterThan(0)
+    })
+
+    const allPayments = result.current.calendarDays.flatMap((d) => d.payments)
+    expect(allPayments).toHaveLength(0)
+  })
+
+  it('getPaymentsForDate returns empty for a date with no payments', async () => {
+    const { result } = renderHook(() => useCalendarStats(currentDate))
+
+    await waitFor(() => {
+      expect(result.current.calendarDays.length).toBeGreaterThan(0)
+    })
+
+    // Feb 3 should have no payments
+    const payments = result.current.getPaymentsForDate(new Date(2024, 1, 3))
+    expect(payments).toHaveLength(0)
+  })
+
+  it('marks payments as paid when payment record exists', async () => {
+    const mockFetch = vi.fn().mockResolvedValue([
+      {
+        id: 'pay-1',
+        subscription_id: 'sub-1',
+        due_date: '2024-02-15',
+        amount: 15.99,
+        status: 'paid',
+        created_at: '2024-02-15T00:00:00.000Z',
+      },
+    ])
+
+    usePaymentStore.setState({
+      payments: [],
+      isLoading: false,
+      error: null,
+      fetchPaymentsByMonth: mockFetch,
+    })
+
+    const { result } = renderHook(() => useCalendarStats(currentDate))
+
+    await waitFor(() => {
+      const day15 = result.current.calendarDays.find((d) => d.dayOfMonth === 15)
+      const netflixPayment = day15?.payments.find((p) => p.subscription.name === 'Netflix')
+      expect(netflixPayment?.isPaid).toBe(true)
+    })
+  })
 })

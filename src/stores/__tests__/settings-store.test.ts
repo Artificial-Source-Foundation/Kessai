@@ -153,4 +153,237 @@ describe('useSettingsStore', () => {
       })
     })
   })
+
+  describe('setBudget', () => {
+    beforeEach(() => {
+      useSettingsStore.setState({ settings: { ...mockSettings } })
+    })
+
+    it('sets monthly budget', async () => {
+      const updated = { ...mockSettings, monthly_budget: 100 }
+      mockInvoke.mockResolvedValue(updated)
+
+      await useSettingsStore.getState().setBudget(100)
+
+      expect(mockInvoke).toHaveBeenCalledWith('update_settings', {
+        data: { monthly_budget: 100 },
+      })
+    })
+
+    it('sets budget to null to clear it', async () => {
+      const updated = { ...mockSettings, monthly_budget: null }
+      mockInvoke.mockResolvedValue(updated)
+
+      await useSettingsStore.getState().setBudget(null)
+
+      expect(mockInvoke).toHaveBeenCalledWith('update_settings', {
+        data: { monthly_budget: null },
+      })
+    })
+  })
+
+  describe('setNotificationAdvanceDays', () => {
+    beforeEach(() => {
+      useSettingsStore.setState({ settings: { ...mockSettings } })
+    })
+
+    it('updates notification advance days', async () => {
+      const updated = { ...mockSettings, notification_advance_days: 3 }
+      mockInvoke.mockResolvedValue(updated)
+
+      await useSettingsStore.getState().setNotificationAdvanceDays(3)
+
+      expect(mockInvoke).toHaveBeenCalledWith('update_settings', {
+        data: { notification_advance_days: 3 },
+      })
+    })
+  })
+
+  describe('setNotificationTime', () => {
+    beforeEach(() => {
+      useSettingsStore.setState({ settings: { ...mockSettings } })
+    })
+
+    it('updates notification time', async () => {
+      const updated = { ...mockSettings, notification_time: '18:00' }
+      mockInvoke.mockResolvedValue(updated)
+
+      await useSettingsStore.getState().setNotificationTime('18:00')
+
+      expect(mockInvoke).toHaveBeenCalledWith('update_settings', {
+        data: { notification_time: '18:00' },
+      })
+    })
+  })
+
+  describe('setReduceMotion', () => {
+    beforeEach(() => {
+      useSettingsStore.setState({ settings: { ...mockSettings } })
+    })
+
+    it('updates reduce_motion setting', async () => {
+      const updated = { ...mockSettings, reduce_motion: true }
+      mockInvoke.mockResolvedValue(updated)
+
+      await useSettingsStore.getState().setReduceMotion(true)
+
+      expect(mockInvoke).toHaveBeenCalledWith('update_settings', {
+        data: { reduce_motion: true },
+      })
+    })
+  })
+
+  describe('setEnableTransitions', () => {
+    beforeEach(() => {
+      useSettingsStore.setState({ settings: { ...mockSettings } })
+    })
+
+    it('updates enable_transitions setting', async () => {
+      const updated = { ...mockSettings, enable_transitions: false }
+      mockInvoke.mockResolvedValue(updated)
+
+      await useSettingsStore.getState().setEnableTransitions(false)
+
+      expect(mockInvoke).toHaveBeenCalledWith('update_settings', {
+        data: { enable_transitions: false },
+      })
+    })
+  })
+
+  describe('setEnableHoverEffects', () => {
+    beforeEach(() => {
+      useSettingsStore.setState({ settings: { ...mockSettings } })
+    })
+
+    it('updates enable_hover_effects setting', async () => {
+      const updated = { ...mockSettings, enable_hover_effects: false }
+      mockInvoke.mockResolvedValue(updated)
+
+      await useSettingsStore.getState().setEnableHoverEffects(false)
+
+      expect(mockInvoke).toHaveBeenCalledWith('update_settings', {
+        data: { enable_hover_effects: false },
+      })
+    })
+  })
+
+  describe('setAnimationSpeed', () => {
+    beforeEach(() => {
+      useSettingsStore.setState({ settings: { ...mockSettings } })
+    })
+
+    it('updates animation_speed setting', async () => {
+      const updated = { ...mockSettings, animation_speed: 'slow' as const }
+      mockInvoke.mockResolvedValue(updated)
+
+      await useSettingsStore.getState().setAnimationSpeed('slow')
+
+      expect(mockInvoke).toHaveBeenCalledWith('update_settings', {
+        data: { animation_speed: 'slow' },
+      })
+    })
+  })
+
+  describe('error rollback paths', () => {
+    beforeEach(() => {
+      useSettingsStore.setState({ settings: { ...mockSettings } })
+    })
+
+    it('rolls back setBudget on failure', async () => {
+      mockInvoke.mockRejectedValue(new Error('Budget update failed'))
+
+      await expect(useSettingsStore.getState().setBudget(500)).rejects.toThrow(
+        'Budget update failed'
+      )
+
+      // Settings should be rolled back to original (no monthly_budget key change)
+      expect(useSettingsStore.getState().settings?.currency).toBe('USD')
+    })
+
+    it('rolls back setNotificationAdvanceDays on failure', async () => {
+      mockInvoke.mockRejectedValue(new Error('Update failed'))
+
+      await expect(useSettingsStore.getState().setNotificationAdvanceDays(5)).rejects.toThrow(
+        'Update failed'
+      )
+
+      expect(useSettingsStore.getState().settings?.notification_advance_days).toBe(1)
+    })
+
+    it('rolls back setNotificationTime on failure', async () => {
+      mockInvoke.mockRejectedValue(new Error('Update failed'))
+
+      await expect(useSettingsStore.getState().setNotificationTime('20:00')).rejects.toThrow(
+        'Update failed'
+      )
+
+      expect(useSettingsStore.getState().settings?.notification_time).toBe('09:00')
+    })
+
+    it('rolls back setReduceMotion on failure', async () => {
+      mockInvoke.mockRejectedValue(new Error('Update failed'))
+
+      await expect(useSettingsStore.getState().setReduceMotion(true)).rejects.toThrow(
+        'Update failed'
+      )
+
+      expect(useSettingsStore.getState().settings?.reduce_motion).toBe(false)
+    })
+
+    it('rolls back setEnableTransitions on failure', async () => {
+      mockInvoke.mockRejectedValue(new Error('Update failed'))
+
+      await expect(useSettingsStore.getState().setEnableTransitions(false)).rejects.toThrow(
+        'Update failed'
+      )
+
+      expect(useSettingsStore.getState().settings?.enable_transitions).toBe(true)
+    })
+
+    it('rolls back setEnableHoverEffects on failure', async () => {
+      mockInvoke.mockRejectedValue(new Error('Update failed'))
+
+      await expect(useSettingsStore.getState().setEnableHoverEffects(false)).rejects.toThrow(
+        'Update failed'
+      )
+
+      expect(useSettingsStore.getState().settings?.enable_hover_effects).toBe(true)
+    })
+
+    it('rolls back setAnimationSpeed on failure', async () => {
+      mockInvoke.mockRejectedValue(new Error('Update failed'))
+
+      await expect(useSettingsStore.getState().setAnimationSpeed('fast')).rejects.toThrow(
+        'Update failed'
+      )
+
+      expect(useSettingsStore.getState().settings?.animation_speed).toBe('normal')
+    })
+
+    it('rolls back setTheme on failure', async () => {
+      mockInvoke.mockRejectedValue(new Error('Update failed'))
+
+      await expect(useSettingsStore.getState().setTheme('light')).rejects.toThrow('Update failed')
+
+      expect(useSettingsStore.getState().settings?.theme).toBe('dark')
+    })
+
+    it('rolls back setCurrency on failure', async () => {
+      mockInvoke.mockRejectedValue(new Error('Update failed'))
+
+      await expect(useSettingsStore.getState().setCurrency('EUR')).rejects.toThrow('Update failed')
+
+      expect(useSettingsStore.getState().settings?.currency).toBe('USD')
+    })
+
+    it('rolls back setNotifications on failure', async () => {
+      mockInvoke.mockRejectedValue(new Error('Update failed'))
+
+      await expect(useSettingsStore.getState().setNotifications(false)).rejects.toThrow(
+        'Update failed'
+      )
+
+      expect(useSettingsStore.getState().settings?.notification_enabled).toBe(true)
+    })
+  })
 })

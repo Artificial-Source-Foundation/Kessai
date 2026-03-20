@@ -250,4 +250,137 @@ describe('usePaymentStore', () => {
       expect(result).toBe(false)
     })
   })
+
+  describe('fetchPaymentsBySubscription', () => {
+    it('fetches all payments and filters by subscription id', async () => {
+      mockInvoke.mockResolvedValue(mockPayments)
+
+      const result = await usePaymentStore.getState().fetchPaymentsBySubscription('sub-1')
+
+      expect(mockInvoke).toHaveBeenCalledWith('list_payments')
+      expect(result).toHaveLength(2)
+      expect(result.every((p) => p.subscription_id === 'sub-1')).toBe(true)
+    })
+
+    it('returns empty array when no payments match subscription', async () => {
+      mockInvoke.mockResolvedValue(mockPayments)
+
+      const result = await usePaymentStore.getState().fetchPaymentsBySubscription('sub-999')
+
+      expect(result).toEqual([])
+    })
+
+    it('returns empty array on error', async () => {
+      mockInvoke.mockRejectedValue(new Error('Database error'))
+
+      const result = await usePaymentStore.getState().fetchPaymentsBySubscription('sub-1')
+      expect(result).toEqual([])
+    })
+  })
+
+  describe('addPayment error handling', () => {
+    it('throws error when invoke fails', async () => {
+      mockInvoke.mockRejectedValue(new Error('Create failed'))
+
+      const newPayment = {
+        subscription_id: 'sub-1',
+        amount: 15.99,
+        paid_at: '2024-03-15T10:00:00.000Z',
+        due_date: '2024-03-15',
+        status: 'paid' as const,
+      }
+
+      await expect(usePaymentStore.getState().addPayment(newPayment)).rejects.toThrow(
+        'Create failed'
+      )
+      expect(usePaymentStore.getState().payments).toEqual([])
+    })
+  })
+
+  describe('updatePayment', () => {
+    beforeEach(() => {
+      usePaymentStore.setState({ payments: [...mockPayments] })
+    })
+
+    it('optimistically updates a payment then replaces with server response', async () => {
+      const updated = { ...mockPayments[0], notes: 'Updated note' }
+      mockInvoke.mockResolvedValue(updated)
+
+      await usePaymentStore.getState().updatePayment('pay-1', { notes: 'Updated note' })
+
+      expect(mockInvoke).toHaveBeenCalledWith('update_payment', {
+        id: 'pay-1',
+        data: { notes: 'Updated note' },
+      })
+      const payment = usePaymentStore.getState().payments.find((p) => p.id === 'pay-1')
+      expect(payment?.notes).toBe('Updated note')
+    })
+
+    it('rolls back on update failure', async () => {
+      mockInvoke.mockRejectedValue(new Error('Update failed'))
+
+      await expect(
+        usePaymentStore.getState().updatePayment('pay-1', { notes: 'Failed update' })
+      ).rejects.toThrow('Update failed')
+
+      const payment = usePaymentStore.getState().payments.find((p) => p.id === 'pay-1')
+      expect(payment?.notes).toBeNull()
+    })
+
+    it('does nothing when payment id not found', async () => {
+      await usePaymentStore.getState().updatePayment('non-existent', { notes: 'Test' })
+
+      expect(mockInvoke).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('deletePayment', () => {
+    beforeEach(() => {
+      usePaymentStore.setState({ payments: [...mockPayments] })
+    })
+
+    it('optimistically removes a payment', async () => {
+      mockInvoke.mockResolvedValue(undefined)
+
+      await usePaymentStore.getState().deletePayment('pay-1')
+
+      expect(mockInvoke).toHaveBeenCalledWith('delete_payment', { id: 'pay-1' })
+      expect(usePaymentStore.getState().payments.some((p) => p.id === 'pay-1')).toBe(false)
+    })
+
+    it('rolls back on delete failure', async () => {
+      mockInvoke.mockRejectedValue(new Error('Delete failed'))
+
+      await expect(usePaymentStore.getState().deletePayment('pay-1')).rejects.toThrow(
+        'Delete failed'
+      )
+
+      expect(usePaymentStore.getState().payments).toHaveLength(3)
+      expect(usePaymentStore.getState().payments.some((p) => p.id === 'pay-1')).toBe(true)
+    })
+  })
+
+  describe('markAsPaid error handling', () => {
+    it('throws error when invoke fails', async () => {
+      mockInvoke.mockRejectedValue(new Error('Mark paid failed'))
+
+      await expect(
+        usePaymentStore.getState().markAsPaid('sub-1', '2024-03-15', 15.99)
+      ).rejects.toThrow('Mark paid failed')
+
+      expect(usePaymentStore.getState().payments).toEqual([])
+    })
+  })
+
+  describe('skipPayment error handling', () => {
+    it('throws error when invoke fails', async () => {
+      mockInvoke.mockRejectedValue(new Error('Skip failed'))
+
+      await expect(
+        usePaymentStore.getState().skipPayment('sub-1', '2024-03-15', 15.99)
+      ).rejects.toThrow('Skip failed')
+
+      expect(usePaymentStore.getState().payments).toEqual([])
+    })
+  })
 })

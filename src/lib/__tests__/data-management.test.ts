@@ -1,5 +1,24 @@
-import { describe, it, expect } from 'vitest'
-import { validateBackupData, readFileAsJson } from '../data-management'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { validateBackupData, readFileAsJson, exportData, importData, saveBackupToFile } from '../data-management'
+import { invoke } from '@tauri-apps/api/core'
+import { save } from '@tauri-apps/plugin-dialog'
+import { writeTextFile } from '@tauri-apps/plugin-fs'
+
+vi.mock('@tauri-apps/api/core', () => ({
+  invoke: vi.fn(),
+}))
+
+vi.mock('@tauri-apps/plugin-dialog', () => ({
+  save: vi.fn(),
+}))
+
+vi.mock('@tauri-apps/plugin-fs', () => ({
+  writeTextFile: vi.fn(),
+}))
+
+const mockInvoke = vi.mocked(invoke)
+const mockSave = vi.mocked(save)
+const mockWriteTextFile = vi.mocked(writeTextFile)
 
 describe('validateBackupData', () => {
   const validBackup = {
@@ -8,7 +27,7 @@ describe('validateBackupData', () => {
     subscriptions: [],
     categories: [],
     payments: [],
-    settings: { theme: 'dark', currency: 'USD' },
+    settings: { theme: 'dark', currency: 'USD', notification_enabled: true, notification_days_before: [1, 3, 7], notification_advance_days: 1, notification_time: '09:00', reduce_motion: false, enable_transitions: true, enable_hover_effects: true, animation_speed: 'normal' },
   }
 
   it('accepts valid backup data', () => {
@@ -107,6 +126,154 @@ describe('validateBackupData', () => {
   it('rejects oversized payments array (DoS limit)', () => {
     const backup = { ...validBackup, payments: new Array(100001) }
     expect(validateBackupData(backup)).toBe(false)
+  })
+})
+
+describe('exportData', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('calls invoke with export_data command', async () => {
+    const mockBackup = {
+      version: '1.0.0',
+      exportedAt: '2026-01-01T00:00:00.000Z',
+      subscriptions: [],
+      categories: [],
+      payments: [],
+      settings: { theme: 'dark', currency: 'USD', notification_enabled: true, notification_days_before: [1, 3, 7], notification_advance_days: 1, notification_time: '09:00', reduce_motion: false, enable_transitions: true, enable_hover_effects: true, animation_speed: 'normal' },
+    }
+    mockInvoke.mockResolvedValue(mockBackup)
+
+    const result = await exportData()
+
+    expect(mockInvoke).toHaveBeenCalledWith('export_data')
+    expect(result).toEqual(mockBackup)
+  })
+})
+
+describe('importData', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('calls invoke with import_data command and data', async () => {
+    const data = {
+      version: '1.0.0',
+      exportedAt: '2026-01-01T00:00:00.000Z',
+      subscriptions: [],
+      categories: [],
+      payments: [],
+      settings: { theme: 'dark', currency: 'USD', notification_enabled: true, notification_days_before: [1, 3, 7], notification_advance_days: 1, notification_time: '09:00', reduce_motion: false, enable_transitions: true, enable_hover_effects: true, animation_speed: 'normal' },
+    }
+    mockInvoke.mockResolvedValue({ success: true, message: 'Imported successfully' })
+
+    const result = await importData(data as Parameters<typeof importData>[0])
+
+    expect(mockInvoke).toHaveBeenCalledWith('import_data', {
+      data,
+      clearExisting: false,
+    })
+    expect(result).toEqual({ success: true, message: 'Imported successfully' })
+  })
+
+  it('passes clearExisting option when specified', async () => {
+    const data = {
+      version: '1.0.0',
+      exportedAt: '2026-01-01T00:00:00.000Z',
+      subscriptions: [],
+      categories: [],
+      payments: [],
+      settings: { theme: 'dark', currency: 'USD', notification_enabled: true, notification_days_before: [1, 3, 7], notification_advance_days: 1, notification_time: '09:00', reduce_motion: false, enable_transitions: true, enable_hover_effects: true, animation_speed: 'normal' },
+    }
+    mockInvoke.mockResolvedValue({ success: true, message: 'OK' })
+
+    await importData(data as Parameters<typeof importData>[0], { clearExisting: true })
+
+    expect(mockInvoke).toHaveBeenCalledWith('import_data', {
+      data,
+      clearExisting: true,
+    })
+  })
+
+  it('returns error result when invoke throws', async () => {
+    const data = {
+      version: '1.0.0',
+      exportedAt: '2026-01-01T00:00:00.000Z',
+      subscriptions: [],
+      categories: [],
+      payments: [],
+      settings: { theme: 'dark', currency: 'USD', notification_enabled: true, notification_days_before: [1, 3, 7], notification_advance_days: 1, notification_time: '09:00', reduce_motion: false, enable_transitions: true, enable_hover_effects: true, animation_speed: 'normal' },
+    }
+    mockInvoke.mockRejectedValue(new Error('DB error'))
+
+    const result = await importData(data as Parameters<typeof importData>[0])
+
+    expect(result.success).toBe(false)
+    expect(result.message).toContain('DB error')
+  })
+
+  it('handles non-Error thrown values', async () => {
+    const data = {
+      version: '1.0.0',
+      exportedAt: '2026-01-01T00:00:00.000Z',
+      subscriptions: [],
+      categories: [],
+      payments: [],
+      settings: { theme: 'dark', currency: 'USD', notification_enabled: true, notification_days_before: [1, 3, 7], notification_advance_days: 1, notification_time: '09:00', reduce_motion: false, enable_transitions: true, enable_hover_effects: true, animation_speed: 'normal' },
+    }
+    mockInvoke.mockRejectedValue('string error')
+
+    const result = await importData(data as Parameters<typeof importData>[0])
+
+    expect(result.success).toBe(false)
+    expect(result.message).toContain('string error')
+  })
+})
+
+describe('saveBackupToFile', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('returns false when user cancels save dialog', async () => {
+    mockSave.mockResolvedValue(null)
+
+    const data = {
+      version: '1.0.0',
+      exportedAt: '2026-01-01T00:00:00.000Z',
+      subscriptions: [],
+      categories: [],
+      payments: [],
+      settings: { theme: 'dark', currency: 'USD', notification_enabled: true, notification_days_before: [1, 3, 7], notification_advance_days: 1, notification_time: '09:00', reduce_motion: false, enable_transitions: true, enable_hover_effects: true, animation_speed: 'normal' },
+    }
+
+    const result = await saveBackupToFile(data as Parameters<typeof saveBackupToFile>[0])
+
+    expect(result).toBe(false)
+    expect(mockWriteTextFile).not.toHaveBeenCalled()
+  })
+
+  it('writes JSON to selected file path', async () => {
+    mockSave.mockResolvedValue('/home/user/backup.json')
+    mockWriteTextFile.mockResolvedValue(undefined)
+
+    const data = {
+      version: '1.0.0',
+      exportedAt: '2026-01-01T00:00:00.000Z',
+      subscriptions: [],
+      categories: [],
+      payments: [],
+      settings: { theme: 'dark', currency: 'USD', notification_enabled: true, notification_days_before: [1, 3, 7], notification_advance_days: 1, notification_time: '09:00', reduce_motion: false, enable_transitions: true, enable_hover_effects: true, animation_speed: 'normal' },
+    }
+
+    const result = await saveBackupToFile(data as Parameters<typeof saveBackupToFile>[0])
+
+    expect(result).toBe(true)
+    expect(mockWriteTextFile).toHaveBeenCalledWith(
+      '/home/user/backup.json',
+      expect.any(String)
+    )
   })
 })
 

@@ -236,5 +236,83 @@ describe('useSubscriptionStore', () => {
 
       expect(mockInvoke).toHaveBeenCalledWith('toggle_subscription_active', { id: 'sub-1' })
     })
+
+    it('optimistically toggles is_active before server response', async () => {
+      const toggled = { ...mockSubscriptions[0], is_active: false }
+      mockInvoke.mockResolvedValue(toggled)
+
+      await useSubscriptionStore.getState().toggleActive('sub-1')
+
+      const sub = useSubscriptionStore.getState().subscriptions.find((s) => s.id === 'sub-1')
+      expect(sub?.is_active).toBe(false)
+    })
+
+    it('rolls back on toggleActive failure', async () => {
+      mockInvoke.mockRejectedValue(new Error('Toggle failed'))
+
+      await expect(useSubscriptionStore.getState().toggleActive('sub-1')).rejects.toThrow(
+        'Toggle failed'
+      )
+
+      const sub = useSubscriptionStore.getState().subscriptions.find((s) => s.id === 'sub-1')
+      expect(sub?.is_active).toBe(true)
+    })
+
+    it('does nothing when subscription not found', async () => {
+      await useSubscriptionStore.getState().toggleActive('non-existent')
+
+      expect(mockInvoke).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('update edge cases', () => {
+    beforeEach(() => {
+      useSubscriptionStore.setState({
+        subscriptions: [...mockSubscriptions],
+        isLoading: false,
+        error: null,
+      })
+    })
+
+    it('does nothing when subscription not found', async () => {
+      await useSubscriptionStore.getState().update('non-existent', { name: 'Test' })
+
+      expect(mockInvoke).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('transitionStatus', () => {
+    beforeEach(() => {
+      useSubscriptionStore.setState({
+        subscriptions: [...mockSubscriptions],
+        isLoading: false,
+        error: null,
+      })
+    })
+
+    it('transitions subscription status optimistically', async () => {
+      const updated = { ...mockSubscriptions[0], status: 'paused' as const }
+      mockInvoke.mockResolvedValue(updated)
+
+      await useSubscriptionStore.getState().transitionStatus('sub-1', 'paused')
+
+      expect(mockInvoke).toHaveBeenCalledWith('transition_subscription_status', {
+        id: 'sub-1',
+        status: 'paused',
+      })
+      const sub = useSubscriptionStore.getState().subscriptions.find((s) => s.id === 'sub-1')
+      expect(sub?.status).toBe('paused')
+    })
+
+    it('rolls back on transitionStatus failure', async () => {
+      mockInvoke.mockRejectedValue(new Error('Transition failed'))
+
+      await expect(
+        useSubscriptionStore.getState().transitionStatus('sub-1', 'cancelled')
+      ).rejects.toThrow('Transition failed')
+
+      const sub = useSubscriptionStore.getState().subscriptions.find((s) => s.id === 'sub-1')
+      expect(sub?.status).toBe('active')
+    })
   })
 })

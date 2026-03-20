@@ -195,4 +195,55 @@ describe('usePaymentCardStore', () => {
       expect(card).toBeUndefined()
     })
   })
+
+  describe('add error handling', () => {
+    it('throws error and does not add card on failure', async () => {
+      mockInvoke.mockRejectedValue(new Error('Create failed'))
+
+      await expect(
+        usePaymentCardStore.getState().add({
+          name: 'Failed Card',
+          card_type: 'credit',
+          last_four: '0000',
+          color: '#000000',
+        })
+      ).rejects.toThrow('Create failed')
+
+      expect(usePaymentCardStore.getState().cards).toEqual([])
+    })
+  })
+
+  describe('update error handling', () => {
+    beforeEach(() => {
+      usePaymentCardStore.setState({ cards: [...mockCards] })
+    })
+
+    it('rolls back on update failure', async () => {
+      mockInvoke.mockRejectedValue(new Error('Update failed'))
+
+      await expect(
+        usePaymentCardStore.getState().update('card-1', { name: 'Failed Update' })
+      ).rejects.toThrow('Update failed')
+
+      const card = usePaymentCardStore.getState().cards.find((c) => c.id === 'card-1')
+      expect(card?.name).toBe('Visa Platinum')
+    })
+  })
+
+  describe('remove error handling', () => {
+    beforeEach(() => {
+      usePaymentCardStore.setState({ cards: [...mockCards] })
+    })
+
+    it('rolls back on remove failure', async () => {
+      mockInvoke.mockRejectedValue(new Error('Delete failed'))
+
+      await expect(usePaymentCardStore.getState().remove('card-1')).rejects.toThrow(
+        'Delete failed'
+      )
+
+      expect(usePaymentCardStore.getState().cards).toHaveLength(2)
+      expect(usePaymentCardStore.getState().cards.some((c) => c.id === 'card-1')).toBe(true)
+    })
+  })
 })
