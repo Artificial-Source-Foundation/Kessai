@@ -18,9 +18,12 @@ export async function fetchLogoForName(
   const key = name.trim().toLowerCase()
   if (!key || key.length < 2) return null
 
-  // Check cache
-  if (fetchCache.has(key)) {
-    const cached = fetchCache.get(key)!
+  // Use domain-aware cache key when domain is provided
+  const cacheKey = domain ? `${key}::${domain}` : key
+
+  // Check cache (skip if previous attempt without domain failed but now we have a domain)
+  if (fetchCache.has(cacheKey)) {
+    const cached = fetchCache.get(cacheKey)!
     if (cached === null) return null
     // cached is a filename, resolve to data URL
     return getLogoDataUrl(cached)
@@ -31,7 +34,7 @@ export async function fetchLogoForName(
       name,
       domain: domain ?? null,
     })
-    fetchCache.set(key, filename)
+    fetchCache.set(cacheKey, filename)
 
     if (filename) {
       return getLogoDataUrl(filename)

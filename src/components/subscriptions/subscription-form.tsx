@@ -524,18 +524,23 @@ export function SubscriptionForm({
           {/* Logo library picker */}
           <LogoLibraryPicker
             onSelect={async (domain, name) => {
-              // Clear current logo so the suggestion banner is visible
+              // Clear current logo so we can set the new one
               setLogoPreview(null)
               form.setValue('logo_url', null)
               clearFetchedLogo()
               // Fetch and auto-apply the logo
-              const dataUrl = await fetchLogoForName(name, domain)
-              if (dataUrl) {
+              try {
+                const dataUrl = await fetchLogoForName(name, domain)
                 const filename = getCachedLogoFilename(name)
-                if (filename) {
+                if (dataUrl && filename) {
                   form.setValue('logo_url', filename, { shouldDirty: true })
                   setLogoPreview(dataUrl)
+                  toast.success('Logo applied', { description: `Using ${name} logo` })
+                } else {
+                  toast.error('Logo not found', { description: `Could not fetch logo for ${name}` })
                 }
+              } catch (err) {
+                toast.error('Logo fetch failed', { description: String(err) })
               }
             }}
           />
