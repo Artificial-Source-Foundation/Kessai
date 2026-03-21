@@ -42,8 +42,8 @@ const mockSubscriptions = [
 
 const mockInvoke = vi.fn()
 
-vi.mock('@tauri-apps/api/core', () => ({
-  invoke: (...args: unknown[]) => mockInvoke(...args),
+vi.mock('@/lib/api', () => ({
+  apiInvoke: (...args: unknown[]) => mockInvoke(...args),
 }))
 
 describe('useSubscriptionStore', () => {

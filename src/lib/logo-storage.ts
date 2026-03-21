@@ -1,10 +1,21 @@
-import { open } from '@tauri-apps/plugin-dialog'
-import { invoke } from '@tauri-apps/api/core'
+import { apiInvoke as invoke } from '@/lib/api'
+
+function isTauri(): boolean {
+  return typeof window !== 'undefined' && '__TAURI__' in window
+}
 
 // In-memory cache for logo data URLs
 const logoCache = new Map<string, string>()
 
 export async function pickAndSaveLogo(subscriptionId: string): Promise<string | null> {
+  if (!isTauri()) {
+    // In web mode, use a file input instead
+    // For now, return null — logo upload in web mode can be added later
+    return null
+  }
+
+  const { open } = await import('@tauri-apps/plugin-dialog')
+
   const file = await open({
     multiple: false,
     filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'webp', 'gif'] }],

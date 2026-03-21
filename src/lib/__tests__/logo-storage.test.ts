@@ -1,10 +1,14 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
+// Simulate Tauri environment for pickAndSaveLogo tests
+// @ts-expect-error -- setting Tauri flag for tests
+window.__TAURI__ = true
+
 const mockInvoke = vi.fn()
 const mockOpen = vi.fn()
 
-vi.mock('@tauri-apps/api/core', () => ({
-  invoke: (...args: unknown[]) => mockInvoke(...args),
+vi.mock('@/lib/api', () => ({
+  apiInvoke: (...args: unknown[]) => mockInvoke(...args),
 }))
 
 vi.mock('@tauri-apps/plugin-dialog', () => ({

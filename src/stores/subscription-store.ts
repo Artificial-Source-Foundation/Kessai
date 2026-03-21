@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { invoke } from '@tauri-apps/api/core'
+import { apiInvoke as invoke } from '@/lib/api'
 import type { Subscription, NewSubscription, SubscriptionStatus } from '@/types/subscription'
 
 type SubscriptionState = {

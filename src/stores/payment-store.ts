@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { invoke } from '@tauri-apps/api/core'
+import { apiInvoke as invoke } from '@/lib/api'
 import type { Payment, PaymentFormData, PaymentWithSubscription } from '@/types/payment'
 
 interface PaymentState {

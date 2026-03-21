@@ -1,11 +1,13 @@
-import { save } from '@tauri-apps/plugin-dialog'
-import { writeTextFile } from '@tauri-apps/plugin-fs'
-import { invoke } from '@tauri-apps/api/core'
+import { apiInvoke as invoke } from '@/lib/api'
 import type { Subscription } from '@/types/subscription'
 import type { Category } from '@/types/category'
 import type { Payment } from '@/types/payment'
 import type { PriceChange } from '@/types/price-history'
 import type { Settings } from '@/types/settings'
+
+function isTauri(): boolean {
+  return typeof window !== 'undefined' && '__TAURI__' in window
+}
 
 interface BackupData {
   version: string
@@ -27,6 +29,24 @@ export async function exportData(): Promise<BackupData> {
 }
 
 export async function saveBackupToFile(data: BackupData): Promise<boolean> {
+  if (!isTauri()) {
+    // In web mode, trigger a browser download instead
+    const json = JSON.stringify(data, null, 2)
+    const date = new Date().toISOString().split('T')[0]
+    const filename = `subby-backup-${date}.json`
+    const blob = new Blob([json], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    a.click()
+    URL.revokeObjectURL(url)
+    return true
+  }
+
+  const { save } = await import('@tauri-apps/plugin-dialog')
+  const { writeTextFile } = await import('@tauri-apps/plugin-fs')
+
   const json = JSON.stringify(data, null, 2)
   const date = new Date().toISOString().split('T')[0]
   const defaultFilename = `subby-backup-${date}.json`

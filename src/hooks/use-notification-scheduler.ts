@@ -6,7 +6,10 @@ import { formatCurrency } from '@/lib/currency'
 import type { CurrencyCode } from '@/lib/currency'
 import type { Subscription } from '@/types/subscription'
 import type { Settings } from '@/types/settings'
-import { isPermissionGranted, sendNotification } from '@tauri-apps/plugin-notification'
+
+function isTauri(): boolean {
+  return typeof window !== 'undefined' && '__TAURI__' in window
+}
 
 const CHECK_INTERVAL_MS = 60 * 60 * 1000 // 1 hour
 const LAST_NOTIFIED_KEY = 'subby-last-notification-date'
@@ -78,6 +81,12 @@ async function sendRenewalNotifications(
 ): Promise<void> {
   const upcoming = getUpcomingRenewals(subscriptions, settings.notification_advance_days)
   if (upcoming.length === 0) return
+
+  if (!isTauri()) return
+
+  const { isPermissionGranted, sendNotification } = await import(
+    '@tauri-apps/plugin-notification'
+  )
 
   const granted = await isPermissionGranted()
   if (!granted) return

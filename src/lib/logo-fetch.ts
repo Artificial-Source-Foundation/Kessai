@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api/core'
+import { apiInvoke as invoke } from '@/lib/api'
 import { getLogoDataUrl } from '@/lib/logo-storage'
 
 // Cache of fetched logo results keyed by lowercased name

@@ -48,7 +48,9 @@
     "bot:start": "pnpm --filter @subby/discord-bot start",
     "release": "release-it",
     "release:dry": "release-it --dry-run",
-    "sync-versions": "node scripts/sync-versions.js"
+    "sync-versions": "node scripts/sync-versions.js",
+    "serve": "cargo build --release -p subby-web && pnpm build && ./target/release/subby-web",
+    "serve:dev": "cargo run -p subby-web -- --dist-dir dist --port 3000"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

@@ -1,24 +1,28 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { validateBackupData, readFileAsJson, exportData, importData, saveBackupToFile } from '../data-management'
-import { invoke } from '@tauri-apps/api/core'
-import { save } from '@tauri-apps/plugin-dialog'
-import { writeTextFile } from '@tauri-apps/plugin-fs'
 
-vi.mock('@tauri-apps/api/core', () => ({
-  invoke: vi.fn(),
+// Simulate Tauri environment for saveBackupToFile tests
+// @ts-expect-error -- setting Tauri flag for tests
+window.__TAURI__ = true
+
+import { validateBackupData, readFileAsJson, exportData, importData, saveBackupToFile } from '../data-management'
+
+const mockInvoke = vi.fn()
+
+vi.mock('@/lib/api', () => ({
+  apiInvoke: (...args: unknown[]) => mockInvoke(...args),
 }))
 
+// Mock Tauri plugins (lazy-imported in saveBackupToFile)
+const mockSave = vi.fn()
+const mockWriteTextFile = vi.fn()
+
 vi.mock('@tauri-apps/plugin-dialog', () => ({
-  save: vi.fn(),
+  save: (...args: unknown[]) => mockSave(...args),
 }))
 
 vi.mock('@tauri-apps/plugin-fs', () => ({
-  writeTextFile: vi.fn(),
+  writeTextFile: (...args: unknown[]) => mockWriteTextFile(...args),
 }))
-
-const mockInvoke = vi.mocked(invoke)
-const mockSave = vi.mocked(save)
-const mockWriteTextFile = vi.mocked(writeTextFile)
 
 describe('validateBackupData', () => {
   const validBackup = {

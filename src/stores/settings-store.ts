@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { invoke } from '@tauri-apps/api/core'
+import { apiInvoke as invoke } from '@/lib/api'
 import type { Settings, Theme, AnimationSpeed } from '@/types/settings'
 import { DEFAULT_SETTINGS } from '@/types/settings'
 
