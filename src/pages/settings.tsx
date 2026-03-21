@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSettings } from '@/hooks/use-settings'
 import { useTheme } from '@/components/theme-provider'
 import { useSubscriptionStore } from '@/stores/subscription-store'
 import { useCategoryStore } from '@/stores/category-store'
 import { useSettingsStore } from '@/stores/settings-store'
 import { getCurrencyOptions } from '@/lib/currency'
-import { Moon, Sun, Monitor, Wallet, Zap } from 'lucide-react'
+import { Moon, Sun, Monitor, Wallet, Zap, X, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -39,14 +39,39 @@ export function SettingsPage() {
   const { fetch: refetchSubscriptions } = useSubscriptionStore()
   const { fetch: refetchCategories } = useCategoryStore()
   const { setBudget } = useSettingsStore()
-  const [budgetInput, setBudgetInput] = useState('')
-  const [isSavingBudget, setIsSavingBudget] = useState(false)
+  const [budgetInput, setBudgetInput] = useState(settings?.monthly_budget?.toString() ?? '')
+  const [budgetSaved, setBudgetSaved] = useState(false)
+  const isInitialized = useRef(false)
 
   const handleDataChanged = () => {
     refetchSettings()
     refetchSubscriptions()
     refetchCategories()
   }
+
+  // Sync budgetInput when settings load for the first time
+  useEffect(() => {
+    if (!isInitialized.current && settings) {
+      setBudgetInput(settings.monthly_budget?.toString() ?? '')
+      isInitialized.current = true
+    }
+  }, [settings])
+
+  // Debounced auto-save for budget
+  useEffect(() => {
+    const currentBudgetStr = settings?.monthly_budget?.toString() ?? ''
+    if (budgetInput === currentBudgetStr) return
+
+    const timer = setTimeout(async () => {
+      const val = parseFloat(budgetInput)
+      if (!isNaN(val) && val > 0) {
+        await setBudget(val)
+        setBudgetSaved(true)
+        setTimeout(() => setBudgetSaved(false), 2000)
+      }
+    }, 800)
+    return () => clearTimeout(timer)
+  }, [budgetInput, settings?.monthly_budget, setBudget])
 
   if (isLoading || !settings) {
     return <SettingsSkeleton />
@@ -160,58 +185,44 @@ export function SettingsPage() {
           </div>
 
           <div className="flex flex-col gap-3">
-            <Label htmlFor="monthly_budget">
-              Monthly Budget{' '}
-              {settings.monthly_budget ? `(${settings.currency} ${settings.monthly_budget})` : ''}
-            </Label>
+            <Label htmlFor="monthly_budget">Monthly Budget</Label>
             <div className="flex items-center gap-3">
-              <Input
-                id="monthly_budget"
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder={
-                  settings.monthly_budget ? String(settings.monthly_budget) : 'e.g. 100.00'
-                }
-                value={budgetInput}
-                onChange={(e) => setBudgetInput(e.target.value)}
-                className="border-border bg-muted/50 w-40"
-              />
-              <Button
-                size="sm"
-                disabled={isSavingBudget || !budgetInput}
-                onClick={async () => {
-                  const val = parseFloat(budgetInput)
-                  if (isNaN(val) || val < 0) return
-                  setIsSavingBudget(true)
-                  try {
-                    await setBudget(val > 0 ? val : null)
-                    setBudgetInput('')
-                  } finally {
-                    setIsSavingBudget(false)
+              <div className="relative w-40">
+                <Input
+                  id="monthly_budget"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder={
+                    settings.monthly_budget ? String(settings.monthly_budget) : 'e.g. 100.00'
                   }
-                }}
-              >
-                {isSavingBudget ? 'Saving...' : 'Set'}
-              </Button>
-              {settings.monthly_budget !== null && settings.monthly_budget !== undefined && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={isSavingBudget}
-                  onClick={async () => {
-                    setIsSavingBudget(true)
-                    try {
+                  value={budgetInput}
+                  onChange={(e) => setBudgetInput(e.target.value)}
+                  className="border-border bg-muted/50 pr-7"
+                />
+                {(settings.monthly_budget !== null && settings.monthly_budget !== undefined) ||
+                budgetInput !== '' ? (
+                  <button
+                    type="button"
+                    aria-label="Clear budget"
+                    className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2 -translate-y-1/2 transition-colors"
+                    onClick={async () => {
                       await setBudget(null)
                       setBudgetInput('')
-                    } finally {
-                      setIsSavingBudget(false)
-                    }
-                  }}
-                >
-                  Clear
-                </Button>
-              )}
+                      setBudgetSaved(false)
+                    }}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                ) : null}
+              </div>
+              <span
+                className={`text-primary flex items-center gap-1 text-xs transition-opacity duration-300 ${budgetSaved ? 'opacity-100' : 'opacity-0'}`}
+                aria-live="polite"
+              >
+                <Check className="h-3.5 w-3.5" />
+                Saved
+              </span>
             </div>
           </div>
         </div>

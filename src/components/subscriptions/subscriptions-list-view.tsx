@@ -96,12 +96,17 @@ export const SubscriptionsListView = memo(function SubscriptionsListView({
                         : null
                       return (
                         <>
-                          <p className="text-foreground font-[family-name:var(--font-heading)] font-semibold">
-                            {formatCurrency(sub.amount, subCurrency)}
-                          </p>
+                          <div className="flex items-baseline gap-1.5">
+                            <p className="text-foreground font-[family-name:var(--font-heading)] font-semibold">
+                              {formatCurrency(sub.amount, subCurrency)}
+                            </p>
+                            <span className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px] tracking-wider">
+                              {subCurrency}
+                            </span>
+                          </div>
                           {isDifferent && converted !== null && (
                             <p className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px]">
-                              ≈ {formatCurrency(converted, currency)}
+                              ≈ {formatCurrency(converted, currency)} {currency}
                             </p>
                           )}
                           <p className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px] tracking-wider uppercase">

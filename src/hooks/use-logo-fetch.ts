@@ -8,8 +8,8 @@ type LogoFetchState = {
   isFetchingLogo: boolean
   /** The filename to store (e.g. "fetched-netflix.webp") */
   fetchedLogoFilename: string | null
-  /** Trigger a fetch for a given name */
-  fetchLogo: (name: string) => void
+  /** Trigger a fetch for a given name, with an optional known domain */
+  fetchLogo: (name: string, domain?: string | null) => void
   /** Clear the fetched logo state */
   clearFetchedLogo: () => void
 }
@@ -31,7 +31,7 @@ export function useLogoFetch(debounceMs = 500): LogoFetchState {
   }, [])
 
   const fetchLogo = useCallback(
-    (name: string) => {
+    (name: string, domain?: string | null) => {
       // Clear any pending debounce
       if (timerRef.current) {
         clearTimeout(timerRef.current)
@@ -49,7 +49,7 @@ export function useLogoFetch(debounceMs = 500): LogoFetchState {
 
       timerRef.current = setTimeout(async () => {
         try {
-          const dataUrl = await fetchLogoForName(trimmed)
+          const dataUrl = await fetchLogoForName(trimmed, domain)
           if (abortRef.current) return
 
           if (dataUrl) {

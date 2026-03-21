@@ -103,17 +103,22 @@ fn delete_logo(app_handle: tauri::AppHandle, filename: String) -> Result<(), Str
 async fn fetch_logo(
     app_handle: tauri::AppHandle,
     name: String,
+    domain: Option<String>,
 ) -> Result<Option<String>, String> {
     let clean_name = name.trim().to_lowercase().replace(' ', "");
     if clean_name.is_empty() {
         return Ok(None);
     }
 
-    let domains = vec![
-        format!("{}.com", clean_name),
-        format!("{}.io", clean_name),
-        format!("{}.app", clean_name),
-    ];
+    let domains = if let Some(d) = domain.filter(|d| !d.trim().is_empty()) {
+        vec![d.trim().to_string()]
+    } else {
+        vec![
+            format!("{}.com", clean_name),
+            format!("{}.io", clean_name),
+            format!("{}.app", clean_name),
+        ]
+    };
 
     let client = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(5))

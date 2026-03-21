@@ -8,8 +8,13 @@ const fetchCache = new Map<string, string | null>()
  * Fetch a logo for a subscription name via the Rust backend.
  * Returns a base64 data URL if found, or null.
  * Results are cached in-memory to avoid re-fetching.
+ * @param name - Subscription name (used for cache key and fallback domain guessing)
+ * @param domain - Optional known domain for the service (e.g. "netflix.com")
  */
-export async function fetchLogoForName(name: string): Promise<string | null> {
+export async function fetchLogoForName(
+  name: string,
+  domain?: string | null
+): Promise<string | null> {
   const key = name.trim().toLowerCase()
   if (!key || key.length < 2) return null
 
@@ -22,7 +27,10 @@ export async function fetchLogoForName(name: string): Promise<string | null> {
   }
 
   try {
-    const filename = await invoke<string | null>('fetch_logo', { name })
+    const filename = await invoke<string | null>('fetch_logo', {
+      name,
+      domain: domain ?? null,
+    })
     fetchCache.set(key, filename)
 
     if (filename) {

@@ -182,6 +182,16 @@ export function SubscriptionForm({
     return formatCurrency(converted, globalCurrency)
   }, [watchedAmount, watchedCurrency, globalCurrency])
 
+  // When a template with a domain is selected, immediately trigger a logo fetch
+  const templateDomain = template?.domain ?? null
+  useEffect(() => {
+    if (template && templateDomain && !subscription) {
+      fetchLogo(template.name, templateDomain)
+    }
+    // Only run on mount (template won't change due to key prop)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // Watch the name field and auto-fetch logo when it changes (only for new subscriptions without a logo)
   useEffect(() => {
     const sub = form.watch((values) => {
@@ -504,7 +514,8 @@ export function SubscriptionForm({
                   }
                 }}
               >
-                {isUploadingLogo ? 'Uploading...' : logoPreview ? 'Change Logo' : 'Upload Logo'}
+                <Upload className="h-3.5 w-3.5" />
+                {isUploadingLogo ? 'Uploading...' : logoPreview ? 'Change Logo' : 'Upload Custom Logo'}
               </Button>
             </div>
           </div>

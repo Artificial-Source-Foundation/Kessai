@@ -3,6 +3,7 @@ import type { BillingCycle } from '@/types/subscription'
 export interface SubscriptionTemplate {
   id: string
   name: string
+  domain: string | null
   category: string
   color: string
   defaultBillingCycle: BillingCycle
@@ -16,6 +17,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'netflix',
     name: 'Netflix',
+    domain: 'netflix.com',
     category: 'Streaming',
     color: '#e50914',
     defaultBillingCycle: 'monthly',
@@ -26,6 +28,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'disney-plus',
     name: 'Disney+',
+    domain: 'disneyplus.com',
     category: 'Streaming',
     color: '#113ccf',
     defaultBillingCycle: 'monthly',
@@ -36,6 +39,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'hulu',
     name: 'Hulu',
+    domain: 'hulu.com',
     category: 'Streaming',
     color: '#1ce783',
     defaultBillingCycle: 'monthly',
@@ -46,6 +50,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'hbo-max',
     name: 'Max',
+    domain: 'max.com',
     category: 'Streaming',
     color: '#002be7',
     defaultBillingCycle: 'monthly',
@@ -56,6 +61,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'amazon-prime',
     name: 'Amazon Prime',
+    domain: 'amazon.com',
     category: 'Streaming',
     color: '#00a8e1',
     defaultBillingCycle: 'yearly',
@@ -66,6 +72,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'apple-tv',
     name: 'Apple TV+',
+    domain: 'tv.apple.com',
     category: 'Streaming',
     color: '#000000',
     defaultBillingCycle: 'monthly',
@@ -76,6 +83,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'paramount-plus',
     name: 'Paramount+',
+    domain: 'paramountplus.com',
     category: 'Streaming',
     color: '#0064ff',
     defaultBillingCycle: 'monthly',
@@ -86,6 +94,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'peacock',
     name: 'Peacock',
+    domain: 'peacocktv.com',
     category: 'Streaming',
     color: '#000000',
     defaultBillingCycle: 'monthly',
@@ -96,6 +105,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'crunchyroll',
     name: 'Crunchyroll',
+    domain: 'crunchyroll.com',
     category: 'Streaming',
     color: '#f47521',
     defaultBillingCycle: 'monthly',
@@ -106,6 +116,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'mubi',
     name: 'MUBI',
+    domain: 'mubi.com',
     category: 'Streaming',
     color: '#001489',
     defaultBillingCycle: 'monthly',
@@ -116,6 +127,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'curiosity-stream',
     name: 'CuriosityStream',
+    domain: 'curiositystream.com',
     category: 'Streaming',
     color: '#174a6c',
     defaultBillingCycle: 'yearly',
@@ -126,6 +138,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'discovery-plus',
     name: 'Discovery+',
+    domain: 'discoveryplus.com',
     category: 'Streaming',
     color: '#003c71',
     defaultBillingCycle: 'monthly',
@@ -136,6 +149,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'twitch',
     name: 'Twitch',
+    domain: 'twitch.tv',
     category: 'Streaming',
     color: '#9146ff',
     defaultBillingCycle: 'monthly',
@@ -146,6 +160,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'youtube-premium',
     name: 'YouTube Premium',
+    domain: 'youtube.com',
     category: 'Streaming',
     color: '#ff0000',
     defaultBillingCycle: 'monthly',
@@ -156,6 +171,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'funimation',
     name: 'Funimation',
+    domain: 'funimation.com',
     category: 'Streaming',
     color: '#410099',
     defaultBillingCycle: 'monthly',
@@ -168,6 +184,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'spotify',
     name: 'Spotify',
+    domain: 'spotify.com',
     category: 'Music',
     color: '#1db954',
     defaultBillingCycle: 'monthly',
@@ -178,6 +195,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'apple-music',
     name: 'Apple Music',
+    domain: 'apple.com',
     category: 'Music',
     color: '#fa233b',
     defaultBillingCycle: 'monthly',
@@ -188,6 +206,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'tidal',
     name: 'TIDAL',
+    domain: 'tidal.com',
     category: 'Music',
     color: '#000000',
     defaultBillingCycle: 'monthly',
@@ -198,6 +217,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'amazon-music',
     name: 'Amazon Music',
+    domain: 'music.amazon.com',
     category: 'Music',
     color: '#25d1da',
     defaultBillingCycle: 'monthly',
@@ -208,6 +228,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'deezer',
     name: 'Deezer',
+    domain: 'deezer.com',
     category: 'Music',
     color: '#a238ff',
     defaultBillingCycle: 'monthly',
@@ -218,6 +239,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'soundcloud-go',
     name: 'SoundCloud Go+',
+    domain: 'soundcloud.com',
     category: 'Music',
     color: '#ff5500',
     defaultBillingCycle: 'monthly',
@@ -228,6 +250,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'youtube-music',
     name: 'YouTube Music',
+    domain: 'music.youtube.com',
     category: 'Music',
     color: '#ff0000',
     defaultBillingCycle: 'monthly',
@@ -238,6 +261,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'pandora',
     name: 'Pandora',
+    domain: 'pandora.com',
     category: 'Music',
     color: '#3668ff',
     defaultBillingCycle: 'monthly',
@@ -248,6 +272,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'audible',
     name: 'Audible',
+    domain: 'audible.com',
     category: 'Music',
     color: '#f8991c',
     defaultBillingCycle: 'monthly',
@@ -258,6 +283,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'pocket-casts',
     name: 'Pocket Casts',
+    domain: 'pocketcasts.com',
     category: 'Music',
     color: '#f43e37',
     defaultBillingCycle: 'yearly',
@@ -270,6 +296,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'adobe-cc',
     name: 'Adobe Creative Cloud',
+    domain: 'adobe.com',
     category: 'Software',
     color: '#ff0000',
     defaultBillingCycle: 'monthly',
@@ -280,6 +307,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'microsoft-365',
     name: 'Microsoft 365',
+    domain: 'microsoft.com',
     category: 'Software',
     color: '#0078d4',
     defaultBillingCycle: 'yearly',
@@ -290,6 +318,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'google-one',
     name: 'Google One',
+    domain: 'one.google.com',
     category: 'Software',
     color: '#4285f4',
     defaultBillingCycle: 'monthly',
@@ -300,6 +329,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'canva-pro',
     name: 'Canva Pro',
+    domain: 'canva.com',
     category: 'Software',
     color: '#00c4cc',
     defaultBillingCycle: 'monthly',
@@ -310,6 +340,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'figma',
     name: 'Figma',
+    domain: 'figma.com',
     category: 'Software',
     color: '#f24e1e',
     defaultBillingCycle: 'monthly',
@@ -320,6 +351,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: '1password',
     name: '1Password',
+    domain: '1password.com',
     category: 'Software',
     color: '#0572ec',
     defaultBillingCycle: 'yearly',
@@ -330,6 +362,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'bitwarden',
     name: 'Bitwarden',
+    domain: 'bitwarden.com',
     category: 'Software',
     color: '#175ddc',
     defaultBillingCycle: 'yearly',
@@ -340,6 +373,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'lastpass',
     name: 'LastPass',
+    domain: 'lastpass.com',
     category: 'Software',
     color: '#d32d27',
     defaultBillingCycle: 'yearly',
@@ -350,6 +384,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'grammarly',
     name: 'Grammarly',
+    domain: 'grammarly.com',
     category: 'Software',
     color: '#15c39a',
     defaultBillingCycle: 'monthly',
@@ -360,6 +395,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'dashlane',
     name: 'Dashlane',
+    domain: 'dashlane.com',
     category: 'Software',
     color: '#0e6856',
     defaultBillingCycle: 'yearly',
@@ -370,6 +406,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'setapp',
     name: 'Setapp',
+    domain: 'setapp.com',
     category: 'Software',
     color: '#7b68ee',
     defaultBillingCycle: 'monthly',
@@ -380,6 +417,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'sketch',
     name: 'Sketch',
+    domain: 'sketch.com',
     category: 'Software',
     color: '#f7b500',
     defaultBillingCycle: 'yearly',
@@ -390,6 +428,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'affinity',
     name: 'Affinity',
+    domain: 'affinity.serif.com',
     category: 'Software',
     color: '#4dc5f1',
     defaultBillingCycle: 'yearly',
@@ -400,6 +439,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'notion',
     name: 'Notion',
+    domain: 'notion.so',
     category: 'Software',
     color: '#000000',
     defaultBillingCycle: 'monthly',
@@ -410,6 +450,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'evernote',
     name: 'Evernote',
+    domain: 'evernote.com',
     category: 'Software',
     color: '#00a82d',
     defaultBillingCycle: 'monthly',
@@ -422,6 +463,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'xbox-game-pass',
     name: 'Xbox Game Pass',
+    domain: 'xbox.com',
     category: 'Gaming',
     color: '#107c10',
     defaultBillingCycle: 'monthly',
@@ -432,6 +474,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'playstation-plus',
     name: 'PlayStation Plus',
+    domain: 'playstation.com',
     category: 'Gaming',
     color: '#003087',
     defaultBillingCycle: 'yearly',
@@ -442,6 +485,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'nintendo-switch',
     name: 'Nintendo Switch Online',
+    domain: 'nintendo.com',
     category: 'Gaming',
     color: '#e60012',
     defaultBillingCycle: 'yearly',
@@ -452,6 +496,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'ea-play',
     name: 'EA Play',
+    domain: 'ea.com',
     category: 'Gaming',
     color: '#000000',
     defaultBillingCycle: 'monthly',
@@ -462,6 +507,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'humble-choice',
     name: 'Humble Choice',
+    domain: 'humblebundle.com',
     category: 'Gaming',
     color: '#cc2929',
     defaultBillingCycle: 'monthly',
@@ -472,6 +518,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'geforce-now',
     name: 'GeForce NOW',
+    domain: 'nvidia.com',
     category: 'Gaming',
     color: '#76b900',
     defaultBillingCycle: 'monthly',
@@ -482,6 +529,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'ubisoft-plus',
     name: 'Ubisoft+',
+    domain: 'ubisoft.com',
     category: 'Gaming',
     color: '#0070ff',
     defaultBillingCycle: 'monthly',
@@ -492,6 +540,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'world-of-warcraft',
     name: 'World of Warcraft',
+    domain: 'worldofwarcraft.blizzard.com',
     category: 'Gaming',
     color: '#0074e0',
     defaultBillingCycle: 'monthly',
@@ -504,6 +553,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'icloud-plus',
     name: 'iCloud+',
+    domain: 'apple.com',
     category: 'Cloud Storage',
     color: '#3693f3',
     defaultBillingCycle: 'monthly',
@@ -514,6 +564,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'dropbox',
     name: 'Dropbox',
+    domain: 'dropbox.com',
     category: 'Cloud Storage',
     color: '#0061ff',
     defaultBillingCycle: 'monthly',
@@ -524,6 +575,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'onedrive',
     name: 'OneDrive',
+    domain: 'onedrive.live.com',
     category: 'Cloud Storage',
     color: '#0078d4',
     defaultBillingCycle: 'monthly',
@@ -534,6 +586,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'pcloud',
     name: 'pCloud',
+    domain: 'pcloud.com',
     category: 'Cloud Storage',
     color: '#20b8e4',
     defaultBillingCycle: 'yearly',
@@ -544,6 +597,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'backblaze',
     name: 'Backblaze',
+    domain: 'backblaze.com',
     category: 'Cloud Storage',
     color: '#c41200',
     defaultBillingCycle: 'monthly',
@@ -554,6 +608,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'sync-com',
     name: 'Sync.com',
+    domain: 'sync.com',
     category: 'Cloud Storage',
     color: '#0097d7',
     defaultBillingCycle: 'yearly',
@@ -564,6 +619,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'mega',
     name: 'MEGA',
+    domain: 'mega.io',
     category: 'Cloud Storage',
     color: '#d9272e',
     defaultBillingCycle: 'monthly',
@@ -576,6 +632,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'slack',
     name: 'Slack',
+    domain: 'slack.com',
     category: 'Productivity',
     color: '#611f69',
     defaultBillingCycle: 'monthly',
@@ -586,6 +643,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'todoist',
     name: 'Todoist',
+    domain: 'todoist.com',
     category: 'Productivity',
     color: '#e44332',
     defaultBillingCycle: 'yearly',
@@ -596,6 +654,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'asana',
     name: 'Asana',
+    domain: 'asana.com',
     category: 'Productivity',
     color: '#f06a6a',
     defaultBillingCycle: 'monthly',
@@ -606,6 +665,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'monday-com',
     name: 'Monday.com',
+    domain: 'monday.com',
     category: 'Productivity',
     color: '#ff3d57',
     defaultBillingCycle: 'monthly',
@@ -616,6 +676,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'clickup',
     name: 'ClickUp',
+    domain: 'clickup.com',
     category: 'Productivity',
     color: '#7b68ee',
     defaultBillingCycle: 'monthly',
@@ -626,6 +687,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'linear',
     name: 'Linear',
+    domain: 'linear.app',
     category: 'Productivity',
     color: '#5e6ad2',
     defaultBillingCycle: 'monthly',
@@ -636,6 +698,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'zoom',
     name: 'Zoom',
+    domain: 'zoom.us',
     category: 'Productivity',
     color: '#2d8cff',
     defaultBillingCycle: 'monthly',
@@ -646,6 +709,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'calendly',
     name: 'Calendly',
+    domain: 'calendly.com',
     category: 'Productivity',
     color: '#006bff',
     defaultBillingCycle: 'monthly',
@@ -658,6 +722,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'peloton',
     name: 'Peloton',
+    domain: 'onepeloton.com',
     category: 'Health & Fitness',
     color: '#c4122f',
     defaultBillingCycle: 'monthly',
@@ -668,6 +733,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'strava',
     name: 'Strava',
+    domain: 'strava.com',
     category: 'Health & Fitness',
     color: '#fc4c02',
     defaultBillingCycle: 'monthly',
@@ -678,6 +744,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'calm',
     name: 'Calm',
+    domain: 'calm.com',
     category: 'Health & Fitness',
     color: '#3b8dc5',
     defaultBillingCycle: 'yearly',
@@ -688,6 +755,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'headspace',
     name: 'Headspace',
+    domain: 'headspace.com',
     category: 'Health & Fitness',
     color: '#f47d31',
     defaultBillingCycle: 'yearly',
@@ -698,6 +766,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'myfitnesspal',
     name: 'MyFitnessPal',
+    domain: 'myfitnesspal.com',
     category: 'Health & Fitness',
     color: '#0070e0',
     defaultBillingCycle: 'monthly',
@@ -708,6 +777,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'fitbod',
     name: 'Fitbod',
+    domain: 'fitbod.me',
     category: 'Health & Fitness',
     color: '#31b2f7',
     defaultBillingCycle: 'yearly',
@@ -718,6 +788,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'whoop',
     name: 'WHOOP',
+    domain: 'whoop.com',
     category: 'Health & Fitness',
     color: '#00a3ff',
     defaultBillingCycle: 'monthly',
@@ -728,6 +799,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'apple-fitness',
     name: 'Apple Fitness+',
+    domain: 'apple.com',
     category: 'Health & Fitness',
     color: '#4cd964',
     defaultBillingCycle: 'monthly',
@@ -740,6 +812,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'nyt',
     name: 'New York Times',
+    domain: 'nytimes.com',
     category: 'News & Reading',
     color: '#000000',
     defaultBillingCycle: 'monthly',
@@ -750,6 +823,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'wsj',
     name: 'Wall Street Journal',
+    domain: 'wsj.com',
     category: 'News & Reading',
     color: '#0274b6',
     defaultBillingCycle: 'monthly',
@@ -760,6 +834,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'wapo',
     name: 'Washington Post',
+    domain: 'washingtonpost.com',
     category: 'News & Reading',
     color: '#000000',
     defaultBillingCycle: 'monthly',
@@ -770,6 +845,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'medium',
     name: 'Medium',
+    domain: 'medium.com',
     category: 'News & Reading',
     color: '#000000',
     defaultBillingCycle: 'monthly',
@@ -780,6 +856,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'substack',
     name: 'Substack',
+    domain: 'substack.com',
     category: 'News & Reading',
     color: '#ff6719',
     defaultBillingCycle: 'monthly',
@@ -790,6 +867,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'kindle-unlimited',
     name: 'Kindle Unlimited',
+    domain: 'amazon.com',
     category: 'News & Reading',
     color: '#ff9900',
     defaultBillingCycle: 'monthly',
@@ -800,6 +878,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'apple-news',
     name: 'Apple News+',
+    domain: 'apple.com',
     category: 'News & Reading',
     color: '#fa233b',
     defaultBillingCycle: 'monthly',
@@ -810,6 +889,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'economist',
     name: 'The Economist',
+    domain: 'economist.com',
     category: 'News & Reading',
     color: '#e3120b',
     defaultBillingCycle: 'monthly',
@@ -820,6 +900,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'scribd',
     name: 'Scribd',
+    domain: 'scribd.com',
     category: 'News & Reading',
     color: '#1e7b85',
     defaultBillingCycle: 'monthly',
@@ -830,6 +911,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'blinkist',
     name: 'Blinkist',
+    domain: 'blinkist.com',
     category: 'News & Reading',
     color: '#00e38c',
     defaultBillingCycle: 'yearly',
@@ -842,6 +924,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'chatgpt-plus',
     name: 'ChatGPT Plus',
+    domain: 'chatgpt.com',
     category: 'Other',
     color: '#10a37f',
     defaultBillingCycle: 'monthly',
@@ -852,6 +935,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'claude-pro',
     name: 'Claude Pro',
+    domain: 'claude.ai',
     category: 'Other',
     color: '#d97706',
     defaultBillingCycle: 'monthly',
@@ -862,6 +946,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'github-pro',
     name: 'GitHub Pro',
+    domain: 'github.com',
     category: 'Other',
     color: '#24292e',
     defaultBillingCycle: 'monthly',
@@ -872,6 +957,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'github-copilot',
     name: 'GitHub Copilot',
+    domain: 'github.com',
     category: 'Other',
     color: '#000000',
     defaultBillingCycle: 'monthly',
@@ -882,6 +968,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'nordvpn',
     name: 'NordVPN',
+    domain: 'nordvpn.com',
     category: 'Other',
     color: '#4687ff',
     defaultBillingCycle: 'yearly',
@@ -892,6 +979,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'expressvpn',
     name: 'ExpressVPN',
+    domain: 'expressvpn.com',
     category: 'Other',
     color: '#da3940',
     defaultBillingCycle: 'yearly',
@@ -902,6 +990,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'surfshark',
     name: 'Surfshark',
+    domain: 'surfshark.com',
     category: 'Other',
     color: '#178bff',
     defaultBillingCycle: 'yearly',
@@ -912,6 +1001,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'proton-mail',
     name: 'Proton Mail',
+    domain: 'proton.me',
     category: 'Other',
     color: '#6d4aff',
     defaultBillingCycle: 'yearly',
@@ -922,6 +1012,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'mullvad',
     name: 'Mullvad VPN',
+    domain: 'mullvad.net',
     category: 'Other',
     color: '#294d73',
     defaultBillingCycle: 'monthly',
@@ -932,6 +1023,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'domain-name',
     name: 'Domain Name',
+    domain: null,
     category: 'Other',
     color: '#6b7280',
     defaultBillingCycle: 'yearly',
@@ -942,6 +1034,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'web-hosting',
     name: 'Web Hosting',
+    domain: null,
     category: 'Other',
     color: '#6b7280',
     defaultBillingCycle: 'monthly',
@@ -952,6 +1045,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'vercel',
     name: 'Vercel',
+    domain: 'vercel.com',
     category: 'Other',
     color: '#000000',
     defaultBillingCycle: 'monthly',
@@ -962,6 +1056,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'netlify',
     name: 'Netlify',
+    domain: 'netlify.com',
     category: 'Other',
     color: '#00c7b7',
     defaultBillingCycle: 'monthly',
@@ -972,6 +1067,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'aws',
     name: 'AWS',
+    domain: 'aws.amazon.com',
     category: 'Other',
     color: '#ff9900',
     defaultBillingCycle: 'monthly',
@@ -982,6 +1078,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'digitalocean',
     name: 'DigitalOcean',
+    domain: 'digitalocean.com',
     category: 'Other',
     color: '#0080ff',
     defaultBillingCycle: 'monthly',
@@ -992,6 +1089,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'gym-membership',
     name: 'Gym Membership',
+    domain: null,
     category: 'Other',
     color: '#6b7280',
     defaultBillingCycle: 'monthly',
@@ -1002,6 +1100,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'duolingo',
     name: 'Duolingo',
+    domain: 'duolingo.com',
     category: 'Other',
     color: '#58cc02',
     defaultBillingCycle: 'monthly',
@@ -1012,6 +1111,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'skillshare',
     name: 'Skillshare',
+    domain: 'skillshare.com',
     category: 'Other',
     color: '#00ff84',
     defaultBillingCycle: 'yearly',
@@ -1022,6 +1122,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'masterclass',
     name: 'MasterClass',
+    domain: 'masterclass.com',
     category: 'Other',
     color: '#000000',
     defaultBillingCycle: 'yearly',
@@ -1032,6 +1133,7 @@ export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
   {
     id: 'tailscale',
     name: 'Tailscale',
+    domain: 'tailscale.com',
     category: 'Other',
     color: '#000000',
     defaultBillingCycle: 'monthly',

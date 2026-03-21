@@ -46,7 +46,7 @@ export const SubscriptionsGridView = memo(function SubscriptionsGridView({
         return (
           <div
             key={sub.id}
-            className={`glass-card hover-lift group relative overflow-hidden ${!sub.is_active ? 'opacity-60' : ''}`}
+            className={`glass-card hover-lift group relative ${!sub.is_active ? 'opacity-60' : ''}`}
           >
             <div className="absolute top-2 right-2 z-10 flex gap-1 rounded-lg bg-[var(--color-surface-elevated)] p-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
               <button
@@ -113,7 +113,8 @@ export const SubscriptionsGridView = memo(function SubscriptionsGridView({
                       {formatCurrency(sub.amount, (sub.currency || currency) as CurrencyCode)}
                     </p>
                     <span className="text-muted-foreground font-[family-name:var(--font-mono)] text-xs">
-                      /{sub.billing_cycle === 'yearly' ? 'yr' : 'mo'}
+                      {(sub.currency || currency).toUpperCase()}
+                      <span className="ml-0.5">/{sub.billing_cycle === 'yearly' ? 'yr' : 'mo'}</span>
                     </span>
                   </div>
                   {(() => {
@@ -123,7 +124,7 @@ export const SubscriptionsGridView = memo(function SubscriptionsGridView({
                     if (converted === null) return null
                     return (
                       <p className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px]">
-                        ≈ {formatCurrency(converted, currency)}
+                        ≈ {formatCurrency(converted, currency)} {currency}
                       </p>
                     )
                   })()}

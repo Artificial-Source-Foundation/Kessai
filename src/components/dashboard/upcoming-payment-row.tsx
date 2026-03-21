@@ -53,12 +53,17 @@ export const UpcomingPaymentRow = memo(function UpcomingPaymentRow({
             : null
           return (
             <>
-              <p className="text-foreground font-[family-name:var(--font-heading)] font-bold">
-                {formatCurrency(subscription.amount, subCurrency)}
-              </p>
+              <div className="flex items-baseline gap-1">
+                <p className="text-foreground font-[family-name:var(--font-heading)] font-bold">
+                  {formatCurrency(subscription.amount, subCurrency)}
+                </p>
+                <span className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px]">
+                  {subCurrency}
+                </span>
+              </div>
               {isDifferent && converted !== null && (
                 <p className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px]">
-                  ≈ {formatCurrency(converted, currency)}
+                  ≈ {formatCurrency(converted, currency)} {currency}
                 </p>
               )}
             </>
