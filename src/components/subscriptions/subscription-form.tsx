@@ -524,18 +524,18 @@ export function SubscriptionForm({
           {/* Logo library picker */}
           <LogoLibraryPicker
             onSelect={async (domain, name) => {
-              // Directly fetch and apply the logo (skip the suggestion step)
-              try {
-                const dataUrl = await fetchLogoForName(name, domain)
-                if (dataUrl) {
-                  const filename = getCachedLogoFilename(name)
-                  form.setValue('logo_url', filename)
+              // Clear current logo so the suggestion banner is visible
+              setLogoPreview(null)
+              form.setValue('logo_url', null)
+              clearFetchedLogo()
+              // Fetch and auto-apply the logo
+              const dataUrl = await fetchLogoForName(name, domain)
+              if (dataUrl) {
+                const filename = getCachedLogoFilename(name)
+                if (filename) {
+                  form.setValue('logo_url', filename, { shouldDirty: true })
                   setLogoPreview(dataUrl)
-                  clearFetchedLogo()
                 }
-              } catch {
-                // Fall back to suggestion flow
-                fetchLogo(name, domain)
               }
             }}
           />
