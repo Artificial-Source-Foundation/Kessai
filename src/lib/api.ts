@@ -3,17 +3,12 @@
  * Automatically detects the environment and routes calls accordingly.
  */
 
-// Detect if we're running inside Tauri
-const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
-
-// Lazy import Tauri invoke to avoid errors in browser
-let tauriInvoke: ((cmd: string, args?: Record<string, unknown>) => Promise<unknown>) | null = null
-
-if (isTauri) {
-  import('@tauri-apps/api/core').then((mod) => {
-    tauriInvoke = mod.invoke
-  })
-}
+// Lazy import Tauri invoke — always attempt the import, check at call time
+const tauriInvokePromise: Promise<
+  ((cmd: string, args?: Record<string, unknown>) => Promise<unknown>) | null
+> = import('@tauri-apps/api/core')
+  .then((mod) => mod.invoke)
+  .catch(() => null)
 
 async function webFetch<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(url, {
@@ -113,9 +108,10 @@ const API_MAP: Record<
 }
 
 export async function apiInvoke<T>(command: string, args?: Record<string, unknown>): Promise<T> {
-  // In Tauri mode, use native IPC
-  if (isTauri && tauriInvoke) {
-    return tauriInvoke(command, args) as Promise<T>
+  // Try Tauri IPC first (works in desktop app)
+  const invoke = await tauriInvokePromise
+  if (invoke) {
+    return invoke(command, args) as Promise<T>
   }
 
   // In web mode, use REST API

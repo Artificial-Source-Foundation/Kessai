@@ -35,7 +35,7 @@ fn resolve_db_path(cli_path: Option<PathBuf>) -> PathBuf {
     }
 
     if let Some(data_dir) = dirs::data_dir() {
-        let app_dir = data_dir.join("com.newstella.subby");
+        let app_dir = data_dir.join("com.asf.subby");
         std::fs::create_dir_all(&app_dir).ok();
         return app_dir.join("subby.db");
     }

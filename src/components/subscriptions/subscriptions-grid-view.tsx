@@ -114,7 +114,9 @@ export const SubscriptionsGridView = memo(function SubscriptionsGridView({
                     </p>
                     <span className="text-muted-foreground font-[family-name:var(--font-mono)] text-xs">
                       {(sub.currency || currency).toUpperCase()}
-                      <span className="ml-0.5">/{sub.billing_cycle === 'yearly' ? 'yr' : 'mo'}</span>
+                      <span className="ml-0.5">
+                        /{sub.billing_cycle === 'yearly' ? 'yr' : 'mo'}
+                      </span>
                     </span>
                   </div>
                   {(() => {
