@@ -3,13 +3,19 @@ import { Pin } from 'lucide-react'
 import { formatCurrency, type CurrencyCode } from '@/lib/currency'
 import { convertCurrencyCached } from '@/lib/exchange-rates'
 import { getLogoDataUrl } from '@/lib/logo-storage'
-import { calculateMonthlyAmount, type Subscription } from '@/types/subscription'
+import {
+  calculateMonthlyAmount,
+  calculateNormalizedAmount,
+  NORMALIZATION_SUFFIXES,
+} from '@/types/subscription'
+import type { Subscription, NormalizationPeriod } from '@/types/subscription'
 import type { Category } from '@/types/category'
 
 interface SubscriptionBentoProps {
   subscriptions: Subscription[]
   categories: Category[]
   currency: CurrencyCode
+  costNormalization: NormalizationPeriod
   onEdit: (subscription: Subscription) => void
 }
 
@@ -174,6 +180,7 @@ const BentoTile = memo(function BentoTile({
   colorIndex,
   percentage,
   currency,
+  costNormalization,
   width,
   height,
   onClick,
@@ -183,6 +190,7 @@ const BentoTile = memo(function BentoTile({
   colorIndex: number
   percentage: number
   currency: CurrencyCode
+  costNormalization: NormalizationPeriod
   width: number
   height: number
   onClick: () => void
@@ -193,7 +201,10 @@ const BentoTile = memo(function BentoTile({
     subCurrency === currency
       ? subscription.amount
       : (convertCurrencyCached(subscription.amount, subCurrency, currency) ?? subscription.amount)
-  const monthlyAmount = calculateMonthlyAmount(convertedAmount, subscription.billing_cycle)
+  const isNormalized = costNormalization !== 'as-is'
+  const displayAmount = isNormalized
+    ? calculateNormalizedAmount(convertedAmount, subscription.billing_cycle, costNormalization)
+    : calculateMonthlyAmount(convertedAmount, subscription.billing_cycle)
   const bgColor = BENTO_COLORS[colorIndex % BENTO_COLORS.length]
 
   // Determine tile size for adaptive content
@@ -276,7 +287,12 @@ const BentoTile = memo(function BentoTile({
                 isLarge ? 'text-xl' : isMedium ? 'text-base' : 'text-sm'
               }`}
             >
-              {formatCurrency(monthlyAmount, currency)}
+              {formatCurrency(displayAmount, currency)}
+              {isNormalized && isLarge && (
+                <span className="ml-0.5 text-xs font-normal text-white/60">
+                  {NORMALIZATION_SUFFIXES[costNormalization]}
+                </span>
+              )}
             </span>
             <span
               className={`bg-black/25 font-semibold text-white/90 ${
@@ -319,6 +335,7 @@ export function SubscriptionBento({
   subscriptions,
   categories,
   currency,
+  costNormalization,
   onEdit,
 }: SubscriptionBentoProps) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -449,6 +466,7 @@ export function SubscriptionBento({
                 colorIndex={rect.node.colorIndex}
                 percentage={percentage}
                 currency={currency}
+                costNormalization={costNormalization}
                 width={width}
                 height={height}
                 onClick={() => onEdit(rect.node.subscription)}
