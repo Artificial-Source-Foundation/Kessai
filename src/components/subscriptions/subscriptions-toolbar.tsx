@@ -10,26 +10,9 @@ import {
 import { CostNormalizationToggle } from '@/components/subscriptions/cost-normalization-toggle'
 import { CategoryFilter } from '@/components/subscriptions/category-filter'
 import { TagFilter } from '@/components/tags/tag-filter'
+import { SORT_LABELS } from '@/components/subscriptions/subscriptions-sort'
+import type { SortOption } from '@/components/subscriptions/subscriptions-sort'
 import type { Category } from '@/types/category'
-
-export type SortOption =
-  | 'name-asc'
-  | 'name-desc'
-  | 'price-asc'
-  | 'price-desc'
-  | 'date-asc'
-  | 'date-desc'
-  | 'category'
-
-export const SORT_LABELS: Record<SortOption, string> = {
-  'name-asc': 'Name (A-Z)',
-  'name-desc': 'Name (Z-A)',
-  'price-asc': 'Price (Low-High)',
-  'price-desc': 'Price (High-Low)',
-  'date-asc': 'Next billing (Soonest)',
-  'date-desc': 'Next billing (Latest)',
-  category: 'Category',
-}
 
 type ViewMode = 'grid' | 'list' | 'bento'
 
@@ -80,7 +63,10 @@ export const SubscriptionsToolbar = React.memo(function SubscriptionsToolbar({
             />
           </div>
           <Select value={sortOption} onValueChange={(v) => setSortOption(v as SortOption)}>
-            <SelectTrigger className="h-10 w-full gap-2 rounded-lg font-[family-name:var(--font-mono)] text-[11px] tracking-wider sm:w-[200px]" aria-label="Sort subscriptions">
+            <SelectTrigger
+              className="h-10 w-full gap-2 rounded-lg font-[family-name:var(--font-mono)] text-[11px] tracking-wider sm:w-[200px]"
+              aria-label="Sort subscriptions"
+            >
               <ArrowUpDown className="h-3.5 w-3.5 shrink-0 opacity-50" />
               <SelectValue />
             </SelectTrigger>

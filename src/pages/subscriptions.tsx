@@ -16,11 +16,9 @@ import { SubscriptionBento } from '@/components/subscriptions/subscription-bento
 import { SubscriptionsGridView } from '@/components/subscriptions/subscriptions-grid-view'
 import { SubscriptionsListView } from '@/components/subscriptions/subscriptions-list-view'
 import { SubscriptionsHeader } from '@/components/subscriptions/subscriptions-header'
-import {
-  SubscriptionsToolbar,
-  SORT_LABELS,
-} from '@/components/subscriptions/subscriptions-toolbar'
-import type { SortOption } from '@/components/subscriptions/subscriptions-toolbar'
+import { SubscriptionsToolbar } from '@/components/subscriptions/subscriptions-toolbar'
+import { SORT_LABELS } from '@/components/subscriptions/subscriptions-sort'
+import type { SortOption } from '@/components/subscriptions/subscriptions-sort'
 import { CancelledSubscriptionsSection } from '@/components/subscriptions/cancelled-subscriptions-section'
 import { useTagStore } from '@/stores/tag-store'
 import { SubscriptionsSkeleton } from '@/components/subscriptions/subscriptions-skeleton'
