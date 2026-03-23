@@ -34,7 +34,7 @@ export function SettingsPage() {
     isLoading,
     setCurrency,
     setNotifications,
-    setNotificationAdvanceDays,
+    setNotificationDaysBefore,
     setNotificationTime,
     refresh: refetchSettings,
   } = useSettings()
@@ -149,7 +149,7 @@ export function SettingsPage() {
           <NotificationSettings
             settings={settings}
             onToggle={(enabled) => setNotifications(enabled)}
-            onAdvanceDaysChange={setNotificationAdvanceDays}
+            onDaysBeforeChange={setNotificationDaysBefore}
             onTimeChange={setNotificationTime}
           />
         </div>
