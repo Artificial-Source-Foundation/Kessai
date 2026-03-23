@@ -120,6 +120,7 @@ mod tests {
                 status: models::SubscriptionStatus::Active,
                 trial_end_date: None,
                 shared_count: 1,
+                is_pinned: false,
             })
             .unwrap();
 
@@ -224,6 +225,7 @@ mod tests {
                 status: models::SubscriptionStatus::Active,
                 trial_end_date: None,
                 shared_count: 1,
+                is_pinned: false,
             })
             .unwrap();
 
@@ -287,6 +289,7 @@ mod tests {
                 status: models::SubscriptionStatus::Active,
                 trial_end_date: None,
                 shared_count: 1,
+                is_pinned: false,
             })
             .unwrap();
 
@@ -340,6 +343,7 @@ mod tests {
                 status: models::SubscriptionStatus::Active,
                 trial_end_date: None,
                 shared_count: 1,
+                is_pinned: false,
             })
             .unwrap();
 
@@ -392,6 +396,7 @@ mod tests {
                 status: models::SubscriptionStatus::Active,
                 trial_end_date: None,
                 shared_count: 1,
+                is_pinned: false,
             })
             .unwrap();
 
@@ -419,6 +424,7 @@ mod tests {
                 status: models::SubscriptionStatus::Active,
                 trial_end_date: None,
                 shared_count: 1,
+                is_pinned: false,
             })
             .unwrap();
 
@@ -470,6 +476,7 @@ mod tests {
                 status: models::SubscriptionStatus::Active,
                 trial_end_date: None,
                 shared_count: 1,
+                is_pinned: false,
             })
             .unwrap();
 
@@ -546,6 +553,7 @@ mod tests {
                 status: models::SubscriptionStatus::Trial,
                 trial_end_date: Some(future_date),
                 shared_count: 1,
+                is_pinned: false,
             })
             .unwrap();
 
@@ -635,6 +643,7 @@ mod tests {
                 status: models::SubscriptionStatus::Active,
                 trial_end_date: None,
                 shared_count: 1,
+                is_pinned: false,
             })
             .unwrap();
 
@@ -677,6 +686,7 @@ mod tests {
                 status: models::SubscriptionStatus::Active,
                 trial_end_date: None,
                 shared_count: 1,
+                is_pinned: false,
             })
             .unwrap();
 

@@ -15,43 +15,23 @@ impl SubscriptionService {
         Self { pool }
     }
 
-    /// List all subscriptions, sorted by next_payment_date ASC (nulls last).
+    /// List all subscriptions, sorted by pinned first, then next_payment_date ASC (nulls last).
     pub fn list(&self) -> Result<Vec<Subscription>> {
         let conn = self.pool.get()?;
         let mut stmt = conn.prepare(
             "SELECT id, name, amount, currency, billing_cycle, billing_day, category_id,
                     card_id, color, logo_url, notes, is_active, next_payment_date,
                     status, trial_end_date, status_changed_at, shared_count,
-                    created_at, updated_at
+                    is_pinned, cancellation_reason, cancelled_at,
+                    last_reviewed_at, created_at, updated_at
              FROM subscriptions
              ORDER BY
+                is_pinned DESC,
                 CASE WHEN next_payment_date IS NULL THEN 1 ELSE 0 END,
                 next_payment_date ASC",
         )?;
 
-        let rows = stmt.query_map([], |row| {
-            Ok(Subscription {
-                id: row.get(0)?,
-                name: row.get(1)?,
-                amount: row.get(2)?,
-                currency: row.get(3)?,
-                billing_cycle: billing_cycle_from_db(row.get::<_, String>(4)?),
-                billing_day: row.get(5)?,
-                category_id: row.get(6)?,
-                card_id: row.get(7)?,
-                color: row.get(8)?,
-                logo_url: row.get(9)?,
-                notes: row.get(10)?,
-                is_active: row.get::<_, i32>(11)? != 0,
-                next_payment_date: row.get(12)?,
-                status: status_from_db(row.get::<_, String>(13)?),
-                trial_end_date: row.get(14)?,
-                status_changed_at: row.get(15)?,
-                shared_count: row.get::<_, i32>(16).unwrap_or(1),
-                created_at: row.get(17)?,
-                updated_at: row.get(18)?,
-            })
-        })?;
+        let rows = stmt.query_map([], |row| row_to_subscription(row))?;
 
         Ok(rows.collect::<std::result::Result<Vec<_>, _>>()?)
     }
@@ -63,32 +43,11 @@ impl SubscriptionService {
             "SELECT id, name, amount, currency, billing_cycle, billing_day, category_id,
                     card_id, color, logo_url, notes, is_active, next_payment_date,
                     status, trial_end_date, status_changed_at, shared_count,
-                    created_at, updated_at
+                    is_pinned, cancellation_reason, cancelled_at,
+                    last_reviewed_at, created_at, updated_at
              FROM subscriptions WHERE id = ?1",
             params![id],
-            |row| {
-                Ok(Subscription {
-                    id: row.get(0)?,
-                    name: row.get(1)?,
-                    amount: row.get(2)?,
-                    currency: row.get(3)?,
-                    billing_cycle: billing_cycle_from_db(row.get::<_, String>(4)?),
-                    billing_day: row.get(5)?,
-                    category_id: row.get(6)?,
-                    card_id: row.get(7)?,
-                    color: row.get(8)?,
-                    logo_url: row.get(9)?,
-                    notes: row.get(10)?,
-                    is_active: row.get::<_, i32>(11)? != 0,
-                    next_payment_date: row.get(12)?,
-                    status: status_from_db(row.get::<_, String>(13)?),
-                    trial_end_date: row.get(14)?,
-                    status_changed_at: row.get(15)?,
-                    shared_count: row.get::<_, i32>(16).unwrap_or(1),
-                    created_at: row.get(17)?,
-                    updated_at: row.get(18)?,
-                })
-            },
+            |row| row_to_subscription(row),
         )
         .map_err(|e| match e {
             rusqlite::Error::QueryReturnedNoRows => {
@@ -111,9 +70,10 @@ impl SubscriptionService {
             "INSERT INTO subscriptions
              (id, name, amount, currency, billing_cycle, billing_day, category_id,
               card_id, color, logo_url, notes, is_active, next_payment_date,
-              status, trial_end_date, status_changed_at, shared_count,
-              created_at, updated_at)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19)",
+              status, trial_end_date, status_changed_at, shared_count, is_pinned,
+              cancellation_reason, cancelled_at,
+              last_reviewed_at, created_at, updated_at)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23)",
             params![
                 id,
                 data.name,
@@ -132,6 +92,10 @@ impl SubscriptionService {
                 data.trial_end_date,
                 now,
                 data.shared_count.max(1),
+                if data.is_pinned { 1i32 } else { 0 },
+                Option::<String>::None,
+                Option::<String>::None,
+                rusqlite::types::Null,
                 now,
                 now,
             ],
@@ -213,6 +177,22 @@ impl SubscriptionService {
             sets.push("shared_count = ?");
             values.push(Box::new(shared_count.max(1)));
         }
+        if let Some(is_pinned) = data.is_pinned {
+            sets.push("is_pinned = ?");
+            values.push(Box::new(if is_pinned { 1i32 } else { 0 }));
+        }
+        if let Some(ref cancellation_reason) = data.cancellation_reason {
+            sets.push("cancellation_reason = ?");
+            values.push(Box::new(cancellation_reason.clone()));
+        }
+        if let Some(ref cancelled_at) = data.cancelled_at {
+            sets.push("cancelled_at = ?");
+            values.push(Box::new(cancelled_at.clone()));
+        }
+        if let Some(ref last_reviewed_at) = data.last_reviewed_at {
+            sets.push("last_reviewed_at = ?");
+            values.push(Box::new(last_reviewed_at.clone()));
+        }
 
         if sets.is_empty() {
             return self.get(id);
@@ -260,20 +240,115 @@ impl SubscriptionService {
         )
     }
 
+    /// Toggle the pinned status of a subscription.
+    pub fn toggle_pinned(&self, id: &str) -> Result<Subscription> {
+        let sub = self.get(id)?;
+        self.update(
+            id,
+            UpdateSubscription {
+                is_pinned: Some(!sub.is_pinned),
+                ..Default::default()
+            },
+        )
+    }
+
     /// Transition a subscription to a new status.
+    /// When transitioning to cancelled, automatically sets cancelled_at.
     pub fn transition_status(
         &self,
         id: &str,
         new_status: SubscriptionStatus,
     ) -> Result<Subscription> {
+        let mut update = UpdateSubscription {
+            status: Some(new_status.clone()),
+            ..Default::default()
+        };
+
+        if matches!(new_status, SubscriptionStatus::Cancelled) {
+            let now = chrono::Utc::now().to_rfc3339();
+            update.cancelled_at = Some(Some(now));
+        }
+
+        self.update(id, update)
+    }
+
+    /// Cancel a subscription with an optional reason.
+    pub fn cancel_with_reason(&self, id: &str, reason: Option<&str>) -> Result<Subscription> {
+        let now = chrono::Utc::now().to_rfc3339();
         self.update(
             id,
             UpdateSubscription {
-                status: Some(new_status),
+                status: Some(SubscriptionStatus::Cancelled),
+                is_active: Some(false),
+                cancelled_at: Some(Some(now)),
+                cancellation_reason: Some(reason.map(|r| r.to_string())),
                 ..Default::default()
             },
         )
     }
+
+    /// Mark a subscription as reviewed (sets last_reviewed_at to current timestamp).
+    pub fn mark_reviewed(&self, id: &str) -> Result<Subscription> {
+        let now = chrono::Utc::now().to_rfc3339();
+        self.update(
+            id,
+            UpdateSubscription {
+                last_reviewed_at: Some(Some(now)),
+                ..Default::default()
+            },
+        )
+    }
+
+    /// List active subscriptions that haven't been reviewed in `days_threshold` days.
+    pub fn list_needing_review(&self, days_threshold: i64) -> Result<Vec<Subscription>> {
+        let conn = self.pool.get()?;
+        let threshold = format!("-{} days", days_threshold);
+        let mut stmt = conn.prepare(
+            "SELECT id, name, amount, currency, billing_cycle, billing_day, category_id,
+                    card_id, color, logo_url, notes, is_active, next_payment_date,
+                    status, trial_end_date, status_changed_at, shared_count,
+                    is_pinned, cancellation_reason, cancelled_at,
+                    last_reviewed_at, created_at, updated_at
+             FROM subscriptions
+             WHERE is_active = 1
+               AND (last_reviewed_at IS NULL OR last_reviewed_at < datetime('now', ?1))
+             ORDER BY
+                CASE WHEN last_reviewed_at IS NULL THEN 0 ELSE 1 END,
+                last_reviewed_at ASC",
+        )?;
+
+        let rows = stmt.query_map(params![threshold], |row| row_to_subscription(row))?;
+
+        Ok(rows.collect::<std::result::Result<Vec<_>, _>>()?)
+    }
+}
+
+fn row_to_subscription(row: &rusqlite::Row) -> rusqlite::Result<Subscription> {
+    Ok(Subscription {
+        id: row.get(0)?,
+        name: row.get(1)?,
+        amount: row.get(2)?,
+        currency: row.get(3)?,
+        billing_cycle: billing_cycle_from_db(row.get::<_, String>(4)?),
+        billing_day: row.get(5)?,
+        category_id: row.get(6)?,
+        card_id: row.get(7)?,
+        color: row.get(8)?,
+        logo_url: row.get(9)?,
+        notes: row.get(10)?,
+        is_active: row.get::<_, i32>(11)? != 0,
+        next_payment_date: row.get(12)?,
+        status: status_from_db(row.get::<_, String>(13)?),
+        trial_end_date: row.get(14)?,
+        status_changed_at: row.get(15)?,
+        shared_count: row.get::<_, i32>(16).unwrap_or(1),
+        is_pinned: row.get::<_, i32>(17).unwrap_or(0) != 0,
+        cancellation_reason: row.get(18)?,
+        cancelled_at: row.get(19)?,
+        last_reviewed_at: row.get(20)?,
+        created_at: row.get(21)?,
+        updated_at: row.get(22)?,
+    })
 }
 
 fn billing_cycle_from_db(s: String) -> BillingCycle {

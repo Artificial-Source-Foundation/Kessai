@@ -181,6 +181,21 @@ const MIGRATIONS: &[Migration] = &[
     },
     Migration {
         version: 12,
+        description: "add_subscription_pinned",
+        sql: r#"
+            ALTER TABLE subscriptions ADD COLUMN is_pinned INTEGER NOT NULL DEFAULT 0;
+        "#,
+    },
+    Migration {
+        version: 13,
+        description: "add_cancellation_tracking",
+        sql: r#"
+            ALTER TABLE subscriptions ADD COLUMN cancellation_reason TEXT;
+            ALTER TABLE subscriptions ADD COLUMN cancelled_at TEXT;
+        "#,
+    },
+    Migration {
+        version: 14,
         description: "create_tags_tables",
         sql: r#"
             CREATE TABLE IF NOT EXISTS tags (
@@ -196,6 +211,13 @@ const MIGRATIONS: &[Migration] = &[
             );
             CREATE INDEX IF NOT EXISTS idx_subscription_tags_sub ON subscription_tags(subscription_id);
             CREATE INDEX IF NOT EXISTS idx_subscription_tags_tag ON subscription_tags(tag_id);
+        "#,
+    },
+    Migration {
+        version: 15,
+        description: "add_last_reviewed_at_to_subscriptions",
+        sql: r#"
+            ALTER TABLE subscriptions ADD COLUMN last_reviewed_at TEXT;
         "#,
     },
 ];
@@ -271,7 +293,10 @@ fn should_skip_migration(conn: &Connection, version: u32) -> bool {
         9 => column_exists(conn, "settings", "monthly_budget"),
         10 => column_exists(conn, "settings", "reduce_motion"),
         11 => column_exists(conn, "settings", "notification_advance_days"),
-        12 => table_exists(conn, "tags"),
+        12 => column_exists(conn, "subscriptions", "is_pinned"),
+        13 => column_exists(conn, "subscriptions", "cancellation_reason"),
+        14 => table_exists(conn, "tags"),
+        15 => column_exists(conn, "subscriptions", "last_reviewed_at"),
         _ => false,
     }
 }
@@ -357,6 +382,6 @@ mod tests {
         let count: i64 = conn
             .query_row("SELECT COUNT(*) FROM _subby_migrations", [], |r| r.get(0))
             .unwrap();
-        assert_eq!(count, 12);
+        assert_eq!(count, 15);
     }
 }

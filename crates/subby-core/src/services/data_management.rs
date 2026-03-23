@@ -128,9 +128,10 @@ impl DataManagementService {
                     "INSERT OR REPLACE INTO subscriptions
                      (id, name, amount, currency, billing_cycle, billing_day, next_payment_date,
                       category_id, card_id, color, logo_url, notes, is_active,
-                      status, trial_end_date, status_changed_at, shared_count,
-                      created_at, updated_at)
-                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19)",
+                      status, trial_end_date, status_changed_at, shared_count, is_pinned,
+                      cancellation_reason, cancelled_at,
+                      last_reviewed_at, created_at, updated_at)
+                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23)",
                     params![
                         sub.id,
                         sub.name,
@@ -149,6 +150,10 @@ impl DataManagementService {
                         sub.trial_end_date,
                         sub.status_changed_at,
                         sub.shared_count,
+                        if sub.is_pinned { 1i32 } else { 0 },
+                        sub.cancellation_reason,
+                        sub.cancelled_at,
+                        sub.last_reviewed_at,
                         sub.created_at,
                         sub.updated_at,
                     ],

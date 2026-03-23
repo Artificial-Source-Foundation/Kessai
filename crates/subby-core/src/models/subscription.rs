@@ -130,6 +130,13 @@ pub struct Subscription {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status_changed_at: Option<String>,
     pub shared_count: i32,
+    pub is_pinned: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cancellation_reason: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cancelled_at: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub last_reviewed_at: Option<String>,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -161,6 +168,8 @@ pub struct NewSubscription {
     pub trial_end_date: Option<String>,
     #[serde(default = "default_shared_count")]
     pub shared_count: i32,
+    #[serde(default)]
+    pub is_pinned: bool,
 }
 
 fn default_true() -> bool {
@@ -207,4 +216,12 @@ pub struct UpdateSubscription {
     pub trial_end_date: Option<Option<String>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub shared_count: Option<i32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub is_pinned: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none", deserialize_with = "deserialize_double_option")]
+    pub cancellation_reason: Option<Option<String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none", deserialize_with = "deserialize_double_option")]
+    pub cancelled_at: Option<Option<String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none", deserialize_with = "deserialize_double_option")]
+    pub last_reviewed_at: Option<Option<String>>,
 }
