@@ -1,8 +1,12 @@
 use std::fs;
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
+use chrono::NaiveDate;
 use image::ImageReader;
+use tauri::menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem};
+use tauri::tray::TrayIconBuilder;
 use tauri::Manager;
 
 use subby_core::models::{
@@ -14,6 +18,9 @@ use subby_core::{
     models::{Category, ImportResult, Payment, PaymentCard, Settings, Subscription},
     SubbyCore,
 };
+
+/// Global flag to track whether the app should truly quit or just hide to tray.
+static QUITTING: AtomicBool = AtomicBool::new(false);
 
 // ── Logo commands (unchanged) ──────────────────────────────────────────────
 
@@ -476,6 +483,71 @@ fn import_data(
         .map_err(|e| e.to_string())
 }
 
+// ── System tray helpers ─────────────────────────────────────────────────────
+
+/// Count subscriptions with `next_payment_date` within the next 7 days.
+fn count_upcoming_payments(core: &SubbyCore) -> usize {
+    let subs = match core.subscriptions().list() {
+        Ok(s) => s,
+        Err(_) => return 0,
+    };
+
+    let today = chrono::Local::now().date_naive();
+    let week_later = today + chrono::Duration::days(7);
+
+    subs.iter()
+        .filter(|s| s.is_active)
+        .filter_map(|s| {
+            s.next_payment_date
+                .as_deref()
+                .and_then(|d| NaiveDate::parse_from_str(d, "%Y-%m-%d").ok())
+        })
+        .filter(|date| *date >= today && *date <= week_later)
+        .count()
+}
+
+/// Build (or rebuild) the tray menu with the current upcoming payment count.
+fn build_tray_menu(app: &tauri::AppHandle, count: usize) -> tauri::Result<()> {
+    let upcoming_label = if count == 0 {
+        "No upcoming payments".to_string()
+    } else {
+        format!("Upcoming payments: {}", count)
+    };
+
+    let open_item = MenuItemBuilder::with_id("open", "Open Subby").build(app)?;
+    let upcoming_item = MenuItemBuilder::with_id("upcoming", &upcoming_label)
+        .enabled(false)
+        .build(app)?;
+    let separator = PredefinedMenuItem::separator(app)?;
+    let quit_item = MenuItemBuilder::with_id("quit", "Quit").build(app)?;
+
+    let menu = MenuBuilder::new(app)
+        .item(&open_item)
+        .item(&upcoming_item)
+        .item(&separator)
+        .item(&quit_item)
+        .build()?;
+
+    // Update the existing tray icon's menu
+    if let Some(tray) = app.tray_by_id("main-tray") {
+        tray.set_menu(Some(menu))?;
+        let tooltip = if count == 0 {
+            "Subby".to_string()
+        } else {
+            format!("Subby — {} upcoming", count)
+        };
+        tray.set_tooltip(Some(&tooltip))?;
+    }
+
+    Ok(())
+}
+
+#[tauri::command]
+fn update_tray_badge(app: tauri::AppHandle, core: tauri::State<'_, SubbyCore>) -> Result<(), String> {
+    let count = count_upcoming_payments(&core);
+    build_tray_menu(&app, count).map_err(|e| e.to_string())
+}
+
 // ── App setup ──────────────────────────────────────────────────────────────
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -496,9 +568,98 @@ pub fn run() {
             let db_path = app_data_dir.join("subby.db");
 
             let core = SubbyCore::new(&db_path).expect("Failed to initialize SubbyCore database");
+            let upcoming_count = count_upcoming_payments(&core);
 
             app.manage(core);
+
+            // ── System tray setup ──────────────────────────────────────────
+            let handle = app.handle().clone();
+
+            // Build the initial tray menu
+            let upcoming_label = if upcoming_count == 0 {
+                "No upcoming payments".to_string()
+            } else {
+                format!("Upcoming payments: {}", upcoming_count)
+            };
+
+            let open_item = MenuItemBuilder::with_id("open", "Open Subby")
+                .build(&handle)?;
+            let upcoming_item = MenuItemBuilder::with_id("upcoming", &upcoming_label)
+                .enabled(false)
+                .build(&handle)?;
+            let separator = PredefinedMenuItem::separator(&handle)?;
+            let quit_item = MenuItemBuilder::with_id("quit", "Quit")
+                .build(&handle)?;
+
+            let menu = MenuBuilder::new(&handle)
+                .item(&open_item)
+                .item(&upcoming_item)
+                .item(&separator)
+                .item(&quit_item)
+                .build()?;
+
+            let tooltip = if upcoming_count == 0 {
+                "Subby".to_string()
+            } else {
+                format!("Subby — {} upcoming", upcoming_count)
+            };
+
+            TrayIconBuilder::with_id("main-tray")
+                .icon(app.default_window_icon().unwrap().clone())
+                .tooltip(&tooltip)
+                .menu(&menu)
+                .on_menu_event(move |app, event| match event.id().as_ref() {
+                    "open" => {
+                        if let Some(window) = app.get_webview_window("main") {
+                            let _ = window.show();
+                            let _ = window.unminimize();
+                            let _ = window.set_focus();
+                        }
+                    }
+                    "quit" => {
+                        QUITTING.store(true, Ordering::SeqCst);
+                        app.exit(0);
+                    }
+                    _ => {}
+                })
+                .on_tray_icon_event(|tray, event| {
+                    if let tauri::tray::TrayIconEvent::Click {
+                        button: tauri::tray::MouseButton::Left,
+                        ..
+                    } = event
+                    {
+                        let app = tray.app_handle();
+                        if let Some(window) = app.get_webview_window("main") {
+                            let _ = window.show();
+                            let _ = window.unminimize();
+                            let _ = window.set_focus();
+                        }
+                    }
+                })
+                .build(app)?;
+
+            // ── Periodic tray badge refresh (every 5 minutes) ──────────────
+            let periodic_handle = app.handle().clone();
+            std::thread::spawn(move || {
+                loop {
+                    std::thread::sleep(std::time::Duration::from_secs(300));
+                    if let Some(core) = periodic_handle.try_state::<SubbyCore>() {
+                        let count = count_upcoming_payments(&core);
+                        let _ = build_tray_menu(&periodic_handle, count);
+                    }
+                }
+            });
+
             Ok(())
+        })
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                if !QUITTING.load(Ordering::SeqCst) {
+                    // Hide to tray instead of quitting
+                    api.prevent_close();
+                    let _ = window.hide();
+                }
+            }
         })
         .invoke_handler(tauri::generate_handler![
             // Logo
@@ -546,6 +707,8 @@ pub fn run() {
             // Data management
             export_data,
             import_data,
+            // System tray
+            update_tray_badge,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

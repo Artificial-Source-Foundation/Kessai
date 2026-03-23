@@ -27,6 +27,7 @@ type UiState = {
   editingSubscriptionId: string | null
   shortcutsDialogOpen: boolean
   costNormalization: NormalizationPeriod
+  commandPaletteOpen: boolean
 
   toggleSidebar: () => void
   setSidebarCollapsed: (collapsed: boolean) => void
@@ -35,6 +36,8 @@ type UiState = {
   openShortcutsDialog: () => void
   closeShortcutsDialog: () => void
   setCostNormalization: (period: NormalizationPeriod) => void
+  openCommandPalette: () => void
+  closeCommandPalette: () => void
 }
 
 export const useUiStore = create<UiState>((set) => ({
@@ -43,6 +46,7 @@ export const useUiStore = create<UiState>((set) => ({
   editingSubscriptionId: null,
   shortcutsDialogOpen: false,
   costNormalization: loadCostNormalization(),
+  commandPaletteOpen: false,
 
   toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
 
@@ -72,4 +76,8 @@ export const useUiStore = create<UiState>((set) => ({
     }
     set({ costNormalization: period })
   },
+
+  openCommandPalette: () => set({ commandPaletteOpen: true }),
+
+  closeCommandPalette: () => set({ commandPaletteOpen: false }),
 }))
