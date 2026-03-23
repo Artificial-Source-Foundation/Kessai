@@ -1,3 +1,4 @@
+pub mod analytics;
 pub mod category;
 pub mod data_management;
 pub mod payment;
@@ -6,6 +7,7 @@ pub mod price_history;
 pub mod settings;
 pub mod subscription;
 
+pub use analytics::AnalyticsService;
 pub use category::CategoryService;
 pub use data_management::DataManagementService;
 pub use payment::PaymentService;

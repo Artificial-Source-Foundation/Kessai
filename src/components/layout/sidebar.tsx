@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   CreditCard,
   Calendar,
+  BarChart3,
   Settings,
   PanelLeftClose,
   PanelLeft,
@@ -18,6 +19,7 @@ const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/subscriptions', icon: CreditCard, label: 'Subscriptions' },
   { to: '/calendar', icon: Calendar, label: 'Calendar' },
+  { to: '/analytics', icon: BarChart3, label: 'Analytics' },
   { to: '/settings', icon: Settings, label: 'Settings' },
 ]
 

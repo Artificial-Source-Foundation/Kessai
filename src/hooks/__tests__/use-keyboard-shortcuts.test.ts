@@ -186,6 +186,9 @@ describe('useKeyboardShortcuts', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/calendar')
 
     fireKey('4')
+    expect(mockNavigate).toHaveBeenCalledWith('/analytics')
+
+    fireKey('5')
     expect(mockNavigate).toHaveBeenCalledWith('/settings')
   })
 

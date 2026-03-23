@@ -20,6 +20,9 @@ const Subscriptions = lazy(() =>
 const CalendarPage = lazy(() =>
   import('@/pages/calendar').then((m) => ({ default: m.CalendarPage }))
 )
+const AnalyticsPage = lazy(() =>
+  import('@/pages/analytics').then((m) => ({ default: m.AnalyticsPage }))
+)
 const SettingsPage = lazy(() =>
   import('@/pages/settings').then((m) => ({ default: m.SettingsPage }))
 )
@@ -88,6 +91,14 @@ export default function App() {
                   element={
                     <RouteErrorBoundary>
                       <CalendarPage />
+                    </RouteErrorBoundary>
+                  }
+                />
+                <Route
+                  path="/analytics"
+                  element={
+                    <RouteErrorBoundary>
+                      <AnalyticsPage />
                     </RouteErrorBoundary>
                   }
                 />

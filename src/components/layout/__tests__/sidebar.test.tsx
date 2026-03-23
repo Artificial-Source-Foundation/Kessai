@@ -62,11 +62,17 @@ describe('Sidebar', () => {
     expect(screen.getByText('Settings')).toBeInTheDocument()
   })
 
-  it('shows all 4 nav items', () => {
+  it('shows all 5 nav items', () => {
     renderSidebar()
 
     const navLinks = screen.getAllByRole('link')
-    expect(navLinks).toHaveLength(4)
+    expect(navLinks).toHaveLength(5)
+  })
+
+  it('shows Analytics nav item', () => {
+    renderSidebar()
+
+    expect(screen.getByText('Analytics')).toBeInTheDocument()
   })
 
   it('renders Subby branding', () => {

@@ -10,7 +10,7 @@ use std::path::Path;
 use db::DbPool;
 use error::Result;
 use services::{
-    CategoryService, DataManagementService, PaymentCardService, PaymentService,
+    AnalyticsService, CategoryService, DataManagementService, PaymentCardService, PaymentService,
     PriceHistoryService, SettingsService, SubscriptionService,
 };
 
@@ -67,6 +67,10 @@ impl SubbyCore {
 
     pub fn data_management(&self) -> DataManagementService {
         DataManagementService::new(self.pool.clone())
+    }
+
+    pub fn analytics(&self) -> AnalyticsService {
+        AnalyticsService::new(self.pool.clone())
     }
 }
 

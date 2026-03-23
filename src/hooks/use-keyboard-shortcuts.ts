@@ -6,7 +6,8 @@ const ROUTE_MAP: Record<string, string> = {
   '1': '/',
   '2': '/subscriptions',
   '3': '/calendar',
-  '4': '/settings',
+  '4': '/analytics',
+  '5': '/settings',
 }
 
 function isEditableTarget(target: EventTarget | null): boolean {

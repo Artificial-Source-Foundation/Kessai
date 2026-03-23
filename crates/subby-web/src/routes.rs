@@ -86,6 +86,11 @@ pub fn api_router(state: Arc<AppState>) -> Router {
         // Data Management
         .route("/export", get(export_data))
         .route("/import", post(import_data))
+        // Analytics
+        .route("/analytics/monthly", get(get_monthly_spending))
+        .route("/analytics/year/{year}", get(get_year_summary))
+        .route("/analytics/velocity", get(get_spending_velocity))
+        .route("/analytics/categories", get(get_category_spending))
         // Trials
         .route("/trials/expiring", get(get_expiring_trials))
         .with_state(state)
@@ -396,6 +401,50 @@ async fn import_data(
         .data_management()
         .import_data(body.data, body.clear_existing.unwrap_or(false))?;
     Ok(Json(result))
+}
+
+// ── Analytics handlers ───────────────────────────────────────────────────────
+
+#[derive(Deserialize)]
+struct MonthsQuery {
+    months: Option<i32>,
+}
+
+async fn get_monthly_spending(
+    State(state): State<Arc<AppState>>,
+    Query(query): Query<MonthsQuery>,
+) -> Result<impl IntoResponse> {
+    let data = state
+        .core
+        .analytics()
+        .monthly_spending(query.months.unwrap_or(12))?;
+    Ok(Json(data))
+}
+
+async fn get_year_summary(
+    State(state): State<Arc<AppState>>,
+    Path(year): Path<i32>,
+) -> Result<impl IntoResponse> {
+    let summary = state.core.analytics().year_summary(year)?;
+    Ok(Json(summary))
+}
+
+async fn get_spending_velocity(
+    State(state): State<Arc<AppState>>,
+) -> Result<impl IntoResponse> {
+    let velocity = state.core.analytics().spending_velocity()?;
+    Ok(Json(velocity))
+}
+
+async fn get_category_spending(
+    State(state): State<Arc<AppState>>,
+    Query(query): Query<MonthsQuery>,
+) -> Result<impl IntoResponse> {
+    let data = state
+        .core
+        .analytics()
+        .category_spending(query.months.unwrap_or(6))?;
+    Ok(Json(data))
 }
 
 // ── Trials handlers ─────────────────────────────────────────────────────────

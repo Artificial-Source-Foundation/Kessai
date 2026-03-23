@@ -101,6 +101,18 @@ const API_MAP: Record<
     path: (a) => `/api/price-history/recent?days=${(a.days as number | undefined) ?? 90}`,
   },
 
+  // Analytics
+  get_monthly_spending: {
+    method: 'GET',
+    path: (a) => `/api/analytics/monthly?months=${(a.months as number | undefined) ?? 12}`,
+  },
+  get_year_summary: { method: 'GET', path: (a) => `/api/analytics/year/${a.year}` },
+  get_spending_velocity: { method: 'GET', path: () => '/api/analytics/velocity' },
+  get_category_spending: {
+    method: 'GET',
+    path: (a) => `/api/analytics/categories?months=${(a.months as number | undefined) ?? 6}`,
+  },
+
   // Data Management
   export_data: { method: 'GET', path: () => '/api/export' },
   import_data: { method: 'POST', path: () => '/api/import' },
