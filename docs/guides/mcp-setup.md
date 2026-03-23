@@ -66,9 +66,9 @@ The MCP server uses the same database as the desktop app:
 
 | Platform | Default Path |
 |----------|-------------|
-| Linux | `~/.local/share/com.newstella.subby/subby.db` |
-| macOS | `~/Library/Application Support/com.newstella.subby/subby.db` |
-| Windows | `%APPDATA%\com.newstella.subby\subby.db` |
+| Linux | `~/.local/share/com.asf.subby/subby.db` |
+| macOS | `~/Library/Application Support/com.asf.subby/subby.db` |
+| Windows | `%APPDATA%\com.asf.subby\subby.db` |
 
 ## Available Tools
 
