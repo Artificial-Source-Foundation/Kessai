@@ -10,9 +10,10 @@ use tauri::tray::TrayIconBuilder;
 use tauri::Manager;
 
 use subby_core::models::{
-    BackupData, NewCategory, NewPayment, NewPaymentCard, NewSubscription, NewTag,
-    PaymentWithSubscription, PriceChange, SubscriptionStatus, Tag, UpdateCategory, UpdatePayment,
-    UpdatePaymentCard, UpdateSettings, UpdateSubscription, UpdateTag,
+    BackupData, CategorySpend, MonthlySpend, NewCategory, NewPayment, NewPaymentCard,
+    NewSubscription, NewTag, PaymentWithSubscription, PriceChange, SpendingVelocity,
+    SubscriptionStatus, Tag, UpdateCategory, UpdatePayment, UpdatePaymentCard, UpdateSettings,
+    UpdateSubscription, UpdateTag, YearSummary,
 };
 use subby_core::{
     models::{Category, ImportResult, Payment, PaymentCard, Settings, Subscription},
@@ -526,6 +527,48 @@ fn list_subscription_tags(
         .map_err(|e| e.to_string())
 }
 
+// ── Analytics commands ─────────────────────────────────────────────────────
+
+#[tauri::command]
+fn get_monthly_spending(
+    core: tauri::State<'_, SubbyCore>,
+    months: Option<i32>,
+) -> Result<Vec<MonthlySpend>, String> {
+    core.analytics()
+        .monthly_spending(months.unwrap_or(12))
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_year_summary(
+    core: tauri::State<'_, SubbyCore>,
+    year: i32,
+) -> Result<YearSummary, String> {
+    core.analytics()
+        .year_summary(year)
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_spending_velocity(
+    core: tauri::State<'_, SubbyCore>,
+) -> Result<SpendingVelocity, String> {
+    core.analytics()
+        .spending_velocity()
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_category_spending(
+    core: tauri::State<'_, SubbyCore>,
+    months: Option<i32>,
+) -> Result<Vec<CategorySpend>, String> {
+    core.analytics()
+        .category_spending(months.unwrap_or(6))
+        .map_err(|e| e.to_string())
+}
+
+
 // ── Settings commands ──────────────────────────────────────────────────────
 
 #[tauri::command]
@@ -776,6 +819,11 @@ pub fn run() {
             // Price history
             list_price_history,
             get_recent_price_changes,
+            // Analytics
+            get_monthly_spending,
+            get_year_summary,
+            get_spending_velocity,
+            get_category_spending,
             // Payment cards
             list_payment_cards,
             create_payment_card,
