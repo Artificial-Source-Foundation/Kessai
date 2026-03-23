@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { Pencil, Trash2, Power, Pin } from 'lucide-react'
+import { Pencil, Trash2, Power, Pin, Ban } from 'lucide-react'
 import { formatCurrency } from '@/lib/currency'
 import { convertCurrencyCached } from '@/lib/exchange-rates'
 import { BILLING_CYCLE_LABELS, CATEGORY_BADGE_VARIANTS } from '@/lib/constants'
@@ -19,6 +19,7 @@ interface SubscriptionsGridViewProps {
   getCategory: (categoryId: string | null) => Category | undefined
   onEdit: (sub: Subscription) => void
   onDelete: (sub: Subscription) => void
+  onCancel: (sub: Subscription) => void
   onToggleActive: (sub: Subscription) => void
   onMarkAsPaid: (sub: Subscription) => void
   canMarkAsPaid: (sub: Subscription) => boolean
@@ -36,6 +37,7 @@ export const SubscriptionsGridView = memo(function SubscriptionsGridView({
   getCategory,
   onEdit,
   onDelete,
+  onCancel,
   onToggleActive,
   onMarkAsPaid,
   canMarkAsPaid,
@@ -80,6 +82,13 @@ export const SubscriptionsGridView = memo(function SubscriptionsGridView({
                 className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-md p-1.5"
               >
                 <Power className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() => onCancel(sub)}
+                aria-label={`Cancel ${sub.name}`}
+                className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive rounded-md p-1.5"
+              >
+                <Ban className="h-3.5 w-3.5" />
               </button>
               <button
                 onClick={() => onDelete(sub)}

@@ -229,6 +229,8 @@ impl SubbyMcp {
             trial_end_date: p.trial_end_date.map(Some),
             shared_count: p.shared_count,
             is_pinned: None,
+            cancellation_reason: None,
+            cancelled_at: None,
         };
 
         let sub = self

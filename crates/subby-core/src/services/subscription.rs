@@ -22,7 +22,8 @@ impl SubscriptionService {
             "SELECT id, name, amount, currency, billing_cycle, billing_day, category_id,
                     card_id, color, logo_url, notes, is_active, next_payment_date,
                     status, trial_end_date, status_changed_at, shared_count,
-                    is_pinned, created_at, updated_at
+                    is_pinned, cancellation_reason, cancelled_at,
+                    created_at, updated_at
              FROM subscriptions
              ORDER BY
                 is_pinned DESC,
@@ -50,8 +51,10 @@ impl SubscriptionService {
                 status_changed_at: row.get(15)?,
                 shared_count: row.get::<_, i32>(16).unwrap_or(1),
                 is_pinned: row.get::<_, i32>(17).unwrap_or(0) != 0,
-                created_at: row.get(18)?,
-                updated_at: row.get(19)?,
+                cancellation_reason: row.get(18)?,
+                cancelled_at: row.get(19)?,
+                created_at: row.get(20)?,
+                updated_at: row.get(21)?,
             })
         })?;
 
@@ -65,7 +68,8 @@ impl SubscriptionService {
             "SELECT id, name, amount, currency, billing_cycle, billing_day, category_id,
                     card_id, color, logo_url, notes, is_active, next_payment_date,
                     status, trial_end_date, status_changed_at, shared_count,
-                    is_pinned, created_at, updated_at
+                    is_pinned, cancellation_reason, cancelled_at,
+                    created_at, updated_at
              FROM subscriptions WHERE id = ?1",
             params![id],
             |row| {
@@ -88,8 +92,10 @@ impl SubscriptionService {
                     status_changed_at: row.get(15)?,
                     shared_count: row.get::<_, i32>(16).unwrap_or(1),
                     is_pinned: row.get::<_, i32>(17).unwrap_or(0) != 0,
-                    created_at: row.get(18)?,
-                    updated_at: row.get(19)?,
+                    cancellation_reason: row.get(18)?,
+                    cancelled_at: row.get(19)?,
+                    created_at: row.get(20)?,
+                    updated_at: row.get(21)?,
                 })
             },
         )
@@ -115,8 +121,9 @@ impl SubscriptionService {
              (id, name, amount, currency, billing_cycle, billing_day, category_id,
               card_id, color, logo_url, notes, is_active, next_payment_date,
               status, trial_end_date, status_changed_at, shared_count, is_pinned,
+              cancellation_reason, cancelled_at,
               created_at, updated_at)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20)",
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22)",
             params![
                 id,
                 data.name,
@@ -136,6 +143,8 @@ impl SubscriptionService {
                 now,
                 data.shared_count.max(1),
                 if data.is_pinned { 1i32 } else { 0 },
+                Option::<String>::None,
+                Option::<String>::None,
                 now,
                 now,
             ],
@@ -221,6 +230,14 @@ impl SubscriptionService {
             sets.push("is_pinned = ?");
             values.push(Box::new(if is_pinned { 1i32 } else { 0 }));
         }
+        if let Some(ref cancellation_reason) = data.cancellation_reason {
+            sets.push("cancellation_reason = ?");
+            values.push(Box::new(cancellation_reason.clone()));
+        }
+        if let Some(ref cancelled_at) = data.cancelled_at {
+            sets.push("cancelled_at = ?");
+            values.push(Box::new(cancelled_at.clone()));
+        }
 
         if sets.is_empty() {
             return self.get(id);
@@ -281,15 +298,35 @@ impl SubscriptionService {
     }
 
     /// Transition a subscription to a new status.
+    /// When transitioning to cancelled, automatically sets cancelled_at.
     pub fn transition_status(
         &self,
         id: &str,
         new_status: SubscriptionStatus,
     ) -> Result<Subscription> {
+        let mut update = UpdateSubscription {
+            status: Some(new_status.clone()),
+            ..Default::default()
+        };
+
+        if matches!(new_status, SubscriptionStatus::Cancelled) {
+            let now = chrono::Utc::now().to_rfc3339();
+            update.cancelled_at = Some(Some(now));
+        }
+
+        self.update(id, update)
+    }
+
+    /// Cancel a subscription with an optional reason.
+    pub fn cancel_with_reason(&self, id: &str, reason: Option<&str>) -> Result<Subscription> {
+        let now = chrono::Utc::now().to_rfc3339();
         self.update(
             id,
             UpdateSubscription {
-                status: Some(new_status),
+                status: Some(SubscriptionStatus::Cancelled),
+                is_active: Some(false),
+                cancelled_at: Some(Some(now)),
+                cancellation_reason: Some(reason.map(|r| r.to_string())),
                 ..Default::default()
             },
         )

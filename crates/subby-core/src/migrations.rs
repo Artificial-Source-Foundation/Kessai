@@ -186,6 +186,14 @@ const MIGRATIONS: &[Migration] = &[
             ALTER TABLE subscriptions ADD COLUMN is_pinned INTEGER NOT NULL DEFAULT 0;
         "#,
     },
+    Migration {
+        version: 13,
+        description: "add_cancellation_tracking",
+        sql: r#"
+            ALTER TABLE subscriptions ADD COLUMN cancellation_reason TEXT;
+            ALTER TABLE subscriptions ADD COLUMN cancelled_at TEXT;
+        "#,
+    },
 ];
 
 /// Runs all pending migrations on the database connection.
@@ -260,6 +268,7 @@ fn should_skip_migration(conn: &Connection, version: u32) -> bool {
         10 => column_exists(conn, "settings", "reduce_motion"),
         11 => column_exists(conn, "settings", "notification_advance_days"),
         12 => column_exists(conn, "subscriptions", "is_pinned"),
+        13 => column_exists(conn, "subscriptions", "cancellation_reason"),
         _ => false,
     }
 }
@@ -344,6 +353,6 @@ mod tests {
         let count: i64 = conn
             .query_row("SELECT COUNT(*) FROM _subby_migrations", [], |r| r.get(0))
             .unwrap();
-        assert_eq!(count, 12);
+        assert_eq!(count, 13);
     }
 }

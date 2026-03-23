@@ -297,6 +297,8 @@ fn cmd_update(
             trial_end_date: None,
             shared_count: None,
             is_pinned: None,
+            cancellation_reason: None,
+            cancelled_at: None,
         },
     )?;
 

@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { Pencil, Trash2, Power, Pin } from 'lucide-react'
+import { Pencil, Trash2, Power, Pin, Ban } from 'lucide-react'
 import { formatCurrency } from '@/lib/currency'
 import { convertCurrencyCached } from '@/lib/exchange-rates'
 import { formatPaymentDate } from '@/lib/date-utils'
@@ -20,6 +20,7 @@ interface SubscriptionsListViewProps {
   getCategory: (categoryId: string | null) => Category | undefined
   onEdit: (sub: Subscription) => void
   onDelete: (sub: Subscription) => void
+  onCancel: (sub: Subscription) => void
   onToggleActive: (sub: Subscription) => void
   onTogglePinned: (sub: Subscription) => void
 }
@@ -36,6 +37,7 @@ export const SubscriptionsListView = memo(function SubscriptionsListView({
   getCategory,
   onEdit,
   onDelete,
+  onCancel,
   onToggleActive,
   onTogglePinned,
 }: SubscriptionsListViewProps) {
@@ -174,6 +176,13 @@ export const SubscriptionsListView = memo(function SubscriptionsListView({
                         className="text-muted-foreground hover:bg-accent hover:text-foreground rounded-lg p-2 transition-colors"
                       >
                         <Power className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => onCancel(sub)}
+                        aria-label={`Cancel ${sub.name}`}
+                        className="text-muted-foreground hover:bg-destructive/15 hover:text-destructive rounded-lg p-2 transition-colors"
+                      >
+                        <Ban className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => onDelete(sub)}

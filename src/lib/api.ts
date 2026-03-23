@@ -49,6 +49,10 @@ const API_MAP: Record<
     path: (a) => `/api/subscriptions/${a.id}/status`,
     bodyKey: 'status',
   },
+  cancel_subscription: {
+    method: 'POST',
+    path: (a) => `/api/subscriptions/${a.id}/cancel`,
+  },
   get_expiring_trials: {
     method: 'GET',
     path: (a) => `/api/trials/expiring?days=${(a.days as number | undefined) ?? 7}`,
