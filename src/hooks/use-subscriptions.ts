@@ -10,7 +10,7 @@ import type { Subscription } from '@/types/subscription'
 
 export function useSubscriptions() {
   // Use selective subscriptions for better performance
-  const { subscriptions, isLoading, error, fetch, add, update, remove, toggleActive } =
+  const { subscriptions, isLoading, error, fetch, add, update, remove, toggleActive, cancel } =
     useSubscriptionStore(
       useShallow((state) => ({
         subscriptions: state.subscriptions,
@@ -21,6 +21,7 @@ export function useSubscriptions() {
         update: state.update,
         remove: state.remove,
         toggleActive: state.toggleActive,
+        cancel: state.cancel,
       }))
     )
 
@@ -82,6 +83,7 @@ export function useSubscriptions() {
     update,
     remove,
     toggleActive,
+    cancel,
     getCategory,
     getSubscriptionWithCategory,
     refresh: fetch,

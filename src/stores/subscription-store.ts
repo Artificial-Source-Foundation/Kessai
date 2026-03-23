@@ -13,6 +13,7 @@ type SubscriptionState = {
   remove: (id: string) => Promise<void>
   toggleActive: (id: string) => Promise<void>
   transitionStatus: (id: string, status: SubscriptionStatus) => Promise<void>
+  cancel: (id: string, reason?: string) => Promise<void>
 }
 
 const sortByPaymentDate = (a: Subscription, b: Subscription) => {
@@ -169,6 +170,40 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
     } catch (error) {
       set({ subscriptions: previousSubscriptions })
       console.error('Failed to transition status:', error)
+      throw error
+    }
+  },
+
+  cancel: async (id, reason) => {
+    const previousSubscriptions = get().subscriptions
+    const now = new Date().toISOString()
+
+    // Optimistic update
+    set((state) => ({
+      subscriptions: state.subscriptions.map((s) =>
+        s.id === id
+          ? {
+              ...s,
+              status: 'cancelled' as const,
+              is_active: false,
+              cancellation_reason: reason || null,
+              cancelled_at: now,
+            }
+          : s
+      ),
+    }))
+
+    try {
+      const updated = await invoke<Subscription>('cancel_subscription', {
+        id,
+        reason: reason || null,
+      })
+      set((state) => ({
+        subscriptions: state.subscriptions.map((s) => (s.id === id ? updated : s)),
+      }))
+    } catch (error) {
+      set({ subscriptions: previousSubscriptions })
+      console.error('Failed to cancel subscription:', error)
       throw error
     }
   },

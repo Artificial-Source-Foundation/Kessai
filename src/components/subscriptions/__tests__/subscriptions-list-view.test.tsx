@@ -45,6 +45,7 @@ const defaultProps = {
   currency: 'USD' as const,
   onEdit: vi.fn(),
   onDelete: vi.fn(),
+  onCancel: vi.fn(),
   onToggleActive: vi.fn(),
 }
 

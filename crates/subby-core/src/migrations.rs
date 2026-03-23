@@ -179,6 +179,14 @@ const MIGRATIONS: &[Migration] = &[
             ALTER TABLE settings ADD COLUMN notification_time TEXT NOT NULL DEFAULT '09:00';
         "#,
     },
+    Migration {
+        version: 12,
+        description: "add_cancellation_tracking",
+        sql: r#"
+            ALTER TABLE subscriptions ADD COLUMN cancellation_reason TEXT;
+            ALTER TABLE subscriptions ADD COLUMN cancelled_at TEXT;
+        "#,
+    },
 ];
 
 /// Runs all pending migrations on the database connection.
@@ -252,6 +260,7 @@ fn should_skip_migration(conn: &Connection, version: u32) -> bool {
         9 => column_exists(conn, "settings", "monthly_budget"),
         10 => column_exists(conn, "settings", "reduce_motion"),
         11 => column_exists(conn, "settings", "notification_advance_days"),
+        12 => column_exists(conn, "subscriptions", "cancellation_reason"),
         _ => false,
     }
 }
@@ -336,6 +345,6 @@ mod tests {
         let count: i64 = conn
             .query_row("SELECT COUNT(*) FROM _subby_migrations", [], |r| r.get(0))
             .unwrap();
-        assert_eq!(count, 11);
+        assert_eq!(count, 12);
     }
 }

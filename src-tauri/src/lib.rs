@@ -226,6 +226,17 @@ fn toggle_subscription_active(
         .map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+fn cancel_subscription(
+    core: tauri::State<'_, SubbyCore>,
+    id: String,
+    reason: Option<String>,
+) -> Result<Subscription, String> {
+    core.subscriptions()
+        .cancel_with_reason(&id, reason.as_deref())
+        .map_err(|e| e.to_string())
+}
+
 // ── Category commands ──────────────────────────────────────────────────────
 
 #[tauri::command]
@@ -492,6 +503,7 @@ pub fn run() {
             delete_subscription,
             toggle_subscription_active,
             transition_subscription_status,
+            cancel_subscription,
             get_expiring_trials,
             // Categories
             list_categories,

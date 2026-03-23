@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, lazy, Suspense } from 'react'
 import { toast } from 'sonner'
 import dayjs from 'dayjs'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
-import { Plus, Search, LayoutGrid, List, Grid3x3, ArrowUpDown } from 'lucide-react'
+import { Plus, Search, LayoutGrid, List, Grid3x3, ArrowUpDown, ChevronDown, Ban, Trash2 } from 'lucide-react'
 import { useSubscriptions } from '@/hooks/use-subscriptions'
 import { useSubscriptionStore } from '@/stores/subscription-store'
 import { useCategoryStore } from '@/stores/category-store'
@@ -59,9 +59,13 @@ const SubscriptionDialog = lazy(() =>
 const ConfirmDialog = lazy(() =>
   import('@/components/ui/confirm-dialog').then((m) => ({ default: m.ConfirmDialog }))
 )
+const CancelDialog = lazy(() =>
+  import('@/components/subscriptions/cancel-dialog').then((m) => ({ default: m.CancelDialog }))
+)
 
 export function Subscriptions() {
-  const { subscriptions, isLoading, remove, toggleActive, getCategory } = useSubscriptions()
+  const { subscriptions, isLoading, remove, toggleActive, cancel, getCategory } =
+    useSubscriptions()
   const categories = useCategoryStore((state) => state.categories)
   const { openSubscriptionDialog } = useUiStore()
   const { settings, fetch: fetchSettings } = useSettingsStore()
@@ -90,6 +94,9 @@ export function Subscriptions() {
   })
   const [deleteTarget, setDeleteTarget] = useState<Subscription | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [cancelTarget, setCancelTarget] = useState<Subscription | null>(null)
+  const [isCancelling, setIsCancelling] = useState(false)
+  const [showCancelled, setShowCancelled] = useState(false)
 
   useEffect(() => {
     fetchSettings()
@@ -111,20 +118,38 @@ export function Subscriptions() {
     }
   }, [sortOption])
 
+  // Separate active and cancelled subscriptions
+  const activeSubscriptions = useMemo(
+    () => subscriptions.filter((sub) => sub.status !== 'cancelled'),
+    [subscriptions]
+  )
+
+  const cancelledSubscriptions = useMemo(
+    () =>
+      subscriptions
+        .filter((sub) => sub.status === 'cancelled')
+        .sort((a, b) => {
+          const dateA = a.cancelled_at ? new Date(a.cancelled_at).getTime() : 0
+          const dateB = b.cancelled_at ? new Date(b.cancelled_at).getTime() : 0
+          return dateB - dateA
+        }),
+    [subscriptions]
+  )
+
   // Calculate subscription counts per category
   const subscriptionCounts = useMemo(() => {
     const counts: Record<string, number> = {}
-    subscriptions.forEach((sub) => {
+    activeSubscriptions.forEach((sub) => {
       if (sub.category_id) {
         counts[sub.category_id] = (counts[sub.category_id] || 0) + 1
       }
     })
     return counts
-  }, [subscriptions])
+  }, [activeSubscriptions])
 
   const filteredSubscriptions = useMemo(() => {
     const query = searchQuery.toLowerCase()
-    const filtered = subscriptions.filter((sub) => {
+    const filtered = activeSubscriptions.filter((sub) => {
       const matchesSearch = sub.name.toLowerCase().includes(query)
       const matchesCategory =
         selectedCategories.length === 0 ||
@@ -165,7 +190,7 @@ export function Subscriptions() {
           return 0
       }
     })
-  }, [subscriptions, searchQuery, selectedCategories, sortOption, getCategory])
+  }, [activeSubscriptions, searchQuery, selectedCategories, sortOption, getCategory])
 
   // Separate totals by billing cycle (converted to display currency)
   const monthlySubsTotal = useMemo(() => {
@@ -236,6 +261,22 @@ export function Subscriptions() {
     }
   }
 
+  const handleCancel = async (id: string, reason?: string) => {
+    setIsCancelling(true)
+    try {
+      await cancel(id, reason)
+      const sub = cancelTarget
+      toast.success('Subscription cancelled', {
+        description: `${sub?.name ?? 'Subscription'} has been cancelled.`,
+      })
+    } catch {
+      toast.error('Error', { description: 'Failed to cancel subscription.' })
+    } finally {
+      setIsCancelling(false)
+      setCancelTarget(null)
+    }
+  }
+
   const handleToggleActive = async (sub: Subscription) => {
     try {
       await toggleActive(sub.id)
@@ -286,7 +327,7 @@ export function Subscriptions() {
           </Button>
         </header>
 
-        {subscriptions.length > 0 && (
+        {activeSubscriptions.length > 0 && (
           <div className="flex flex-col gap-4">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex flex-wrap items-center gap-3">
@@ -373,7 +414,7 @@ export function Subscriptions() {
           </div>
         )}
 
-        {subscriptions.length === 0 ? (
+        {activeSubscriptions.length === 0 && cancelledSubscriptions.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-[var(--color-border-hover)] bg-[var(--color-card)] py-16 backdrop-blur-xl">
             <div className="bg-primary/10 animate-gentle-float mb-4 rounded-full p-4">
               <Plus className="text-primary h-8 w-8" />
@@ -418,6 +459,7 @@ export function Subscriptions() {
             getCategory={getCategory}
             onEdit={(sub) => openSubscriptionDialog(sub.id)}
             onDelete={setDeleteTarget}
+            onCancel={setCancelTarget}
             onToggleActive={handleToggleActive}
             onMarkAsPaid={handleMarkAsPaid}
             canMarkAsPaid={canMarkAsPaid}
@@ -425,13 +467,85 @@ export function Subscriptions() {
         ) : (
           <SubscriptionsListView
             subscriptions={filteredSubscriptions}
-            totalCount={subscriptions.length}
+            totalCount={activeSubscriptions.length}
             currency={currency}
             getCategory={getCategory}
             onEdit={(sub) => openSubscriptionDialog(sub.id)}
             onDelete={setDeleteTarget}
+            onCancel={setCancelTarget}
             onToggleActive={handleToggleActive}
           />
+        )}
+
+        {/* Cancelled subscriptions section */}
+        {cancelledSubscriptions.length > 0 && (
+          <div className="mt-2">
+            <button
+              onClick={() => setShowCancelled((prev) => !prev)}
+              className="text-muted-foreground hover:text-foreground flex items-center gap-2 py-2 transition-colors"
+            >
+              <ChevronDown
+                className={`h-4 w-4 transition-transform ${showCancelled ? 'rotate-0' : '-rotate-90'}`}
+              />
+              <span className="font-[family-name:var(--font-mono)] text-[11px] tracking-wider uppercase">
+                Cancelled ({cancelledSubscriptions.length})
+              </span>
+            </button>
+            {showCancelled && (
+              <div className="animate-fade-in-up mt-2 space-y-2">
+                {cancelledSubscriptions.map((sub) => {
+                  const category = getCategory(sub.category_id)
+                  return (
+                    <div
+                      key={sub.id}
+                      className="glass-card flex items-center justify-between gap-4 rounded-xl px-4 py-3 opacity-60"
+                    >
+                      <div className="flex items-center gap-3 overflow-hidden">
+                        <Ban className="text-destructive h-4 w-4 shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-foreground truncate text-sm font-medium">{sub.name}</p>
+                          <div className="text-muted-foreground flex items-center gap-2 font-[family-name:var(--font-mono)] text-[10px]">
+                            {sub.cancelled_at && (
+                              <span>
+                                Cancelled{' '}
+                                {dayjs(sub.cancelled_at).format('MMM D, YYYY')}
+                              </span>
+                            )}
+                            {sub.cancellation_reason && (
+                              <>
+                                <span className="text-border">|</span>
+                                <span className="truncate" title={sub.cancellation_reason}>
+                                  {sub.cancellation_reason}
+                                </span>
+                              </>
+                            )}
+                            {category && (
+                              <>
+                                <span className="text-border">|</span>
+                                <span>{category.name}</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <span className="text-muted-foreground font-[family-name:var(--font-mono)] text-xs">
+                          {formatCurrency(sub.amount, (sub.currency || currency) as CurrencyCode)}
+                        </span>
+                        <button
+                          onClick={() => setDeleteTarget(sub)}
+                          aria-label={`Delete ${sub.name}`}
+                          className="text-muted-foreground hover:bg-destructive/15 hover:text-destructive rounded-lg p-1.5 transition-colors"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
         )}
       </div>
 
@@ -449,6 +563,16 @@ export function Subscriptions() {
           variant="destructive"
           isLoading={isDeleting}
           onConfirm={handleDelete}
+        />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <CancelDialog
+          open={Boolean(cancelTarget)}
+          onOpenChange={(open) => !open && setCancelTarget(null)}
+          subscription={cancelTarget}
+          isLoading={isCancelling}
+          onConfirm={handleCancel}
         />
       </Suspense>
     </>

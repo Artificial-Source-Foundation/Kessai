@@ -57,6 +57,7 @@ pub fn api_router(state: Arc<AppState>) -> Router {
         .route("/subscriptions/{id}", delete(delete_subscription))
         .route("/subscriptions/{id}/toggle", post(toggle_subscription_active))
         .route("/subscriptions/{id}/status", post(transition_subscription_status))
+        .route("/subscriptions/{id}/cancel", post(cancel_subscription))
         // Categories
         .route("/categories", get(list_categories))
         .route("/categories", post(create_category))
@@ -171,6 +172,23 @@ async fn transition_subscription_status(
     let new_status = SubscriptionStatus::from_str(&body.status)
         .ok_or_else(|| anyhow::anyhow!("Invalid status: {}", body.status))?;
     let sub = state.core.subscriptions().transition_status(&id, new_status)?;
+    Ok(Json(sub))
+}
+
+#[derive(Deserialize)]
+struct CancelBody {
+    reason: Option<String>,
+}
+
+async fn cancel_subscription(
+    State(state): State<Arc<AppState>>,
+    Path(id): Path<String>,
+    Json(body): Json<CancelBody>,
+) -> Result<impl IntoResponse> {
+    let sub = state
+        .core
+        .subscriptions()
+        .cancel_with_reason(&id, body.reason.as_deref())?;
     Ok(Json(sub))
 }
 

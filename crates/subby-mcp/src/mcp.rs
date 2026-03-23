@@ -227,6 +227,8 @@ impl SubbyMcp {
             status: p.status.and_then(|s| SubscriptionStatus::from_str(&s)),
             trial_end_date: p.trial_end_date.map(Some),
             shared_count: p.shared_count,
+            cancellation_reason: None,
+            cancelled_at: None,
         };
 
         let sub = self
