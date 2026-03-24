@@ -38,9 +38,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Default options
 DRY_RUN=false
-INSTALL_APP=false
-INSTALL_BOT=false
-INTERACTIVE=true
 
 # ============================================================================
 # Help
@@ -55,15 +52,10 @@ ${BOLD}USAGE:${NC}
 ${BOLD}OPTIONS:${NC}
     -h, --help          Show this help message
     -n, --dry-run       Show what would be done without making changes
-    --app               Install desktop app only (non-interactive)
-    --bot               Install Discord bot only (non-interactive)
-    --all               Install both app and bot (non-interactive)
 
 ${BOLD}EXAMPLES:${NC}
-    ./install.sh                  # Interactive mode (asks what to install)
+    ./install.sh                  # Install the desktop app
     ./install.sh --dry-run        # Preview what would happen
-    ./install.sh --app            # Install just the desktop app
-    ./install.sh --all            # Install everything
 
 ${BOLD}WHAT THIS SCRIPT DOES:${NC}
     1. Checks for build tools (pnpm, cargo/rust)
@@ -84,10 +76,6 @@ ${BOLD}FILES CREATED:${NC}
       ~/.local/share/applications/subby.desktop
       ~/.local/share/icons/hicolor/128x128/apps/subby.png
 
-    Discord bot (optional, requires sudo):
-      /usr/local/bin/subby-bot
-      /etc/systemd/system/subby-bot@.service
-
 ${BOLD}TO UNINSTALL:${NC}
     ./uninstall.sh
 
@@ -105,22 +93,6 @@ while [[ $# -gt 0 ]]; do
             ;;
         -n|--dry-run)
             DRY_RUN=true
-            shift
-            ;;
-        --app)
-            INSTALL_APP=true
-            INTERACTIVE=false
-            shift
-            ;;
-        --bot)
-            INSTALL_BOT=true
-            INTERACTIVE=false
-            shift
-            ;;
-        --all)
-            INSTALL_APP=true
-            INSTALL_BOT=true
-            INTERACTIVE=false
             shift
             ;;
         *)
@@ -252,72 +224,49 @@ fi
 print_success "Dependencies ready"
 
 # ============================================================================
-# Interactive menu (if no flags provided)
-# ============================================================================
-if [[ "$INTERACTIVE" == "true" ]]; then
-    echo ""
-    echo -e "${BOLD}What would you like to install?${NC}"
-    echo ""
-    echo "  1) Subby desktop app only"
-    echo "  2) Subby desktop app + Discord bot"
-    echo "  3) Discord bot only"
-    echo ""
-    read -p "Choose [1-3]: " -n 1 -r INSTALL_CHOICE
-    echo ""
-
-    case $INSTALL_CHOICE in
-        1) INSTALL_APP=true ;;
-        2) INSTALL_APP=true; INSTALL_BOT=true ;;
-        3) INSTALL_BOT=true ;;
-        *) print_error "Invalid choice"; exit 1 ;;
-    esac
-fi
-
-# ============================================================================
 # Build and install Subby app
 # ============================================================================
-if [[ "$INSTALL_APP" == "true" ]]; then
-    echo ""
-    print_step "Building Subby desktop app (this may take a few minutes)..."
+echo ""
+print_step "Building Subby desktop app (this may take a few minutes)..."
 
-    if [[ "$DRY_RUN" == "true" ]]; then
-        print_dry "Would run: pnpm tauri build"
-    else
-        cd "$SCRIPT_DIR"
-        pnpm tauri build 2>&1 | tail -20
-    fi
+if [[ "$DRY_RUN" == "true" ]]; then
+    print_dry "Would run: pnpm tauri build"
+else
+    cd "$SCRIPT_DIR"
+    pnpm tauri build 2>&1 | tail -20
+fi
 
-    # Install locally — no sudo needed
-    RELEASE_DIR="$SCRIPT_DIR/src-tauri/target/release"
-    ICON_SRC="$SCRIPT_DIR/src-tauri/icons/128x128.png"
+# Install locally — no sudo needed
+RELEASE_DIR="$SCRIPT_DIR/src-tauri/target/release"
+ICON_SRC="$SCRIPT_DIR/src-tauri/icons/128x128.png"
 
-    echo ""
-    print_step "Installing to ~/.local (no sudo needed)..."
-    print_info "Binary:  ~/.local/bin/subby"
-    print_info "Desktop: ~/.local/share/applications/subby.desktop"
-    print_info "Icon:    ~/.local/share/icons/hicolor/128x128/apps/subby.png"
-    echo ""
+echo ""
+print_step "Installing to ~/.local (no sudo needed)..."
+print_info "Binary:  ~/.local/bin/subby"
+print_info "Desktop: ~/.local/share/applications/subby.desktop"
+print_info "Icon:    ~/.local/share/icons/hicolor/128x128/apps/subby.png"
+echo ""
 
-    if [[ "$DRY_RUN" == "true" ]]; then
-        print_dry "Would copy binary to ~/.local/bin/subby"
-        print_dry "Would create desktop entry"
-        print_dry "Would install icon"
-    else
-        # Binary
-        mkdir -p "$HOME/.local/bin"
-        cp "$RELEASE_DIR/subby" "$HOME/.local/bin/subby"
-        chmod +x "$HOME/.local/bin/subby"
-        print_success "Binary installed"
+if [[ "$DRY_RUN" == "true" ]]; then
+    print_dry "Would copy binary to ~/.local/bin/subby"
+    print_dry "Would create desktop entry"
+    print_dry "Would install icon"
+else
+    # Binary
+    mkdir -p "$HOME/.local/bin"
+    cp "$RELEASE_DIR/subby" "$HOME/.local/bin/subby"
+    chmod +x "$HOME/.local/bin/subby"
+    print_success "Binary installed"
 
-        # Icon
-        ICON_DIR="$HOME/.local/share/icons/hicolor/128x128/apps"
-        mkdir -p "$ICON_DIR"
-        cp "$ICON_SRC" "$ICON_DIR/subby.png"
-        print_success "Icon installed"
+    # Icon
+    ICON_DIR="$HOME/.local/share/icons/hicolor/128x128/apps"
+    mkdir -p "$ICON_DIR"
+    cp "$ICON_SRC" "$ICON_DIR/subby.png"
+    print_success "Icon installed"
 
-        # Desktop entry
-        mkdir -p "$HOME/.local/share/applications"
-        cat > "$HOME/.local/share/applications/subby.desktop" << EOF
+    # Desktop entry
+    mkdir -p "$HOME/.local/share/applications"
+    cat > "$HOME/.local/share/applications/subby.desktop" << EOF
 [Desktop Entry]
 Name=Subby
 Comment=Know where your money flows
@@ -327,46 +276,24 @@ Terminal=false
 Type=Application
 Categories=Finance;Office;
 EOF
-        print_success "Desktop entry created"
+    print_success "Desktop entry created"
 
-        # Update icon cache if available
-        if command -v gtk-update-icon-cache &>/dev/null; then
-            gtk-update-icon-cache -f -t "$HOME/.local/share/icons/hicolor" 2>/dev/null || true
-        fi
-
-        # Check PATH
-        if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
-            echo ""
-            print_warning "~/.local/bin is not in your PATH"
-            print_info "Add this to your shell config (~/.bashrc or ~/.zshrc):"
-            print_info "  export PATH=\"\$HOME/.local/bin:\$PATH\""
-        fi
+    # Update icon cache if available
+    if command -v gtk-update-icon-cache &>/dev/null; then
+        gtk-update-icon-cache -f -t "$HOME/.local/share/icons/hicolor" 2>/dev/null || true
     fi
 
-    echo ""
-    print_success "Subby desktop app installed!"
-fi
-
-# ============================================================================
-# Install Discord bot
-# ============================================================================
-if [[ "$INSTALL_BOT" == "true" ]]; then
-    echo ""
-    print_step "Setting up Discord bot..."
-
-    if [[ "$DRY_RUN" == "true" ]]; then
-        print_dry "Would run: packages/discord-bot/install.sh"
+    # Check PATH
+    if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
         echo ""
-        print_info "The bot installer will:"
-        print_info "  - Build a standalone binary"
-        print_info "  - Copy it to /usr/local/bin/subby-bot (requires sudo)"
-        print_info "  - Ask for your Discord token and user ID"
-        print_info "  - Create a systemd service (requires sudo)"
-    else
-        cd "$SCRIPT_DIR/packages/discord-bot"
-        ./install.sh
+        print_warning "~/.local/bin is not in your PATH"
+        print_info "Add this to your shell config (~/.bashrc or ~/.zshrc):"
+        print_info "  export PATH=\"\$HOME/.local/bin:\$PATH\""
     fi
 fi
+
+echo ""
+print_success "Subby desktop app installed!"
 
 # ============================================================================
 # Done!
@@ -381,18 +308,9 @@ fi
 echo -e "${GREEN}${BOLD}╚═══════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
-if [[ "$INSTALL_APP" == "true" ]]; then
-    echo -e "  ${GREEN}✓${NC} Subby desktop app"
-    if [[ "$DRY_RUN" == "false" ]]; then
-        echo "    Launch from your app menu or run: subby"
-    fi
-fi
-
-if [[ "$INSTALL_BOT" == "true" ]]; then
-    echo -e "  ${GREEN}✓${NC} Discord bot"
-    if [[ "$DRY_RUN" == "false" ]]; then
-        echo "    Check status: sudo systemctl status subby-bot@$USER"
-    fi
+echo -e "  ${GREEN}✓${NC} Subby desktop app"
+if [[ "$DRY_RUN" == "false" ]]; then
+    echo "    Launch from your app menu or run: subby"
 fi
 
 echo ""

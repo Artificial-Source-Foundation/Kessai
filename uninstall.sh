@@ -20,7 +20,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Default options
 UNINSTALL_APP=false
-UNINSTALL_BOT=false
 INTERACTIVE=true
 
 # ============================================================================
@@ -35,15 +34,13 @@ ${BOLD}USAGE:${NC}
 
 ${BOLD}OPTIONS:${NC}
     -h, --help          Show this help message
-    --app               Uninstall desktop app only (non-interactive)
-    --bot               Uninstall Discord bot only (non-interactive)
-    --all               Uninstall everything (non-interactive)
-    --purge             Also delete app data (combine with --app or --all)
+    --app               Uninstall desktop app (non-interactive)
+    --purge             Also delete app data (combine with --app)
 
 ${BOLD}EXAMPLES:${NC}
     ./uninstall.sh                  # Interactive mode
-    ./uninstall.sh --app            # Remove just the desktop app
-    ./uninstall.sh --all --purge    # Remove everything including data
+    ./uninstall.sh --app            # Remove the desktop app
+    ./uninstall.sh --app --purge    # Remove app and all data
 
 EOF
 }
@@ -64,17 +61,6 @@ while [[ $# -gt 0 ]]; do
             INTERACTIVE=false
             shift
             ;;
-        --bot)
-            UNINSTALL_BOT=true
-            INTERACTIVE=false
-            shift
-            ;;
-        --all)
-            UNINSTALL_APP=true
-            UNINSTALL_BOT=true
-            INTERACTIVE=false
-            shift
-            ;;
         --purge)
             PURGE=true
             shift
@@ -91,17 +77,12 @@ done
 # Detect what's installed
 # ============================================================================
 APP_INSTALLED=false
-BOT_INSTALLED=false
 DATA_EXISTS=false
 
 # App: check local install and legacy system installs
 [[ -f "$HOME/.local/bin/subby" ]] && APP_INSTALLED=true
 dpkg -s subby &>/dev/null 2>&1 && APP_INSTALLED=true
 rpm -q subby &>/dev/null 2>&1 && APP_INSTALLED=true
-
-# Bot
-[[ -f "/usr/local/bin/subby-bot" ]] && BOT_INSTALLED=true
-systemctl list-unit-files "subby-bot@.service" &>/dev/null 2>&1 && BOT_INSTALLED=true
 
 # Data
 [[ -d "$HOME/.local/share/subby" ]] && DATA_EXISTS=true
@@ -122,11 +103,6 @@ if [[ "$APP_INSTALLED" == "true" ]]; then
 else
     echo -e "  ${DIM}○ Desktop app not found${NC}"
 fi
-if [[ "$BOT_INSTALLED" == "true" ]]; then
-    echo -e "  ${GREEN}●${NC} Discord bot installed"
-else
-    echo -e "  ${DIM}○ Discord bot not found${NC}"
-fi
 if [[ "$DATA_EXISTS" == "true" ]]; then
     echo -e "  ${GREEN}●${NC} App data exists (~/.local/share/subby)"
 else
@@ -135,7 +111,7 @@ fi
 echo ""
 
 # Nothing installed at all
-if [[ "$APP_INSTALLED" == "false" && "$BOT_INSTALLED" == "false" && "$DATA_EXISTS" == "false" ]]; then
+if [[ "$APP_INSTALLED" == "false" && "$DATA_EXISTS" == "false" ]]; then
     print_info "Nothing to uninstall."
     echo ""
     exit 0
@@ -145,47 +121,17 @@ fi
 # Interactive menu
 # ============================================================================
 if [[ "$INTERACTIVE" == "true" ]]; then
-    echo -e "${BOLD}What would you like to uninstall?${NC}"
-    echo ""
-    if [[ "$APP_INSTALLED" == "true" && "$BOT_INSTALLED" == "true" ]]; then
-        echo "  1) Desktop app only"
-        echo "  2) Discord bot only"
-        echo "  3) Everything"
-        echo "  4) Cancel"
+    if [[ "$APP_INSTALLED" == "true" ]]; then
+        echo -e "${BOLD}Uninstall Subby desktop app?${NC}"
         echo ""
-        read -p "Choose [1-4]: " -n 1 -r CHOICE
+        read -p "Proceed? [y/N] " -n 1 -r CHOICE
         echo ""
         case $CHOICE in
-            1) UNINSTALL_APP=true ;;
-            2) UNINSTALL_BOT=true ;;
-            3) UNINSTALL_APP=true; UNINSTALL_BOT=true ;;
-            4) echo "Cancelled."; exit 0 ;;
-            *) print_error "Invalid choice"; exit 1 ;;
-        esac
-    elif [[ "$APP_INSTALLED" == "true" ]]; then
-        echo "  1) Uninstall desktop app"
-        echo "  2) Cancel"
-        echo ""
-        read -p "Choose [1-2]: " -n 1 -r CHOICE
-        echo ""
-        case $CHOICE in
-            1) UNINSTALL_APP=true ;;
-            2) echo "Cancelled."; exit 0 ;;
-            *) print_error "Invalid choice"; exit 1 ;;
-        esac
-    elif [[ "$BOT_INSTALLED" == "true" ]]; then
-        echo "  1) Uninstall Discord bot"
-        echo "  2) Cancel"
-        echo ""
-        read -p "Choose [1-2]: " -n 1 -r CHOICE
-        echo ""
-        case $CHOICE in
-            1) UNINSTALL_BOT=true ;;
-            2) echo "Cancelled."; exit 0 ;;
-            *) print_error "Invalid choice"; exit 1 ;;
+            [Yy]) UNINSTALL_APP=true ;;
+            *) echo "Cancelled."; exit 0 ;;
         esac
     elif [[ "$DATA_EXISTS" == "true" ]]; then
-        # Only leftover data, no app/bot
+        # Only leftover data, no app
         echo "  Only leftover app data was found."
         echo ""
         read -p "Delete app data at ~/.local/share/subby? [y/N] " -n 1 -r
@@ -203,7 +149,6 @@ fi
 
 # Track what we actually removed for the summary
 REMOVED_APP=false
-REMOVED_BOT=false
 REMOVED_DATA=false
 
 # ============================================================================
@@ -294,67 +239,6 @@ if [[ "$UNINSTALL_APP" == "true" ]]; then
 fi
 
 # ============================================================================
-# Uninstall Discord bot
-# ============================================================================
-if [[ "$UNINSTALL_BOT" == "true" ]]; then
-    echo ""
-    print_step "Uninstalling Discord bot..."
-
-    FOUND_SOMETHING=false
-    SERVICE_NAME="subby-bot@$USER"
-    CONFIG_DIR="/etc/subby-bot"
-
-    # Stop and disable service
-    if systemctl list-unit-files "subby-bot@.service" &>/dev/null 2>&1; then
-        sudo systemctl stop "$SERVICE_NAME" 2>/dev/null || true
-        sudo systemctl disable "$SERVICE_NAME" 2>/dev/null || true
-        print_success "Service stopped"
-        FOUND_SOMETHING=true
-    fi
-
-    if [[ -f "/etc/systemd/system/subby-bot@.service" ]]; then
-        sudo rm -f /etc/systemd/system/subby-bot@.service
-        sudo systemctl daemon-reload
-        print_success "Service file removed"
-        FOUND_SOMETHING=true
-    fi
-
-    if [[ -f "/usr/local/bin/subby-bot" ]]; then
-        sudo rm -f /usr/local/bin/subby-bot
-        print_success "Binary removed"
-        FOUND_SOMETHING=true
-    fi
-
-    # Handle bot config
-    if [[ -d "$CONFIG_DIR" ]]; then
-        if [[ "$PURGE" == "true" ]]; then
-            sudo rm -rf "$CONFIG_DIR"
-            print_success "Bot configuration removed"
-        elif [[ "$INTERACTIVE" == "true" ]]; then
-            print_warning "Bot config found at $CONFIG_DIR"
-            print_info "This contains your Discord token."
-            read -p "Remove bot configuration? [y/N] " -n 1 -r
-            echo
-            if [[ $REPLY =~ ^[Yy]$ ]]; then
-                sudo rm -rf "$CONFIG_DIR"
-                print_success "Bot configuration removed"
-            else
-                print_info "Config kept at $CONFIG_DIR"
-            fi
-        else
-            print_info "Bot config kept at $CONFIG_DIR (use --purge to delete)"
-        fi
-        FOUND_SOMETHING=true
-    fi
-
-    if [[ "$FOUND_SOMETHING" == "false" ]]; then
-        print_none "Discord bot was not installed — nothing to remove"
-    else
-        REMOVED_BOT=true
-    fi
-fi
-
-# ============================================================================
 # Summary
 # ============================================================================
 echo ""
@@ -366,13 +250,10 @@ echo ""
 if [[ "$REMOVED_APP" == "true" ]]; then
     echo -e "  ${GREEN}✓${NC} Desktop app removed"
 fi
-if [[ "$REMOVED_BOT" == "true" ]]; then
-    echo -e "  ${GREEN}✓${NC} Discord bot removed"
-fi
 if [[ "$REMOVED_DATA" == "true" ]]; then
     echo -e "  ${GREEN}✓${NC} App data deleted"
 fi
-if [[ "$REMOVED_APP" == "false" && "$REMOVED_BOT" == "false" && "$REMOVED_DATA" == "false" ]]; then
+if [[ "$REMOVED_APP" == "false" && "$REMOVED_DATA" == "false" ]]; then
     echo -e "  ${DIM}Nothing was removed${NC}"
 fi
 

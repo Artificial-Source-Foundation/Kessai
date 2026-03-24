@@ -36,7 +36,7 @@
 - **Smart Reminders** -- Notifications 1-30 days before renewal. System tray badge
 - **Lifecycle Tracking** -- Trials, cancellations with reasons, review nudges for unused subs
 - **Data Portability** -- JSON export/import, CSV/bank statement import, diagnostic logs
-- **Web + CLI + MCP** -- Browser mode, terminal management, AI assistant integration
+- **Web + CLI + MCP** -- Browser mode, terminal CLI, AI assistant integration
 - **Dark/Light Themes** -- Glassmorphic UI with keyboard shortcuts throughout
 
 ---
@@ -110,7 +110,7 @@ cargo test --workspace   # 22 Rust tests
 src/           React frontend (components, pages, stores, hooks, types)
 src-tauri/     Rust backend + Tauri commands
 crates/        subby-core (SQLite + business logic), subby-mcp (CLI + MCP server)
-packages/      Discord reminder bot
+e2e/           Playwright E2E tests
 ```
 
 ---

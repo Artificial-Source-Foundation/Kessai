@@ -40,7 +40,6 @@
 | `src/test/`                     | Test setup                                            |
 | `crates/subby-core/`            | Shared Rust business logic library                    |
 | `crates/subby-mcp/`             | MCP server + CLI binary                               |
-| `packages/discord-bot/`         | Discord reminder bot                                  |
 | `docs/`                         | Project documentation                                 |
 
 ## MVP Features (Complete)

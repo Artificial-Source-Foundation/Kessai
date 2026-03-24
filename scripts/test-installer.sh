@@ -64,22 +64,6 @@ else
     test_fail "missing or not executable"
 fi
 
-# Test 5: Bot installer exists
-echo -n "Test: Bot install.sh... "
-if [[ -x "$SCRIPT_DIR/packages/discord-bot/install.sh" ]]; then
-    test_pass "exists and executable"
-else
-    test_fail "missing or not executable"
-fi
-
-# Test 6: Bot uninstaller exists
-echo -n "Test: Bot uninstall.sh... "
-if [[ -x "$SCRIPT_DIR/packages/discord-bot/uninstall.sh" ]]; then
-    test_pass "exists and executable"
-else
-    test_fail "missing or not executable"
-fi
-
 # Summary
 echo ""
 echo "======================="
