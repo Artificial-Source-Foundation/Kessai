@@ -67,8 +67,12 @@ ${BOLD}WHAT THIS SCRIPT DOES:${NC}
 
 ${BOLD}WHEN IS SUDO NEEDED?${NC}
     Only if system build libraries are missing (libwebkit2gtk, etc).
-    This is a one-time apt install. The app itself installs entirely
-    in your home directory — no sudo required.
+    This is a one-time package install (apt/dnf). The app itself
+    installs entirely in your home directory — no sudo required.
+
+${BOLD}SUPPORTED DISTROS:${NC}
+    Ubuntu, Debian, Pop!_OS, Linux Mint (apt)
+    Fedora, RHEL, CentOS, Nobara (dnf)
 
 ${BOLD}FILES CREATED:${NC}
     Desktop app (all in \$HOME, no sudo):
@@ -118,6 +122,17 @@ detect_distro() {
 DISTRO=$(detect_distro)
 
 # ============================================================================
+# Confirm prompt
+# ============================================================================
+confirm() {
+    local prompt="$1"
+    local reply
+    echo -ne "${YELLOW}?${NC} ${prompt} ${DIM}[Y/n]${NC} "
+    read -r reply
+    [[ -z "$reply" || "$reply" =~ ^[Yy]$ ]]
+}
+
+# ============================================================================
 # Banner
 # ============================================================================
 echo ""
@@ -144,6 +159,11 @@ fi
 # Check prerequisites
 # ============================================================================
 print_step "Checking prerequisites..."
+
+# Source cargo env if rustup is installed but cargo isn't in PATH yet
+if ! command -v cargo &> /dev/null && [[ -f "$HOME/.cargo/env" ]]; then
+    source "$HOME/.cargo/env"
+fi
 
 MISSING_DEPS=()
 
@@ -199,11 +219,48 @@ if [[ "$DISTRO" == "ubuntu" || "$DISTRO" == "debian" || "$DISTRO" == "pop" || "$
         if [[ "$DRY_RUN" == "true" ]]; then
             print_dry "Would run: sudo apt update && sudo apt install -y ${MISSING_TAURI_DEPS[*]}"
         else
-            print_step "Requesting sudo to install build libraries..."
-            sudo -v || { print_error "sudo is required to install build dependencies"; exit 1; }
-            # Keep sudo alive through the install
-            sudo apt update && sudo apt install -y "${MISSING_TAURI_DEPS[@]}"
-            print_success "Build libraries installed"
+            if confirm "Install them now? (requires sudo)"; then
+                sudo apt update && sudo apt install -y "${MISSING_TAURI_DEPS[@]}"
+                print_success "Build libraries installed"
+            else
+                echo ""
+                print_info "You can install them manually and re-run this script:"
+                print_info "  sudo apt update && sudo apt install -y ${MISSING_TAURI_DEPS[*]}"
+                exit 1
+            fi
+        fi
+        echo ""
+    fi
+elif [[ "$DISTRO" == "fedora" || "$DISTRO" == "rhel" || "$DISTRO" == "centos" || "$DISTRO" == "nobara" ]]; then
+    TAURI_DEPS="webkit2gtk4.1-devel librsvg2-devel patchelf libappindicator-gtk3-devel"
+    # Fedora 39+ also needs these for Tauri 2
+    TAURI_DEPS="$TAURI_DEPS gtk3-devel openssl-devel"
+    MISSING_TAURI_DEPS=()
+    for dep in $TAURI_DEPS; do
+        if ! rpm -q "$dep" &>/dev/null; then
+            MISSING_TAURI_DEPS+=("$dep")
+        fi
+    done
+    if [[ ${#MISSING_TAURI_DEPS[@]} -gt 0 ]]; then
+        NEEDS_SUDO=true
+        echo ""
+        print_warning "Missing Tauri build libraries: ${MISSING_TAURI_DEPS[*]}"
+        print_info "These are system libraries needed to compile Tauri apps."
+        print_info "This is the ONLY step that needs sudo (one-time install)."
+        print_info "The app itself installs entirely in your home directory."
+        echo ""
+        if [[ "$DRY_RUN" == "true" ]]; then
+            print_dry "Would run: sudo dnf install -y ${MISSING_TAURI_DEPS[*]}"
+        else
+            if confirm "Install them now? (requires sudo)"; then
+                sudo dnf install -y "${MISSING_TAURI_DEPS[@]}"
+                print_success "Build libraries installed"
+            else
+                echo ""
+                print_info "You can install them manually and re-run this script:"
+                print_info "  sudo dnf install -y ${MISSING_TAURI_DEPS[*]}"
+                exit 1
+            fi
         fi
         echo ""
     fi
@@ -233,11 +290,60 @@ if [[ "$DRY_RUN" == "true" ]]; then
     print_dry "Would run: pnpm tauri build"
 else
     cd "$SCRIPT_DIR"
-    pnpm tauri build 2>&1 | tail -20
+    SPIN_CHARS='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
+    SPIN_IDX=0
+    CURRENT_STATUS="starting..."
+    BUILD_LOG=$(mktemp)
+
+    # Spinner runs in background, reads status from a temp file
+    STATUS_FILE=$(mktemp)
+    echo "$CURRENT_STATUS" > "$STATUS_FILE"
+
+    (
+        while [[ -f "$STATUS_FILE" ]]; do
+            char="${SPIN_CHARS:SPIN_IDX:1}"
+            SPIN_IDX=$(( (SPIN_IDX + 1) % ${#SPIN_CHARS} ))
+            status=$(cat "$STATUS_FILE" 2>/dev/null || echo "building...")
+            printf "\r  ${CYAN}%s${NC} %s" "$char" "$status" >&2
+            sleep 0.1
+        done
+    ) &
+    SPINNER_PID=$!
+
+    # Run build piping output to log, update status on interesting lines
+    pnpm tauri build 2>&1 | while IFS= read -r line; do
+        echo "$line" >> "$BUILD_LOG"
+        if [[ "$line" =~ Compiling[[:space:]]+([^ ]+) ]]; then
+            echo "Compiling ${BASH_REMATCH[1]}..." > "$STATUS_FILE"
+        elif [[ "$line" =~ Bundling[[:space:]]+(.+) ]]; then
+            echo "Bundling ${BASH_REMATCH[1]}" > "$STATUS_FILE"
+        elif [[ "$line" =~ Finished ]]; then
+            echo "Build finished, bundling..." > "$STATUS_FILE"
+        fi
+    done || true
+
+    # Stop spinner
+    rm -f "$STATUS_FILE"
+    wait "$SPINNER_PID" 2>/dev/null || true
+    printf "\r\033[K" >&2
+
+    # Show last few lines if build had issues
+    if [[ ! -f "$SCRIPT_DIR/target/release/subby" ]]; then
+        echo ""
+        print_error "Build output (last 20 lines):"
+        tail -20 "$BUILD_LOG"
+    fi
+    rm -f "$BUILD_LOG"
 fi
 
 # Install locally — no sudo needed
-RELEASE_DIR="$SCRIPT_DIR/src-tauri/target/release"
+RELEASE_DIR="$SCRIPT_DIR/target/release"
+
+if [[ "$DRY_RUN" != "true" && ! -f "$RELEASE_DIR/subby" ]]; then
+    print_error "Build failed — no binary found at $RELEASE_DIR/subby"
+    exit 1
+fi
+print_success "Build complete"
 ICON_SRC="$SCRIPT_DIR/src-tauri/icons/128x128.png"
 
 echo ""
