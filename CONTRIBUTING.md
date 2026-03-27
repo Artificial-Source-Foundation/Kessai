@@ -4,7 +4,7 @@ Thank you for your interest in contributing to Subby! This document provides gui
 
 ## Reporting Bugs
 
-1. Check existing [Issues](https://github.com/AI-Strategic-Forum/Subby/issues) to avoid duplicates
+1. Check existing [Issues](https://github.com/Artificial-Source-Foundation/Subby/issues) to avoid duplicates
 2. Use the "bug" label
 3. Include:
    - OS and version
@@ -23,7 +23,7 @@ Thank you for your interest in contributing to Subby! This document provides gui
 ### Setup
 
 ```bash
-git clone https://github.com/AI-Strategic-Forum/Subby.git
+git clone https://github.com/Artificial-Source-Foundation/Subby.git
 cd subby
 pnpm install
 pnpm tauri dev

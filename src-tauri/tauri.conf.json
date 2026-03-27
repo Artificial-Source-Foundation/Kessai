@@ -45,7 +45,7 @@
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEMzQkQwQUU0QjM3MjBCRTcKUldUbkMzS3o1QXE5dzBnYS91V1lORzNFWDRmdjVta25zY0hNSmwrYzNvL2ZISGpYQUJtYlo3WjcK",
       "endpoints": [
-        "https://github.com/AI-Strategic-Forum/Subby/releases/latest/download/latest.json"
+        "https://github.com/Artificial-Source-Foundation/Subby/releases/latest/download/latest.json"
       ]
     }
   }

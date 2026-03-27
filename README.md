@@ -58,7 +58,7 @@
 
 ### Download
 
-Grab the latest from [Releases](https://github.com/AI-Strategic-Forum/Subby/releases):
+Grab the latest from [Releases](https://github.com/Artificial-Source-Foundation/Subby/releases):
 
 | Platform | Install |
 |---|---|
@@ -71,7 +71,7 @@ Grab the latest from [Releases](https://github.com/AI-Strategic-Forum/Subby/rele
 ### Build from Source
 
 ```bash
-git clone https://github.com/AI-Strategic-Forum/Subby.git
+git clone https://github.com/Artificial-Source-Foundation/Subby.git
 cd Subby && pnpm install && pnpm tauri build
 ```
 
@@ -131,4 +131,4 @@ Structured logs in `{data_dir}/logs/` for debugging. Frontend logs downloadable 
 
 ## License
 
-[MIT](./LICENSE) -- Built by [AI Strategic Forum](https://github.com/AI-Strategic-Forum)
+[MIT](./LICENSE) -- Built by [Artificial Source Foundation](https://github.com/Artificial-Source-Foundation)

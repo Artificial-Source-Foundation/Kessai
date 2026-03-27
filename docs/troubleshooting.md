@@ -173,7 +173,7 @@ SELECT * FROM subscriptions;
 
 ## Getting Help
 
-1. **Search existing issues**: https://github.com/AI-Strategic-Forum/Subby/issues
+1. **Search existing issues**: https://github.com/Artificial-Source-Foundation/Subby/issues
 2. **Create new issue** with:
    - OS and version
    - Steps to reproduce

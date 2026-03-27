@@ -186,7 +186,7 @@ The app uses **Tauri's updater plugin** to deliver updates to installed instance
 
 1. `pnpm release` — runs quality gates (`pnpm check` + `pnpm test:run`), bumps version across `package.json` / `tauri.conf.json` / `Cargo.toml`, generates changelog, creates a `v*` tag, and pushes
 2. GitHub Actions (`.github/workflows/release.yml`) detects the tag → builds signed installers for Linux, Windows, macOS (x86 + ARM) → **auto-publishes** a GitHub Release with updater artifacts
-3. Installed apps check `https://github.com/AI-Strategic-Forum/Subby/releases/latest/download/latest.json` → detect new version → download & install
+3. Installed apps check `https://github.com/Artificial-Source-Foundation/Subby/releases/latest/download/latest.json` → detect new version → download & install
 
 ### Key Files
 
