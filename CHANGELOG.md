@@ -2,6 +2,44 @@
 
 All notable changes to Subby will be documented in this file.
 
+
+## [0.3.0](https://github.com/AI-Strategic-Forum/Subby/compare/v0.2.0...v0.3.0) (2026-03-27)
+
+### Features
+
+* add cancellation tracking with reason ([a891d77](https://github.com/AI-Strategic-Forum/Subby/commit/a891d77fea5e25b1fb0c782aac7e36e96f23532d))
+* add cost normalization toggle ([ff9af11](https://github.com/AI-Strategic-Forum/Subby/commit/ff9af11ef08f75008d648c8abc856b094b42f500))
+* add CSV/bank statement import wizard ([8a7f6e6](https://github.com/AI-Strategic-Forum/Subby/commit/8a7f6e6786ab914136fcc70e54bc0f5aa1cfa6b5))
+* add Fedora/RHEL support to install script ([e60f4e3](https://github.com/AI-Strategic-Forum/Subby/commit/e60f4e3c34116b2220d364435eaf6379453d5e27))
+* add GitHub issue templates for bugs and feature requests ([5f063d9](https://github.com/AI-Strategic-Forum/Subby/commit/5f063d98bb8ebfadba863dc9d62da4821b1b08a2))
+* add global search command palette (Cmd+K) ([237db9f](https://github.com/AI-Strategic-Forum/Subby/commit/237db9f387d84806af4c2d2d40408e3e6ea1628a))
+* add logo routes to web server ([abf3b66](https://github.com/AI-Strategic-Forum/Subby/commit/abf3b660cea90c2b31e136f51412859288757bc9))
+* add pin/favorite subscriptions ([447b818](https://github.com/AI-Strategic-Forum/Subby/commit/447b818e51870b5b3dec62bb8ebedd09970ebeea))
+* add spending analytics page with charts ([f1ed612](https://github.com/AI-Strategic-Forum/Subby/commit/f1ed6127b24fa52e3e6d845ab56d81ce08ff12aa))
+* add structured logging with rotating log files ([429ad3d](https://github.com/AI-Strategic-Forum/Subby/commit/429ad3d3800a53d26ab0833e00c3fc7530e61724))
+* add system tray with upcoming payment badge ([e36b934](https://github.com/AI-Strategic-Forum/Subby/commit/e36b9349e3c39037013f078872a9835dc51387f6))
+* add tags system with full CRUD and subscription tagging ([a5a19ed](https://github.com/AI-Strategic-Forum/Subby/commit/a5a19ed6caa56007398424522f7185788e75bf8d))
+* add unused subscription review nudges ([908c696](https://github.com/AI-Strategic-Forum/Subby/commit/908c696da9fc89a72780a3c9246eba9662601fa2))
+* enhance smart payment reminders with multi-day support ([e6d6947](https://github.com/AI-Strategic-Forum/Subby/commit/e6d6947b52b3c72c8e9aed40878835d6bb5ce36d))
+
+### Bug Fixes
+
+* improve error handling consistency across stores and pages ([88a2978](https://github.com/AI-Strategic-Forum/Subby/commit/88a2978d5d2459aee7c58bc37079ae1cff9e2cf1))
+* resolve post-merge type and lint issues ([34ce59d](https://github.com/AI-Strategic-Forum/Subby/commit/34ce59d74e177c0a84bd5b2eefe21939b0eed64c))
+* resolve Tauri IPC race condition and update app identifier ([48196fa](https://github.com/AI-Strategic-Forum/Subby/commit/48196faa514f91b5e97f207010da03134eb4cf89))
+* update remaining com.newstella.subby references to com.asf.subby ([d7f6e85](https://github.com/AI-Strategic-Forum/Subby/commit/d7f6e85ae8d8c91bcb9dcbbf26d98de1351b146d))
+* web mode IPC detection and logo serving ([603c73e](https://github.com/AI-Strategic-Forum/Subby/commit/603c73e3b1a3fe925348694f62783de8369c4697))
+
+### Refactoring
+
+* extract subscriptions page into smaller components ([642df89](https://github.com/AI-Strategic-Forum/Subby/commit/642df89f311674e477fb8a7fecced2fec709fcd7))
+
+### Documentation
+
+* add release strategy, AGENTS.md, and auto-publish releases ([2ca48d7](https://github.com/AI-Strategic-Forum/Subby/commit/2ca48d7b11ad2f47401e485fa8d602626f790a82))
+* redesign README with new screenshots and feature list ([fea34a5](https://github.com/AI-Strategic-Forum/Subby/commit/fea34a5c7c19f4cd0ec080efb82fdbe351533efc))
+* simplify README and fix broken badges ([08c24da](https://github.com/AI-Strategic-Forum/Subby/commit/08c24da5719736b752c256ce591a82ee955990a9))
+
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
