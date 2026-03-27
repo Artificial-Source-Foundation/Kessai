@@ -129,6 +129,7 @@ pnpm test:e2e           # Run Playwright E2E tests
 pnpm typecheck          # Run TypeScript type checking
 pnpm start              # Alias for tauri dev
 pnpm lint:fix           # Run ESLint with auto-fix
+pnpm release            # Bump version, tag, push (triggers release build)
 ```
 
 ## Code Style
@@ -171,6 +172,38 @@ const form = useForm<SubscriptionFormData>({
   resolver: zodResolver(subscriptionFormSchema),
 })
 ```
+
+## Branching & Release Strategy
+
+### Branch Model
+
+- **`main`** — stable, always releasable. All PRs merge here. CI runs on every push and PR.
+- **Feature branches** — short-lived branches for development. Create a PR to `main`, CI validates.
+
+### Release & Auto-Update Flow
+
+The app uses **Tauri's updater plugin** to deliver updates to installed instances via GitHub Releases.
+
+1. `pnpm release` — runs quality gates (`pnpm check` + `pnpm test:run`), bumps version across `package.json` / `tauri.conf.json` / `Cargo.toml`, generates changelog, creates a `v*` tag, and pushes
+2. GitHub Actions (`.github/workflows/release.yml`) detects the tag → builds signed installers for Linux, Windows, macOS (x86 + ARM) → **auto-publishes** a GitHub Release with updater artifacts
+3. Installed apps check `https://github.com/AI-Strategic-Forum/Subby/releases/latest/download/latest.json` → detect new version → download & install
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `.github/workflows/ci.yml` | Quality gates on PRs and `main` pushes |
+| `.github/workflows/release.yml` | Multi-platform build + auto-publish on `v*` tags |
+| `.release-it.json` | Version bumping, changelog, tag config |
+| `scripts/sync-versions.js` | Keeps version in sync across package.json, tauri.conf.json, Cargo.toml |
+| `src/stores/update-store.ts` | Frontend update state management |
+| `src/components/settings/update-settings.tsx` | Update UI in settings |
+
+### Required GitHub Secrets
+
+- `TAURI_SIGNING_PRIVATE_KEY` — signs updater artifacts (required)
+- `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` — key password (required)
+- `APPLE_CERTIFICATE`, `APPLE_CERTIFICATE_PASSWORD`, `APPLE_SIGNING_IDENTITY`, `APPLE_ID`, `APPLE_PASSWORD`, `APPLE_TEAM_ID` — macOS code signing (optional)
 
 ## Data Storage
 

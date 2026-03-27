@@ -75,6 +75,6 @@ jobs:
           tagName: v__VERSION__
           releaseName: 'Subby v__VERSION__'
           releaseBody: 'Installers and updater artifacts for Subby.'
-          releaseDraft: true
+          releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
