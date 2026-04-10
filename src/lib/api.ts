@@ -33,7 +33,27 @@ async function webFetch<T>(url: string, options?: RequestInit): Promise<T> {
     const err = await res.json().catch(() => ({ error: res.statusText }))
     throw new Error((err as { error?: string }).error || res.statusText)
   }
+
+  if (res.status === 204) {
+    return undefined as T
+  }
+
   return res.json() as Promise<T>
+}
+
+export function isWebApiUnavailableError(error: unknown): boolean {
+  if (typeof window === 'undefined' || '__TAURI_INTERNALS__' in window) {
+    return false
+  }
+
+  const message = error instanceof Error ? error.message : String(error)
+  return (
+    message.includes('Web API unavailable:') ||
+    message.includes('Failed to fetch') ||
+    message.includes('NetworkError') ||
+    message.includes('Load failed') ||
+    message.includes('ERR_CONNECTION_REFUSED')
+  )
 }
 
 const API_MAP: Record<
@@ -125,6 +145,11 @@ const API_MAP: Record<
     method: 'GET',
     path: (a) => `/api/price-history/recent?days=${(a.days as number | undefined) ?? 90}`,
   },
+  list_latest_price_history: {
+    method: 'POST',
+    path: () => '/api/price-history/latest',
+    bodyKey: 'subscriptionIds',
+  },
 
   // Tags
   list_tags: { method: 'GET', path: () => '/api/tags' },
@@ -134,6 +159,11 @@ const API_MAP: Record<
   list_subscription_tags: {
     method: 'GET',
     path: (a) => `/api/subscriptions/${a.subscriptionId}/tags`,
+  },
+  list_subscription_tags_batch: {
+    method: 'POST',
+    path: () => '/api/subscriptions/tags/batch',
+    bodyKey: 'subscriptionIds',
   },
   add_subscription_tag: {
     method: 'POST',
@@ -203,6 +233,9 @@ export async function apiInvoke<T>(command: string, args?: Record<string, unknow
     return result
   } catch (err) {
     logger.error('api', `${command} failed`, err)
+    if (isWebApiUnavailableError(err)) {
+      throw new Error(`Web API unavailable: start the app with pnpm dev:web`)
+    }
     throw new Error(`${command}: ${err instanceof Error ? err.message : String(err)}`)
   }
 }
