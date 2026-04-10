@@ -41,25 +41,25 @@ describe('Sidebar', () => {
   it('shows Dashboard nav item', () => {
     renderSidebar()
 
-    expect(screen.getByText('Dashboard')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /dashboard/i })).toBeInTheDocument()
   })
 
   it('shows Subscriptions nav item', () => {
     renderSidebar()
 
-    expect(screen.getByText('Subscriptions')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /subscriptions/i })).toBeInTheDocument()
   })
 
   it('shows Calendar nav item', () => {
     renderSidebar()
 
-    expect(screen.getByText('Calendar')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /calendar/i })).toBeInTheDocument()
   })
 
   it('shows Settings nav item', () => {
     renderSidebar()
 
-    expect(screen.getByText('Settings')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /settings/i })).toBeInTheDocument()
   })
 
   it('shows all 5 nav items', () => {
@@ -72,18 +72,18 @@ describe('Sidebar', () => {
   it('shows Analytics nav item', () => {
     renderSidebar()
 
-    expect(screen.getByText('Analytics')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /analytics/i })).toBeInTheDocument()
   })
 
-  it('renders Subby branding', () => {
+  it('renders Kessai branding', () => {
     renderSidebar()
 
-    expect(screen.getByText('Subby')).toBeInTheDocument()
+    expect(screen.getByAltText('Kessai')).toBeInTheDocument()
   })
 
-  it('renders collapse toggle button on desktop', () => {
+  it('renders search button on desktop', () => {
     renderSidebar()
 
-    expect(screen.getByRole('button', { name: /collapse sidebar/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /search/i })).toBeInTheDocument()
   })
 })
