@@ -5,6 +5,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
 use chrono::NaiveDate;
 use image::ImageReader;
+use serde::Serialize;
 use tauri::menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem};
 use tauri::tray::TrayIconBuilder;
 use tauri::Manager;
@@ -22,6 +23,13 @@ use subby_core::{
 
 /// Global flag to track whether the app should truly quit or just hide to tray.
 static QUITTING: AtomicBool = AtomicBool::new(false);
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct UpdaterContext {
+    executable_path: String,
+    bundle_type: Option<String>,
+}
 
 // ── Logo commands (unchanged) ──────────────────────────────────────────────
 
@@ -881,6 +889,22 @@ fn update_tray_badge(app: tauri::AppHandle, core: tauri::State<'_, SubbyCore>) -
     build_tray_menu(&app, count).map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+fn get_updater_context() -> Result<UpdaterContext, String> {
+    let executable_path = std::env::current_exe()
+        .map_err(|e| e.to_string())?
+        .display()
+        .to_string();
+
+    let bundle_type =
+        tauri::utils::platform::bundle_type().map(|bundle| format!("{bundle:?}").to_lowercase());
+
+    Ok(UpdaterContext {
+        executable_path,
+        bundle_type,
+    })
+}
+
 // ── App setup ──────────────────────────────────────────────────────────────
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -1096,6 +1120,8 @@ pub fn run() {
             import_data,
             // System tray
             update_tray_badge,
+            // Updater
+            get_updater_context,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
