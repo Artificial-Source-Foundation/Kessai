@@ -1,5 +1,5 @@
 {
-  "name": "subby",
+  "name": "kessai",
   "private": true,
   "version": "0.3.0",
   "description": "Know where your money flows - Personal subscription tracker",
@@ -7,11 +7,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Artificial-Source-Foundation/Subby.git"
+    "url": "https://github.com/Artificial-Source-Foundation/Kessai.git"
   },
-  "homepage": "https://github.com/Artificial-Source-Foundation/Subby",
+  "homepage": "https://github.com/Artificial-Source-Foundation/Kessai",
   "bugs": {
-    "url": "https://github.com/Artificial-Source-Foundation/Subby/issues"
+    "url": "https://github.com/Artificial-Source-Foundation/Kessai/issues"
   },
   "keywords": [
     "tauri",
@@ -24,6 +24,7 @@
   "scripts": {
     "start": "tauri dev",
     "dev": "vite",
+    "dev:web": "sh -c 'cargo run -p kessai-web -- --dist-dir dist --port 3000 & backend=$!; pnpm dev; status=$?; kill $backend; wait $backend 2>/dev/null; exit $status'",
     "build": "tsc && vite build",
     "build:tauri": "tauri build",
     "preview": "vite preview",
@@ -44,8 +45,8 @@
     "release": "release-it",
     "release:dry": "release-it --dry-run",
     "sync-versions": "node scripts/sync-versions.js",
-    "serve": "cargo build --release -p subby-web && pnpm build && ./target/release/subby-web",
-    "serve:dev": "cargo run -p subby-web -- --dist-dir dist --port 3000"
+    "serve": "cargo build --release -p kessai-web && pnpm build && ./target/release/kessai-web",
+    "serve:dev": "cargo run -p kessai-web -- --dist-dir dist --port 3000"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -108,6 +109,7 @@
   },
   "pnpm": {
     "overrides": {
+      "lodash": "4.18.1",
       "undici": ">=6.24.0"
     }
   },
