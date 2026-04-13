@@ -32,6 +32,9 @@ import type { Theme } from '@/types/settings'
 import type { CurrencyCode } from '@/lib/currency'
 import { logger } from '@/lib/logger'
 
+const normalizeDisplayExchangeRates = (rates: Record<string, number> | null | undefined) =>
+  rates ?? {}
+
 export function SettingsPage() {
   const {
     settings,
@@ -52,6 +55,7 @@ export function SettingsPage() {
   const [budgetInput, setBudgetInput] = useState(settings?.monthly_budget?.toString() ?? '')
   const [budgetSaved, setBudgetSaved] = useState(false)
   const isInitialized = useRef(false)
+  const displayExchangeRates = normalizeDisplayExchangeRates(settings?.display_exchange_rates)
 
   const handleDataChanged = () => {
     refetchSettings()
@@ -112,9 +116,7 @@ export function SettingsPage() {
       await update({
         currency: value,
         display_exchange_rates: Object.fromEntries(
-          Object.entries(settings.display_exchange_rates).filter(
-            ([currencyCode]) => currencyCode !== value
-          )
+          Object.entries(displayExchangeRates).filter(([currencyCode]) => currencyCode !== value)
         ),
       })
       toast.success('Display currency updated')
@@ -193,7 +195,7 @@ export function SettingsPage() {
 
               <DisplayExchangeRatesSettings
                 mainCurrency={settings.currency as CurrencyCode}
-                rates={settings.display_exchange_rates}
+                rates={displayExchangeRates}
                 usedCurrencies={usedCurrencies}
                 currencyOptions={currencyOptions}
                 onSave={handleSaveDisplayExchangeRates}

@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom'
 import { LayoutDashboard, CreditCard, Calendar, BarChart3, Settings } from 'lucide-react'
 import { Search } from 'lucide-react'
 import { useUiStore } from '@/stores/ui-store'
+import kessaiLogo from '@/assets/kessai-logo.png'
 
 const SIDEBAR_COLLAPSED_WIDTH = 72
 
@@ -27,7 +28,7 @@ export function Sidebar() {
       {/* Header */}
       <div className="flex h-14 w-full shrink-0 items-center justify-center">
         <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg">
-          <img src="/kessai-logo.png" alt="Kessai" className="h-full w-full object-contain" />
+          <img src={kessaiLogo} alt="Kessai" className="h-full w-full object-contain" />
         </div>
       </div>
 

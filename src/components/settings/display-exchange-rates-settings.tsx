@@ -18,11 +18,13 @@ interface CurrencyOption {
 
 interface DisplayExchangeRatesSettingsProps {
   mainCurrency: CurrencyCode
-  rates: Record<string, number>
+  rates: Record<string, number> | null | undefined
   usedCurrencies: CurrencyCode[]
   currencyOptions: CurrencyOption[]
   onSave: (rates: Record<string, number>) => Promise<void>
 }
+
+const normalizeRates = (rates: Record<string, number> | null | undefined) => rates ?? {}
 
 export function DisplayExchangeRatesSettings({
   mainCurrency,
@@ -31,6 +33,7 @@ export function DisplayExchangeRatesSettings({
   currencyOptions,
   onSave,
 }: DisplayExchangeRatesSettingsProps) {
+  const normalizedRates = normalizeRates(rates)
   const [draftRates, setDraftRates] = useState<Record<string, string>>({})
   const [newCurrency, setNewCurrency] = useState<string>('')
   const [isSaving, setIsSaving] = useState(false)
@@ -38,10 +41,10 @@ export function DisplayExchangeRatesSettings({
   useEffect(() => {
     setDraftRates(
       Object.fromEntries(
-        Object.entries(rates).map(([currency, value]) => [currency, String(value)])
+        Object.entries(normalizedRates).map(([currency, value]) => [currency, String(value)])
       )
     )
-  }, [rates])
+  }, [normalizedRates])
 
   const suggestedCurrencies = useMemo(() => {
     return [...new Set(usedCurrencies)]
@@ -63,10 +66,10 @@ export function DisplayExchangeRatesSettings({
       })
     )
 
-    const currentEntries = Object.entries(rates).sort(([a], [b]) => a.localeCompare(b))
+    const currentEntries = Object.entries(normalizedRates).sort(([a], [b]) => a.localeCompare(b))
     const draftEntries = Object.entries(normalizedDraft).sort(([a], [b]) => a.localeCompare(b))
     return JSON.stringify(currentEntries) !== JSON.stringify(draftEntries)
-  }, [draftRates, rates])
+  }, [draftRates, normalizedRates])
 
   const handleSave = async () => {
     const normalizedDraft = Object.fromEntries(

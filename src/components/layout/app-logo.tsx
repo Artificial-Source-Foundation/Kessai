@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils'
+import kessaiLogo from '@/assets/kessai-logo.png'
 
 interface AppLogoProps {
   compact?: boolean
@@ -9,7 +10,7 @@ export function AppLogo({ compact = false, className }: AppLogoProps) {
   return (
     <div className={cn('flex items-center gap-3', className)}>
       <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg">
-        <img src="/kessai-logo.png" alt="Kessai" className="h-full w-full object-contain" />
+        <img src={kessaiLogo} alt="Kessai" className="h-full w-full object-contain" />
       </div>
       {!compact ? (
         <div className="min-w-0">
