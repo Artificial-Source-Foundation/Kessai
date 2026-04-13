@@ -1,10 +1,10 @@
-# CLAUDE.md — Subby Project Context
+# CLAUDE.md — Kessai Project Context
 
 > This file provides context for Claude Code and other AI assistants.
 
 ## Project Summary
 
-**Subby** is a local-first desktop subscription tracker built with Tauri 2, React, TypeScript, and SQLite. It features a clean, performant UI with light/dark theme support.
+**Kessai** is a local-first desktop subscription tracker built with Tauri 2, React, TypeScript, and SQLite. It features a clean, performant UI with light/dark theme support.
 
 **Status**: Post-MVP (v0.2.0)
 
@@ -14,7 +14,7 @@
 - **Frontend**: React 19 + TypeScript + Vite 7
 - **Styling**: Tailwind CSS 4 + shadcn/ui
 - **State**: Zustand (with useShallow for optimized selectors)
-- **Database**: SQLite via rusqlite (subby-core crate)
+- **Database**: SQLite via rusqlite (kessai-core crate)
 - **Forms**: React Hook Form + Zod
 - **Dates**: dayjs (with plugins: isSameOrBefore, isSameOrAfter, isToday, isTomorrow, weekOfYear, isBetween)
 - **Testing**: Vitest + Testing Library + Playwright (E2E)
@@ -38,8 +38,8 @@
 | `src/types/`                    | TypeScript type definitions with Zod                  |
 | `src/lib/`                      | Utilities (database, currency, date, data-management) |
 | `src/test/`                     | Test setup                                            |
-| `crates/subby-core/`            | Shared Rust business logic library                    |
-| `crates/subby-mcp/`             | MCP server + CLI binary                               |
+| `crates/kessai-core/`            | Shared Rust business logic library                    |
+| `crates/kessai-mcp/`             | MCP server + CLI binary                               |
 | `docs/`                         | Project documentation                                 |
 
 ## MVP Features (Complete)
@@ -124,7 +124,7 @@ pnpm lint               # Run ESLint
 pnpm format             # Run Prettier
 pnpm check              # Lint + typecheck + format check
 cargo test --workspace  # Run Rust tests
-cargo build -p subby-mcp  # Build MCP server + CLI
+cargo build -p kessai-mcp  # Build MCP server + CLI
 pnpm test:e2e           # Run Playwright E2E tests
 pnpm typecheck          # Run TypeScript type checking
 pnpm start              # Alias for tauri dev
@@ -186,7 +186,7 @@ The app uses **Tauri's updater plugin** to deliver updates to installed instance
 
 1. `pnpm release` — runs quality gates (`pnpm check` + `pnpm test:run`), bumps version across `package.json` / `tauri.conf.json` / `Cargo.toml`, generates changelog, creates a `v*` tag, and pushes
 2. GitHub Actions (`.github/workflows/release.yml`) detects the tag → builds signed installers for Linux, Windows, macOS (x86 + ARM) → **auto-publishes** a GitHub Release with updater artifacts
-3. Installed apps check `https://github.com/Artificial-Source-Foundation/Subby/releases/latest/download/latest.json` → detect new version → download & install
+3. Installed apps check `https://github.com/Artificial-Source-Foundation/Kessai/releases/latest/download/latest.json` → detect new version → download & install
 
 ### Key Files
 
@@ -209,6 +209,6 @@ The app uses **Tauri's updater plugin** to deliver updates to installed instance
 
 SQLite database stored in Tauri app data directory:
 
-- Linux: `~/.local/share/subby/`
-- macOS: `~/Library/Application Support/subby/`
-- Windows: `%APPDATA%/subby/`
+- Linux: `~/.local/share/kessai/`
+- macOS: `~/Library/Application Support/kessai/`
+- Windows: `%APPDATA%/kessai/`

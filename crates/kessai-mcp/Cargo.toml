@@ -1,0 +1,25 @@
+[package]
+name = "kessai-mcp"
+version = "0.1.0"
+edition = "2021"
+description = "MCP server for Kessai subscription tracker"
+
+[[bin]]
+name = "kessai-mcp"
+path = "src/main.rs"
+
+[dependencies]
+kessai-core = { path = "../kessai-core" }
+rmcp = { version = "0.16", features = ["server", "transport-io"] }
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+clap = { version = "4", features = ["derive", "env"] }
+anyhow = "1"
+dirs = "6"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-appender = "0.2"
+schemars = "1"
+comfy-table = "7"
+colored = "3"

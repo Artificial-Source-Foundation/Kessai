@@ -38,8 +38,8 @@ export const TrialBadge = memo(function TrialBadge({ trialEndDate }: TrialBadgeP
         isExpired
           ? 'border-destructive/30 bg-destructive/20 text-destructive border'
           : isUrgent
-            ? 'border border-amber-500/30 bg-amber-500/20 text-amber-500'
-            : 'border border-amber-500/30 bg-amber-500/15 text-amber-400'
+            ? 'border-warning/30 bg-warning/20 text-warning border'
+            : 'border-warning/30 bg-warning/15 text-warning border'
       }`}
     >
       {label}

@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 import { useSettingsStore } from '@/stores/settings-store'
 
 export function useSettings() {
@@ -14,7 +15,21 @@ export function useSettings() {
     setNotificationAdvanceDays,
     setNotificationDaysBefore,
     setNotificationTime,
-  } = useSettingsStore()
+  } = useSettingsStore(
+    useShallow((state) => ({
+      settings: state.settings,
+      isLoading: state.isLoading,
+      error: state.error,
+      fetch: state.fetch,
+      update: state.update,
+      setTheme: state.setTheme,
+      setCurrency: state.setCurrency,
+      setNotifications: state.setNotifications,
+      setNotificationAdvanceDays: state.setNotificationAdvanceDays,
+      setNotificationDaysBefore: state.setNotificationDaysBefore,
+      setNotificationTime: state.setNotificationTime,
+    }))
+  )
 
   useEffect(() => {
     fetch()

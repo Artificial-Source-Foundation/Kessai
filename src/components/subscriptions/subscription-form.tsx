@@ -59,7 +59,7 @@ export function SubscriptionForm({
       fetch: state.fetch,
     }))
   )
-  const globalCurrency = (useSettingsStore((s) => s.settings)?.currency || 'USD') as CurrencyCode
+  const globalCurrency = (useSettingsStore((s) => s.settings?.currency) || 'USD') as CurrencyCode
   const isEditing = Boolean(subscription)
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([])
   const fetchForSubscription = useTagStore((s) => s.fetchForSubscription)
@@ -408,7 +408,7 @@ export function SubscriptionForm({
                   onClick={() => field.onChange(!field.value)}
                   className={cn(
                     'relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors',
-                    field.value ? 'bg-blue-500' : 'bg-muted'
+                    field.value ? 'bg-info' : 'bg-muted'
                   )}
                 >
                   <span
@@ -808,7 +808,7 @@ function LogoLibraryIcon({ domain, name, color }: { domain: string; name: string
   if (!logoPath || error) {
     return (
       <div
-        className="flex h-7 w-7 items-center justify-center rounded text-[10px] font-bold text-white"
+        className="text-primary-foreground flex h-7 w-7 items-center justify-center rounded text-[10px] font-bold"
         style={{ backgroundColor: color }}
       >
         {name.charAt(0).toUpperCase()}

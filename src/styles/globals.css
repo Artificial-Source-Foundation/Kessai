@@ -11,38 +11,45 @@ body,
 }
 
 @theme {
-  /* ASF Design System — Subby (aligned with Valute) */
-  --color-background: #020202;
-  --color-foreground: #f0f0f0;
+  /* ASF Design System — Kessai (Liquid Glass / Obsidian Vessel Adapted) */
+  --color-background: #0e0e0e;
+  --color-foreground: #ffffff;
 
-  --color-surface: #0a0a0a;
-  --color-surface-elevated: #111111;
+  --color-surface: #131313;
+  --color-surface-elevated: #1f1f1f;
+  --color-surface-highest: #353535;
 
-  /* Accent — Purple scale */
-  --color-accent: #bf5af2;
-  --color-accent-hover: #d17ff7;
-  --color-accent-muted: rgba(191, 90, 242, 0.15);
-  --color-accent-foreground: #ffffff;
+  /* Accent — High Contrast White */
+  --color-accent: #ffffff;
+  --color-accent-hover: #e2e2e2;
+  --color-accent-muted: rgba(255, 255, 255, 0.1);
+  --color-accent-foreground: #131313;
 
-  --color-primary: #bf5af2;
-  --color-primary-foreground: #ffffff;
+  --color-primary: #ffffff;
+  --color-primary-foreground: #1a1c1c;
 
-  --color-secondary: #1a1a1a;
-  --color-secondary-foreground: #f0f0f0;
+  --color-secondary: #1f1f1f;
+  --color-secondary-foreground: #e2e2e2;
 
-  --color-muted: #1a1a1a;
-  --color-muted-foreground: #888888;
+  --color-muted: #1f1f1f;
+  --color-muted-foreground: #c6c6c6;
 
-  --color-card: rgba(10, 10, 10, 0.6);
-  --color-card-foreground: #f0f0f0;
+  --color-card: rgba(31, 31, 31, 0.6);
+  --color-card-foreground: #ffffff;
 
-  --color-popover: #0a0a0a;
-  --color-popover-foreground: #f0f0f0;
+  --color-popover: #1f1f1f;
+  --color-popover-foreground: #ffffff;
 
-  --color-border: rgba(255, 255, 255, 0.06);
-  --color-border-hover: rgba(255, 255, 255, 0.12);
-  --color-input: rgba(255, 255, 255, 0.06);
-  --color-ring: #bf5af2;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-hover: rgba(255, 255, 255, 0.15);
+  --color-border-ghost: rgba(255, 255, 255, 0.15);
+  --color-input: rgba(255, 255, 255, 0.04);
+  --color-ring: rgba(255, 255, 255, 0.2);
+  --color-overlay: rgba(0, 0, 0, 0.6);
+  --color-overlay-soft: rgba(0, 0, 0, 0.5);
+  --color-shadow-ambient: rgba(255, 255, 255, 0.04);
+  --color-shadow-ambient-strong: rgba(255, 255, 255, 0.1);
+  --color-swatch-foreground: #ffffff;
 
   --color-destructive: #ef4444;
   --color-destructive-foreground: #ffffff;
@@ -50,28 +57,31 @@ body,
   --color-success: #22c55e;
   --color-success-foreground: #ffffff;
   --color-warning: #f59e0b;
+  --color-info: #0ea5e9;
+  --color-info-foreground: #ffffff;
   --color-warning-foreground: #ffffff;
 
-  /* Subby-specific accent colors */
+  /* Kessai-specific accent colors */
   --color-accent-cyan: #06b6d4;
   --color-accent-orange: #f97316;
 
   /* Chart colors */
-  --color-chart-1: #bf5af2;
-  --color-chart-2: #22c55e;
-  --color-chart-3: #3b82f6;
-  --color-chart-4: #f59e0b;
-  --color-chart-5: #ef4444;
+  --color-chart-1: #ffffff;
+  --color-chart-2: #c6c6c6;
+  --color-chart-3: #888888;
+  --color-chart-4: #444444;
+  --color-chart-5: #222222;
+
+  /* Bento colors */
+  --color-bento-1: #1f1f1f;
+  --color-bento-2: #242424;
+  --color-bento-3: #2a2a2a;
+  --color-bento-4: #303030;
+  --color-bento-5: #353535;
 
   /* Sidebar */
-  --color-sidebar: #0a0a0a;
-  --color-sidebar-foreground: #f0f0f0;
-  --color-sidebar-primary: #bf5af2;
-  --color-sidebar-primary-foreground: #ffffff;
-  --color-sidebar-accent: rgba(191, 90, 242, 0.15);
-  --color-sidebar-accent-foreground: #f0f0f0;
-  --color-sidebar-border: rgba(255, 255, 255, 0.06);
-  --color-sidebar-ring: #bf5af2;
+  --color-sidebar: #0e0e0e;
+  --color-sidebar-border: rgba(255, 255, 255, 0.04);
 
   /* Category colors */
   --color-cat-entertainment: #ec4899;
@@ -87,16 +97,16 @@ body,
 
   /* Theme-adaptive utility colors */
   --grid-line-color: rgba(255, 255, 255, 0.02);
-  --color-subtle-overlay: rgba(255, 255, 255, 0.04);
+  --color-subtle-overlay: rgba(255, 255, 255, 0.03);
   --color-scrollbar-thumb: rgba(255, 255, 255, 0.08);
   --color-scrollbar-thumb-hover: rgba(255, 255, 255, 0.15);
 
-  /* Radii — ASF brutalist buttons (0px), pill badges (9999px), 12px cards */
-  --radius-sm: 0px;
-  --radius-md: 0px;
+  /* Radii — Refined rounded rectangles, not pills */
+  --radius-sm: 4px;
+  --radius-md: 8px;
   --radius-lg: 12px;
-  --radius-xl: 12px;
-  --radius-2xl: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
   --radius-pill: 9999px;
 
   /* Fonts — ASF typography */
@@ -136,37 +146,43 @@ body,
 
 .light {
   --color-background: #fafafa;
-  --color-foreground: #0a0a0a;
+  --color-foreground: #131313;
   --color-card: rgba(255, 255, 255, 0.8);
-  --color-card-foreground: #0a0a0a;
+  --color-card-foreground: #131313;
   --color-muted: #f0f0f0;
   --color-muted-foreground: #585858;
+  --color-surface-highest: #d9d9d9;
   --color-border: rgba(0, 0, 0, 0.08);
   --color-border-hover: rgba(0, 0, 0, 0.15);
+  --color-border-ghost: rgba(0, 0, 0, 0.15);
   --color-input: #ffffff;
   --color-surface: #f5f5f5;
   --color-surface-elevated: #ffffff;
   --color-secondary: #f0f0f0;
-  --color-secondary-foreground: #0a0a0a;
+  --color-secondary-foreground: #131313;
   --color-popover: #ffffff;
-  --color-popover-foreground: #0a0a0a;
+  --color-popover-foreground: #131313;
 
-  /* Accent adjustments for light mode — slightly deeper violet for contrast */
-  --color-accent-muted: rgba(191, 90, 242, 0.1);
+  /* Accent adjustments for light mode */
+  --color-accent-muted: rgba(0, 0, 0, 0.05);
+  --color-accent: #131313;
+  --color-primary: #131313;
+  --color-primary-foreground: #ffffff;
 
   /* Sidebar — light surface with dark text */
   --color-sidebar: #f5f5f5;
-  --color-sidebar-foreground: #0a0a0a;
-  --color-sidebar-primary: #bf5af2;
-  --color-sidebar-primary-foreground: #ffffff;
-  --color-sidebar-accent: rgba(191, 90, 242, 0.1);
-  --color-sidebar-accent-foreground: #0a0a0a;
   --color-sidebar-border: rgba(0, 0, 0, 0.08);
-  --color-sidebar-ring: #bf5af2;
+  --color-overlay: rgba(255, 255, 255, 0.7);
+  --color-overlay-soft: rgba(255, 255, 255, 0.55);
+  --color-shadow-ambient: rgba(0, 0, 0, 0.06);
+  --color-shadow-ambient-strong: rgba(0, 0, 0, 0.12);
+  --color-swatch-foreground: #ffffff;
 
   /* Semantic colors — darker for light backgrounds */
   --color-success: #16a34a;
   --color-warning: #d97706;
+  --color-info: #0284c7;
+  --color-info-foreground: #ffffff;
   --color-destructive: #dc2626;
 
   /* Chart colors — adjusted for light background contrast */
@@ -175,6 +191,12 @@ body,
   --color-chart-3: #2563eb;
   --color-chart-4: #d97706;
   --color-chart-5: #dc2626;
+
+  --color-bento-1: #ffffff;
+  --color-bento-2: #f5f5f5;
+  --color-bento-3: #ebebeb;
+  --color-bento-4: #e2e2e2;
+  --color-bento-5: #d9d9d9;
 
   /* Utility overrides */
   --grid-line-color: rgba(0, 0, 0, 0.04);
@@ -208,9 +230,9 @@ body,
 /* Glass morphism utilities */
 @utility glass-card {
   background: var(--color-card);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(20px);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: var(--radius-xl);
   transition: border-color 0.15s ease;
   &:hover {
     border-color: var(--color-border-hover);
@@ -219,32 +241,31 @@ body,
 
 @utility glass-sidebar {
   background: var(--color-sidebar);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(20px);
   border-right: 1px solid var(--color-sidebar-border);
 }
 
-@utility glass-panel {
-  background: var(--color-card);
-  backdrop-filter: blur(12px);
-  border-left: 1px solid var(--color-border);
-}
-
-@utility glass-input {
-  background-color: var(--color-input);
-  border: 1px solid var(--color-border);
-  border-radius: 0px;
-  &:focus {
-    border-color: var(--color-accent);
-    box-shadow: 0 0 0 2px rgba(191, 90, 242, 0.2);
-    outline: none;
-  }
-}
-
 @utility gradient-text {
-  background: linear-gradient(135deg, #bf5af2, #d17ff7);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-muted-foreground));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+@utility shadow-ambient {
+  box-shadow: 0 0 80px -10px var(--color-shadow-ambient);
+}
+
+@utility shadow-ambient-sm {
+  box-shadow: 0 0 40px -10px var(--color-shadow-ambient);
+}
+
+@utility shadow-ambient-strong {
+  box-shadow: 0 0 40px -10px var(--color-shadow-ambient-strong);
+}
+
+@utility border-ghost {
+  border: 1px solid var(--color-border-ghost);
 }
 
 /* Grid background pattern */
@@ -253,69 +274,6 @@ body,
     linear-gradient(var(--grid-line-color) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid-line-color) 1px, transparent 1px);
   background-size: 40px 40px;
-}
-
-/* Sidebar link styles */
-@utility sidebar-link {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.625rem 0.75rem;
-  border-radius: 0px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--color-muted-foreground);
-  transition: all 0.15s ease;
-  &:hover {
-    color: var(--color-foreground);
-    background: var(--color-subtle-overlay);
-  }
-}
-
-@utility sidebar-link-active {
-  background: var(--color-accent-muted);
-  border-left: 2px solid var(--color-accent);
-  color: var(--color-foreground);
-}
-
-@utility sidebar-link-collapsed {
-  justify-content: center;
-  padding-left: 0;
-  padding-right: 0;
-  gap: 0;
-  position: relative;
-}
-
-@utility sidebar-link-active-collapsed {
-  background: var(--color-accent-muted);
-  border-left: none;
-  border-bottom: 2px solid var(--color-accent);
-  color: var(--color-foreground);
-}
-
-/* Sidebar tooltip on collapsed hover */
-.sidebar-tooltip {
-  position: absolute;
-  left: calc(100% + 8px);
-  top: 50%;
-  transform: translateY(-50%);
-  background: var(--color-surface-elevated);
-  color: var(--color-foreground);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  padding: 4px 10px;
-  border-radius: 4px;
-  white-space: nowrap;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-  z-index: 50;
-  border: 1px solid var(--color-border);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.sidebar-link-collapsed:hover .sidebar-tooltip {
-  opacity: 1;
 }
 
 /* ── Motion control ───────────────────────────────────────────────────── */
@@ -489,7 +447,7 @@ body,
   transition: box-shadow var(--transition-duration, 0.2s) ease-out;
 }
 .hover-glow:hover {
-  box-shadow: 0 0 20px rgba(191, 90, 242, 0.3);
+  box-shadow: 0 0 40px var(--color-shadow-ambient-strong);
 }
 
 /* Stagger children animation */

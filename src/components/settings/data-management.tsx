@@ -3,6 +3,13 @@ import { toast } from 'sonner'
 import { Download, Upload, FileUp, FileSpreadsheet } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { ImportDialog } from '@/components/settings/import-dialog'
 import { CSVImportWizard } from '@/components/settings/csv-import-wizard'
 import {
@@ -21,6 +28,7 @@ export function DataManagement({ onDataChanged }: DataManagementProps) {
   const [isExporting, setIsExporting] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
   const [showImportConfirm, setShowImportConfirm] = useState(false)
+  const [showImportOptions, setShowImportOptions] = useState(false)
   const [showImportDialog, setShowImportDialog] = useState(false)
   const [showCSVImportWizard, setShowCSVImportWizard] = useState(false)
   const [pendingImportData, setPendingImportData] = useState<unknown>(null)
@@ -42,8 +50,19 @@ export function DataManagement({ onDataChanged }: DataManagementProps) {
     }
   }
 
-  const handleImportClick = () => {
+  const openBackupImport = () => {
+    setShowImportOptions(false)
     fileInputRef.current?.click()
+  }
+
+  const openStructuredImport = () => {
+    setShowImportOptions(false)
+    setShowImportDialog(true)
+  }
+
+  const openCSVImport = () => {
+    setShowImportOptions(false)
+    setShowCSVImportWizard(true)
   }
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,41 +114,43 @@ export function DataManagement({ onDataChanged }: DataManagementProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-        <div>
+      <div className="border-border bg-muted/30 flex flex-col gap-4 rounded-lg border p-4">
+        <div className="flex flex-col gap-1">
           <p className="text-foreground font-[family-name:var(--font-sans)] text-sm font-medium">
             Export Data
           </p>
           <p className="text-muted-foreground text-xs">
-            Download all your subscriptions as a backup
+            Download all subscriptions and settings as a backup file
           </p>
         </div>
         <Button
           variant="outline"
           onClick={handleExport}
           disabled={isExporting}
-          className="shrink-0 gap-2"
+          className="w-full justify-center gap-2 sm:w-auto sm:self-start"
         >
           <Download className="h-4 w-4" />
-          {isExporting ? 'Exporting...' : 'Export'}
+          {isExporting ? 'Exporting...' : 'Export Backup'}
         </Button>
       </div>
 
-      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-        <div>
+      <div className="border-border bg-muted/30 flex flex-col gap-4 rounded-lg border p-4">
+        <div className="flex flex-col gap-1">
           <p className="text-foreground font-[family-name:var(--font-sans)] text-sm font-medium">
             Import Data
           </p>
-          <p className="text-muted-foreground text-xs">Restore from a backup file</p>
+          <p className="text-muted-foreground text-xs">
+            Restore a backup or import subscriptions from another source
+          </p>
         </div>
         <Button
           variant="outline"
-          onClick={handleImportClick}
+          onClick={() => setShowImportOptions(true)}
           disabled={isImporting}
-          className="shrink-0 gap-2"
+          className="w-full justify-center gap-2 sm:w-auto sm:self-start"
         >
           <Upload className="h-4 w-4" />
-          {isImporting ? 'Importing...' : 'Import'}
+          {isImporting ? 'Importing...' : 'Import Data'}
         </Button>
         <input
           ref={fileInputRef}
@@ -140,48 +161,6 @@ export function DataManagement({ onDataChanged }: DataManagementProps) {
         />
       </div>
 
-      <div className="border-border border-t pt-6">
-        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-          <div>
-            <p className="text-foreground font-[family-name:var(--font-sans)] text-sm font-medium">
-              Import from CSV / Other Apps
-            </p>
-            <p className="text-muted-foreground text-xs">
-              Import from CSV, Wallos, or other formats
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            onClick={() => setShowImportDialog(true)}
-            className="shrink-0 gap-2"
-          >
-            <FileUp className="h-4 w-4" />
-            Import
-          </Button>
-        </div>
-      </div>
-
-      <div className="border-border border-t pt-6">
-        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-          <div>
-            <p className="text-foreground font-[family-name:var(--font-sans)] text-sm font-medium">
-              Import from CSV / Bank Statement
-            </p>
-            <p className="text-muted-foreground text-xs">
-              Detect recurring charges from bank exports with column mapping
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            onClick={() => setShowCSVImportWizard(true)}
-            className="shrink-0 gap-2"
-          >
-            <FileSpreadsheet className="h-4 w-4" />
-            CSV Import
-          </Button>
-        </div>
-      </div>
-
       <ConfirmDialog
         open={showImportConfirm}
         onOpenChange={setShowImportConfirm}
@@ -190,6 +169,59 @@ export function DataManagement({ onDataChanged }: DataManagementProps) {
         confirmLabel="Import"
         onConfirm={handleImportConfirm}
       />
+
+      <Dialog open={showImportOptions} onOpenChange={setShowImportOptions}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Import Data</DialogTitle>
+            <DialogDescription>Choose how you want to bring data into Kessai.</DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-3 pt-2">
+            <button
+              type="button"
+              onClick={openBackupImport}
+              className="border-border bg-muted/30 hover:border-border-hover hover:bg-muted/50 flex items-start gap-3 rounded-lg border p-4 text-left transition-colors"
+            >
+              <Upload className="text-primary mt-0.5 h-4 w-4 shrink-0" />
+              <div>
+                <p className="text-foreground text-sm font-medium">Restore Backup</p>
+                <p className="text-muted-foreground text-xs">
+                  Import a full Kessai backup from a JSON file.
+                </p>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={openStructuredImport}
+              className="border-border bg-muted/30 hover:border-border-hover hover:bg-muted/50 flex items-start gap-3 rounded-lg border p-4 text-left transition-colors"
+            >
+              <FileUp className="text-primary mt-0.5 h-4 w-4 shrink-0" />
+              <div>
+                <p className="text-foreground text-sm font-medium">Import Subscriptions</p>
+                <p className="text-muted-foreground text-xs">
+                  Import from CSV, Wallos, and other supported app formats.
+                </p>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={openCSVImport}
+              className="border-border bg-muted/30 hover:border-border-hover hover:bg-muted/50 flex items-start gap-3 rounded-lg border p-4 text-left transition-colors"
+            >
+              <FileSpreadsheet className="text-primary mt-0.5 h-4 w-4 shrink-0" />
+              <div>
+                <p className="text-foreground text-sm font-medium">Import Bank CSV</p>
+                <p className="text-muted-foreground text-xs">
+                  Detect recurring charges from a bank statement with column mapping.
+                </p>
+              </div>
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <ImportDialog
         open={showImportDialog}

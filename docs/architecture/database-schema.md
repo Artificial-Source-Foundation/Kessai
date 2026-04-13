@@ -1,6 +1,6 @@
 # Database Schema
 
-Subby stores all app data in local SQLite.
+Kessai stores all app data in local SQLite.
 
 ## Tables
 
@@ -13,7 +13,7 @@ Subby stores all app data in local SQLite.
 
 ## Migration Model
 
-Migrations are defined inline in Rust (`crates/subby-core/src/migrations.rs`) using `MigrationKind::Up` entries.
+Migrations are defined inline in Rust (`crates/kessai-core/src/migrations.rs`) using `MigrationKind::Up` entries.
 
 Current migration sequence:
 

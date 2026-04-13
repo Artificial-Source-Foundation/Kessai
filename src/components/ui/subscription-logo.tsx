@@ -70,15 +70,19 @@ export function SubscriptionLogo({
         alt={name}
         loading="lazy"
         decoding="async"
-        className={cn(sizeClass, 'border border-white/20 object-cover', className)}
+        className={cn(sizeClass, 'border-border object-cover', className)}
       />
     )
   }
 
   return (
     <div
-      className={cn(sizeClass, 'flex items-center justify-center font-bold text-white', className)}
-      style={{ backgroundColor: color || '#bf5af2' }}
+      className={cn(
+        sizeClass,
+        'text-primary flex items-center justify-center font-bold',
+        className
+      )}
+      style={{ backgroundColor: color || 'var(--color-surface-highest)' }}
     >
       {name.charAt(0).toUpperCase()}
     </div>

@@ -6,7 +6,7 @@ Status: In Progress
 ## Checklist
 
 - PASS: Docs IA reorganized under `docs/getting-started`, `docs/architecture`, `docs/guides`, `docs/reference`
-- PASS: Namespace links updated to `ASF/Subby`
+- PASS: Namespace links updated to `ASF/Kessai`
 - PASS: Release branch requirement fixed to `main` in `.release-it.json`
 - PASS: CI workflow added (`.github/workflows/ci.yml`)
 - PASS: Issue templates and PR template added

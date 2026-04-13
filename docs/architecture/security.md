@@ -1,6 +1,6 @@
 # Security Model
 
-Subby desktop app is local-first and keeps user data on-device.
+Kessai desktop app is local-first and keeps user data on-device.
 
 ## Security Characteristics
 

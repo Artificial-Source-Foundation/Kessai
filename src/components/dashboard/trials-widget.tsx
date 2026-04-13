@@ -15,9 +15,9 @@ export const TrialsWidget = memo(function TrialsWidget({
   if (trialCount === 0) return null
 
   return (
-    <div className="glass-card border-blue-400/20 p-5">
+    <div className="glass-card border-info/20 p-5">
       <div className="mb-4 flex items-center gap-2.5">
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-400/15 text-blue-400">
+        <div className="bg-info/15 text-info flex h-7 w-7 items-center justify-center rounded-lg">
           <FlaskConical className="h-3.5 w-3.5" />
         </div>
         <h3 className="text-foreground font-[family-name:var(--font-heading)] text-sm font-bold">
@@ -34,7 +34,7 @@ export const TrialsWidget = memo(function TrialsWidget({
                 <span className="text-foreground min-w-0 truncate text-sm">{sub.name}</span>
                 <span
                   className={`shrink-0 rounded px-1.5 py-0.5 font-[family-name:var(--font-mono)] text-[10px] font-medium ${
-                    urgent ? 'bg-amber-400/10 text-amber-400' : 'bg-blue-400/10 text-blue-400'
+                    urgent ? 'bg-warning/10 text-warning' : 'bg-info/10 text-info'
                   }`}
                 >
                   {daysLeft === 0

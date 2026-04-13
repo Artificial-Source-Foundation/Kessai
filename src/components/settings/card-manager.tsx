@@ -95,7 +95,7 @@ export function CardManager({ currency }: CardManagerProps) {
   const cardType = form.watch('card_type')
 
   return (
-    <div className="space-y-4">
+    <div className="flex h-full flex-col space-y-4">
       {!isAdding && (
         <Button variant="outline" onClick={() => setIsAdding(true)} className="w-full gap-2">
           <Plus className="h-4 w-4" />
@@ -215,7 +215,7 @@ export function CardManager({ currency }: CardManagerProps) {
                   className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
                   style={{ backgroundColor: card.color }}
                 >
-                  <CreditCard className="h-5 w-5 text-white" />
+                  <CreditCard className="h-5 w-5 text-[color:var(--color-swatch-foreground)]" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-foreground truncate font-medium">{card.name}</p>
@@ -255,7 +255,9 @@ export function CardManager({ currency }: CardManagerProps) {
       )}
 
       {cards.length === 0 && !isAdding && (
-        <p className="text-muted-foreground py-4 text-center text-sm">No payment cards added yet</p>
+        <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed border-[var(--color-border-hover)] bg-[var(--color-card)] px-4 py-8 text-center">
+          <p className="text-muted-foreground text-sm">No payment cards added yet</p>
+        </div>
       )}
 
       <ConfirmDialog

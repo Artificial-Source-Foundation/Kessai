@@ -56,8 +56,7 @@ export function ImportDialog({ open, onOpenChange, onDataChanged }: ImportDialog
 
   const { subscriptions, add: addSubscription } = useSubscriptionStore()
   const { categories } = useCategoryStore()
-  const { settings } = useSettingsStore()
-  const currency = (settings?.currency || 'USD') as CurrencyCode
+  const currency = (useSettingsStore((s) => s.settings?.currency) || 'USD') as CurrencyCode
 
   const existingNames = useMemo(
     () => new Set(subscriptions.map((s) => s.name.toLowerCase())),
@@ -343,8 +342,8 @@ function UploadStep({
           />
           <FormatInfo
             icon={<FileText className="h-4 w-4" />}
-            title="Subby JSON Backup"
-            description="Exported from Subby's data management settings"
+            title="Kessai JSON Backup"
+            description="Exported from Kessai's data management settings"
           />
           <FormatInfo
             icon={<FileText className="h-4 w-4" />}
@@ -406,7 +405,7 @@ function MappingStep({
     <div className="flex flex-col gap-5 py-4">
       <div className="border-border rounded-lg border bg-[var(--color-subtle-overlay)] p-3">
         <div className="flex items-start gap-2">
-          <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-400" />
+          <AlertCircle className="text-warning mt-0.5 h-4 w-4 flex-shrink-0" />
           <p className="text-muted-foreground text-xs">
             We couldn't auto-detect your CSV columns. Please map them manually below.
           </p>
@@ -494,15 +493,15 @@ function PreviewStep({
         </span>
         <span className="bg-primary/10 text-primary rounded px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] font-medium tracking-wider uppercase">
           {result.source === 'csv' && 'CSV'}
-          {result.source === 'subby-json' && 'Subby Backup'}
+          {result.source === 'kessai-json' && 'Kessai Backup'}
           {result.source === 'wallos-json' && 'Wallos'}
         </span>
       </div>
 
       {/* Errors */}
       {result.errors.length > 0 && (
-        <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
-          <p className="mb-1 text-xs font-medium text-amber-400">
+        <div className="border-warning/30 bg-warning/5 rounded-lg border p-3">
+          <p className="text-warning mb-1 text-xs font-medium">
             {result.errors.length} warning{result.errors.length !== 1 ? 's' : ''}
           </p>
           <div className="max-h-20 overflow-y-auto">
@@ -570,7 +569,7 @@ function PreviewStep({
                     }`}
                   >
                     {selectedRows.size === result.subscriptions.length && (
-                      <Check className="h-3 w-3 text-white" />
+                      <Check className="text-primary-foreground h-3 w-3" />
                     )}
                   </button>
                 </th>
@@ -598,7 +597,7 @@ function PreviewStep({
                     key={`sub-${i}-${sub.name}`}
                     className={`transition-colors ${
                       isSelected ? 'bg-[var(--color-subtle-overlay)]' : 'opacity-40'
-                    } ${isDuplicate ? 'bg-amber-500/5' : ''}`}
+                    } ${isDuplicate ? 'bg-warning/5' : ''}`}
                   >
                     <td className="px-3 py-2.5">
                       <button
@@ -609,14 +608,14 @@ function PreviewStep({
                             : 'border-border hover:border-foreground'
                         }`}
                       >
-                        {isSelected && <Check className="h-3 w-3 text-white" />}
+                        {isSelected && <Check className="text-primary-foreground h-3 w-3" />}
                       </button>
                     </td>
                     <td className="px-3 py-2.5">
                       <div className="flex items-center gap-2">
                         <span className="text-foreground text-sm">{sub.name}</span>
                         {isDuplicate && (
-                          <span className="rounded border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 font-[family-name:var(--font-mono)] text-[9px] tracking-wider text-amber-400 uppercase">
+                          <span className="border-warning/30 bg-warning/10 text-warning rounded border px-1.5 py-0.5 font-[family-name:var(--font-mono)] text-[9px] tracking-wider uppercase">
                             Duplicate
                           </span>
                         )}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parseCSV, parseSubbyJSON, detectAndParseJSON, getCSVHeaders } from '../import-parsers'
+import { parseCSV, parseKessaiJSON, detectAndParseJSON, getCSVHeaders } from '../import-parsers'
 
 describe('parseCSV', () => {
   it('parses valid CSV with standard headers', () => {
@@ -183,7 +183,7 @@ describe('getCSVHeaders', () => {
   })
 })
 
-describe('parseSubbyJSON', () => {
+describe('parseKessaiJSON', () => {
   const validBackup = {
     version: '1.0',
     exportedAt: '2025-06-01T00:00:00Z',
@@ -200,10 +200,10 @@ describe('parseSubbyJSON', () => {
     categories: [{ id: 'cat-1', name: 'Entertainment' }],
   }
 
-  it('parses valid Subby backup', () => {
-    const result = parseSubbyJSON(validBackup)
+  it('parses valid Kessai backup', () => {
+    const result = parseKessaiJSON(validBackup)
 
-    expect(result.source).toBe('subby-json')
+    expect(result.source).toBe('kessai-json')
     expect(result.subscriptions).toHaveLength(1)
     expect(result.subscriptions[0]).toEqual({
       name: 'Netflix',
@@ -217,14 +217,14 @@ describe('parseSubbyJSON', () => {
   })
 
   it('returns error for invalid format (missing version)', () => {
-    const result = parseSubbyJSON({ subscriptions: [] })
+    const result = parseKessaiJSON({ subscriptions: [] })
 
     expect(result.subscriptions).toHaveLength(0)
-    expect(result.errors[0]).toContain('Not a valid Subby backup format')
+    expect(result.errors[0]).toContain('Not a valid Kessai backup format')
   })
 
   it('returns error for empty object', () => {
-    const result = parseSubbyJSON({})
+    const result = parseKessaiJSON({})
 
     expect(result.subscriptions).toHaveLength(0)
     expect(result.errors.length).toBeGreaterThan(0)
@@ -240,7 +240,7 @@ describe('parseSubbyJSON', () => {
       ],
     }
 
-    const result = parseSubbyJSON(backup)
+    const result = parseKessaiJSON(backup)
 
     expect(result.subscriptions).toHaveLength(1)
     expect(result.subscriptions[0].name).toBe('Valid')
@@ -253,7 +253,7 @@ describe('parseSubbyJSON', () => {
       subscriptions: [{ name: 'Test', amount: 10, currency: 'USD', billing_cycle: 'biweekly' }],
     }
 
-    const result = parseSubbyJSON(backup)
+    const result = parseKessaiJSON(backup)
 
     expect(result.subscriptions[0].billing_cycle).toBe('monthly')
   })
@@ -265,20 +265,20 @@ describe('parseSubbyJSON', () => {
       subscriptions: [{ name: 'Test', amount: 10, currency: '', billing_cycle: 'monthly' }],
     }
 
-    const result = parseSubbyJSON(backup)
+    const result = parseKessaiJSON(backup)
 
     expect(result.subscriptions[0].currency).toBe('USD')
   })
 
   it('resolves category names from category map', () => {
-    const result = parseSubbyJSON(validBackup)
+    const result = parseKessaiJSON(validBackup)
 
     expect(result.subscriptions[0].category_name).toBe('Entertainment')
   })
 })
 
 describe('detectAndParseJSON', () => {
-  it('detects Subby format', () => {
+  it('detects Kessai format', () => {
     const data = {
       version: '1.0',
       exportedAt: '2025-06-01',
@@ -287,7 +287,7 @@ describe('detectAndParseJSON', () => {
 
     const result = detectAndParseJSON(data)
 
-    expect(result.source).toBe('subby-json')
+    expect(result.source).toBe('kessai-json')
   })
 
   it('detects Wallos format', () => {

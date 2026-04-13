@@ -3,19 +3,24 @@ import { useShallow } from 'zustand/react/shallow'
 import dayjs from 'dayjs'
 import { TrendingUp, TrendingDown } from 'lucide-react'
 import { usePriceHistoryStore } from '@/stores/price-history-store'
-import { formatCurrency, type CurrencyCode } from '@/lib/currency'
+import type { CurrencyCode } from '@/lib/currency'
+import { getPriceChangeDisplay } from '@/lib/price-history-display'
 import type { PriceChange } from '@/types/price-history'
 
 interface PriceHistoryBadgeProps {
   subscriptionId: string
   currency: CurrencyCode
+  latestChange?: PriceChange | null
+  disableFallbackFetch?: boolean
 }
 
 export const PriceHistoryBadge = memo(function PriceHistoryBadge({
   subscriptionId,
   currency,
+  latestChange,
+  disableFallbackFetch = false,
 }: PriceHistoryBadgeProps) {
-  const [latest, setLatest] = useState<PriceChange | null>(null)
+  const [latest, setLatest] = useState<PriceChange | null>(latestChange ?? null)
   const [history, setHistory] = useState<PriceChange[]>([])
   const [showPopover, setShowPopover] = useState(false)
   const popoverRef = useRef<HTMLDivElement>(null)
@@ -25,8 +30,18 @@ export const PriceHistoryBadge = memo(function PriceHistoryBadge({
   )
 
   useEffect(() => {
+    if (latestChange !== undefined) {
+      setLatest(latestChange)
+      return
+    }
+
+    if (disableFallbackFetch) {
+      setLatest(null)
+      return
+    }
+
     getLatest(subscriptionId).then(setLatest)
-  }, [subscriptionId, getLatest])
+  }, [subscriptionId, getLatest, latestChange, disableFallbackFetch])
 
   useEffect(() => {
     if (showPopover) {
@@ -55,9 +70,7 @@ export const PriceHistoryBadge = memo(function PriceHistoryBadge({
 
   if (!latest) return null
 
-  const diff = latest.new_amount - latest.old_amount
-  const isIncrease = diff > 0
-  const percentage = latest.old_amount > 0 ? Math.abs(diff / latest.old_amount) * 100 : 0
+  const latestDisplay = getPriceChangeDisplay(latest, currency)
 
   return (
     <div className="relative inline-block">
@@ -65,14 +78,26 @@ export const PriceHistoryBadge = memo(function PriceHistoryBadge({
         ref={badgeRef}
         onClick={() => setShowPopover(!showPopover)}
         className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] font-medium tracking-wider uppercase transition-colors ${
-          isIncrease
-            ? 'border border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20'
-            : 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
+          latestDisplay.isIncrease
+            ? 'border-warning/30 bg-warning/10 text-warning hover:bg-warning/20 border'
+            : 'border-success/30 bg-success/10 text-success hover:bg-success/20 border'
         }`}
       >
-        {isIncrease ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-        {isIncrease ? '+' : '-'}
-        {formatCurrency(Math.abs(diff), currency)} ({percentage.toFixed(0)}%)
+        {latestDisplay.isIncrease ? (
+          <TrendingUp className="h-3 w-3" />
+        ) : (
+          <TrendingDown className="h-3 w-3" />
+        )}
+        {latestDisplay.canCompare ? (
+          <>
+            {latestDisplay.isIncrease ? '+' : '-'}
+            {latestDisplay.diffDisplay} ({latestDisplay.percentage.toFixed(0)}%)
+          </>
+        ) : latestDisplay.currenciesChanged ? (
+          'Currency changed'
+        ) : (
+          latestDisplay.newNative
+        )}
       </button>
 
       {showPopover && (
@@ -89,8 +114,7 @@ export const PriceHistoryBadge = memo(function PriceHistoryBadge({
           ) : (
             <div className="flex max-h-48 flex-col gap-2 overflow-y-auto">
               {history.map((entry) => {
-                const entryDiff = entry.new_amount - entry.old_amount
-                const entryIsIncrease = entryDiff > 0
+                const entryDisplay = getPriceChangeDisplay(entry, currency)
 
                 return (
                   <div
@@ -100,24 +124,32 @@ export const PriceHistoryBadge = memo(function PriceHistoryBadge({
                     <div className="flex flex-col gap-0.5">
                       <div className="flex items-center gap-2">
                         <span className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px] line-through">
-                          {formatCurrency(entry.old_amount, currency)}
+                          {entryDisplay.oldNative}
                         </span>
                         <span className="text-muted-foreground text-[10px]">&rarr;</span>
                         <span className="text-foreground font-[family-name:var(--font-mono)] text-xs font-semibold">
-                          {formatCurrency(entry.new_amount, currency)}
+                          {entryDisplay.newNative}
                         </span>
                       </div>
+                      {entryDisplay.convertedRangeLabel && (
+                        <span className="text-muted-foreground font-[family-name:var(--font-mono)] text-[9px]">
+                          {entryDisplay.convertedRangeLabel}
+                        </span>
+                      )}
                       <span className="text-muted-foreground font-[family-name:var(--font-mono)] text-[9px]">
                         {dayjs(entry.changed_at).format('MMM D, YYYY')}
                       </span>
                     </div>
                     <span
                       className={`font-[family-name:var(--font-mono)] text-[10px] font-semibold ${
-                        entryIsIncrease ? 'text-amber-400' : 'text-emerald-400'
+                        entryDisplay.isIncrease ? 'text-warning' : 'text-success'
                       }`}
                     >
-                      {entryIsIncrease ? '+' : ''}
-                      {formatCurrency(entryDiff, currency)}
+                      {entryDisplay.canCompare
+                        ? `${entryDisplay.isIncrease ? '+' : '-'}${entryDisplay.diffDisplay}`
+                        : entryDisplay.currenciesChanged
+                          ? 'Currency changed'
+                          : entryDisplay.newNative}
                     </span>
                   </div>
                 )

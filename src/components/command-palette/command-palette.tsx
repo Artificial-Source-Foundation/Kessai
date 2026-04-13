@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 import { useNavigate } from 'react-router-dom'
 import {
   Search,
@@ -43,7 +44,12 @@ export function CommandPalette() {
   const listRef = useRef<HTMLDivElement>(null)
 
   const { commandPaletteOpen, closeCommandPalette, openSubscriptionDialog } = useUiStore()
-  const { settings, setTheme } = useSettingsStore()
+  const { theme, setTheme } = useSettingsStore(
+    useShallow((state) => ({
+      theme: state.settings?.theme,
+      setTheme: state.setTheme,
+    }))
+  )
   const navigate = useNavigate()
   const groups = useCommandPalette(query)
 
@@ -84,13 +90,13 @@ export function CommandPalette() {
         if (result.action === 'add-subscription') {
           openSubscriptionDialog()
         } else if (result.action === 'toggle-theme') {
-          const currentTheme = settings?.theme ?? 'dark'
+          const currentTheme = theme ?? 'dark'
           const nextTheme = currentTheme === 'dark' ? 'light' : 'dark'
           setTheme(nextTheme)
         }
       }
     },
-    [closeCommandPalette, openSubscriptionDialog, navigate, settings?.theme, setTheme]
+    [closeCommandPalette, openSubscriptionDialog, navigate, theme, setTheme]
   )
 
   const handleKeyDown = useCallback(
@@ -125,7 +131,7 @@ export function CommandPalette() {
       <DialogPortal>
         <DialogOverlay className="bg-black/60 backdrop-blur-sm" />
         <DialogPrimitive.Content
-          className="fixed top-[20%] left-[50%] z-50 w-full max-w-lg translate-x-[-50%] rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] shadow-2xl backdrop-blur-2xl"
+          className="border-ghost bg-surface-elevated/80 shadow-ambient fixed top-4 left-[50%] z-50 w-[calc(100%-2rem)] max-w-lg translate-x-[-50%] rounded-xl backdrop-blur-2xl sm:top-[20%] sm:w-full"
           onOpenAutoFocus={(e) => {
             e.preventDefault()
             inputRef.current?.focus()

@@ -8,7 +8,7 @@
 
 ## Security Model
 
-Subby is a **local-first application** with the following security characteristics:
+Kessai is a **local-first application** with the following security characteristics:
 
 - **All data stored locally** - SQLite database in your app data directory
 - **No network requests in desktop runtime** - 100% offline desktop app, no telemetry, no analytics
@@ -19,9 +19,9 @@ Subby is a **local-first application** with the following security characteristi
 
 | Platform | Location                               |
 | -------- | -------------------------------------- |
-| Linux    | `~/.local/share/subby/`                |
-| macOS    | `~/Library/Application Support/subby/` |
-| Windows  | `%APPDATA%/subby/`                     |
+| Linux    | `~/.local/share/kessai/`                |
+| macOS    | `~/Library/Application Support/kessai/` |
+| Windows  | `%APPDATA%/kessai/`                     |
 
 ## Reporting a Vulnerability
 
@@ -29,7 +29,7 @@ If you discover a security vulnerability, please report it responsibly:
 
 1. **Do NOT open a public issue** for security vulnerabilities
 2. Email security concerns to the maintainer security contact listed in repository settings, or
-3. Open a [private security advisory](https://github.com/Artificial-Source-Foundation/Subby/security/advisories/new) on GitHub
+3. Open a [private security advisory](https://github.com/Artificial-Source-Foundation/Kessai/security/advisories/new) on GitHub
 
 ### What to Include
 
@@ -46,8 +46,8 @@ If you discover a security vulnerability, please report it responsibly:
 
 ## Security Best Practices for Users
 
-1. **Keep Subby updated** - Install updates when available
-2. **Secure your device** - Subby's data is as secure as your device
+1. **Keep Kessai updated** - Install updates when available
+2. **Secure your device** - Kessai's data is as secure as your device
 3. **Back up your data** - Use the export feature regularly
 4. **Be cautious with imports** - Only import backup files from trusted sources
 

@@ -2,8 +2,8 @@
 
 ## Where to Get Help
 
-- Usage issues and bugs: `https://github.com/Artificial-Source-Foundation/Subby/issues`
-- Feature requests: `https://github.com/Artificial-Source-Foundation/Subby/issues`
+- Usage issues and bugs: `https://github.com/Artificial-Source-Foundation/Kessai/issues`
+- Feature requests: `https://github.com/Artificial-Source-Foundation/Kessai/issues`
 - Security concerns: see `SECURITY.md`
 
 ## Before Opening an Issue

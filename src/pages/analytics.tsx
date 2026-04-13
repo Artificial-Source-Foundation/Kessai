@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react'
-import { useShallow } from 'zustand/react/shallow'
 import dayjs from 'dayjs'
 import { useSettingsStore } from '@/stores/settings-store'
 import { useAnalytics } from '@/hooks/use-analytics'
@@ -8,7 +7,7 @@ import { MonthlySpendingChart } from '@/components/analytics/monthly-spending-ch
 import { YearSummaryCard } from '@/components/analytics/year-summary-card'
 import { CategoryBreakdownChart } from '@/components/analytics/category-breakdown-chart'
 import { AnalyticsSkeleton } from '@/components/analytics/analytics-skeleton'
-import { AlertTriangle } from 'lucide-react'
+import { WebBackendBanner } from '@/components/ui/web-backend-banner'
 import type { CurrencyCode } from '@/lib/currency'
 
 type MonthsOption = 6 | 12
@@ -18,12 +17,7 @@ export function AnalyticsPage() {
   const [year, setYear] = useState(currentYear)
   const [months, setMonths] = useState<MonthsOption>(12)
 
-  const { settings } = useSettingsStore(
-    useShallow((state) => ({
-      settings: state.settings,
-    }))
-  )
-  const currency = (settings?.currency || 'USD') as CurrencyCode
+  const currency = useSettingsStore((state) => (state.settings?.currency || 'USD') as CurrencyCode)
 
   const { monthlySpending, yearSummary, velocity, categorySpending, isLoading, error } =
     useAnalytics(year, months)
@@ -52,7 +46,7 @@ export function AnalyticsPage() {
                 onClick={() => setYear(y)}
                 className={`min-w-[56px] px-3 py-1.5 font-[family-name:var(--font-mono)] text-[10px] tracking-wider uppercase transition-colors ${
                   year === y
-                    ? 'bg-primary text-white'
+                    ? 'bg-primary text-primary-foreground'
                     : 'text-muted-foreground hover:text-foreground bg-transparent'
                 } ${idx > 0 ? 'border-border border-l' : ''}`}
               >
@@ -69,7 +63,7 @@ export function AnalyticsPage() {
                 onClick={() => setMonths(m)}
                 className={`min-w-[40px] px-3 py-1.5 font-[family-name:var(--font-mono)] text-[10px] tracking-wider uppercase transition-colors ${
                   months === m
-                    ? 'bg-primary text-white'
+                    ? 'bg-primary text-primary-foreground'
                     : 'text-muted-foreground hover:text-foreground bg-transparent'
                 } ${idx > 0 ? 'border-border border-l' : ''}`}
               >
@@ -81,9 +75,9 @@ export function AnalyticsPage() {
       </header>
 
       {/* Partial failure banner */}
-      {error && (
-        <div className="glass-card flex items-center gap-3 border-amber-500/20 bg-amber-500/5 p-4">
-          <AlertTriangle className="h-4 w-4 shrink-0 text-amber-500" />
+      <WebBackendBanner error={error} />
+      {error && !String(error).includes('Web API unavailable:') && (
+        <div className="glass-card border-warning/20 bg-warning/5 flex items-center gap-3 p-4">
           <p className="text-muted-foreground text-sm">
             Some analytics data could not be loaded. Showing available data.
           </p>

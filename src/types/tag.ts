@@ -15,8 +15,14 @@ export const newTagSchema = z.object({
     .optional(),
 })
 
+export const subscriptionTagLinkSchema = z.object({
+  subscription_id: z.string(),
+  tag_id: z.string(),
+})
+
 export type Tag = z.infer<typeof tagSchema>
 export type NewTag = z.infer<typeof newTagSchema>
+export type SubscriptionTagLink = z.infer<typeof subscriptionTagLinkSchema>
 
 export const TAG_COLORS = [
   '#6b7280',

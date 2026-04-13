@@ -14,8 +14,8 @@ sudo apt install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patc
 ## Setup
 
 ```bash
-git clone https://github.com/Artificial-Source-Foundation/Subby.git
-cd subby
+git clone https://github.com/Artificial-Source-Foundation/Kessai.git
+cd kessai
 pnpm install
 pnpm tauri dev
 ```

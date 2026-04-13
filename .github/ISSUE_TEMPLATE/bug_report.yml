@@ -1,5 +1,5 @@
 name: Bug report
-description: Report a reproducible problem in Subby
+description: Report a reproducible problem in Kessai
 title: "bug: "
 labels: [bug]
 body:
@@ -55,7 +55,7 @@ body:
     id: version
     attributes:
       label: Version
-      description: Subby version or commit hash.
+      description: Kessai version or commit hash.
       placeholder: "v0.2.0 or commit abc1234"
     validations:
       required: true

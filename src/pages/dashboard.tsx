@@ -21,6 +21,7 @@ import { PriceChangesCard } from '@/components/dashboard/price-changes-card'
 import { DashboardSkeleton } from '@/components/dashboard/dashboard-skeleton'
 import { ReviewNudgeCard } from '@/components/dashboard/review-nudge-card'
 import { Button } from '@/components/ui/button'
+import { WebBackendBanner } from '@/components/ui/web-backend-banner'
 import { calculateNormalizedAmount, NORMALIZATION_SUFFIXES } from '@/types/subscription'
 import type { CurrencyCode } from '@/lib/currency'
 
@@ -35,23 +36,24 @@ export function Dashboard() {
   const {
     subscriptions,
     isLoading,
+    error: subscriptionsError,
     fetch: fetchSubscriptions,
     fetchNeedingReview,
   } = useSubscriptionStore(
     useShallow((state) => ({
       subscriptions: state.subscriptions,
       isLoading: state.isLoading,
+      error: state.error,
       fetch: state.fetch,
       fetchNeedingReview: state.fetchNeedingReview,
     }))
   )
   const fetchCategories = useCategoryStore((state) => state.fetch)
-  const { settings, fetch: fetchSettings } = useSettingsStore(
-    useShallow((state) => ({
-      settings: state.settings,
-      fetch: state.fetch,
-    }))
-  )
+  const categoriesError = useCategoryStore((state) => state.error)
+  const fetchSettings = useSettingsStore((state) => state.fetch)
+  const settingsError = useSettingsStore((state) => state.error)
+  const currency = useSettingsStore((state) => (state.settings?.currency || 'USD') as CurrencyCode)
+  const monthlyBudget = useSettingsStore((state) => state.settings?.monthly_budget ?? null)
   const {
     categorySpending,
     totalMonthly,
@@ -64,7 +66,6 @@ export function Dashboard() {
 
   const costNormalization = useUiStore((s) => s.costNormalization)
   const [whatIfOpen, setWhatIfOpen] = useState(false)
-  const currency = (settings?.currency || 'USD') as CurrencyCode
   const isNormalized = costNormalization !== 'as-is'
 
   // Helper to convert totals-by-cycle to normalized amounts
@@ -97,9 +98,13 @@ export function Dashboard() {
     )
     return { trialCount: trials.length, expiringTrials: expiring }
   }, [subscriptions])
-  const monthlyBudget = settings?.monthly_budget ?? null
-  const upcomingPayments = getUpcomingPayments(subscriptions, 7)
-  const upcomingTotal = upcomingPayments.reduce((sum, sub) => sum + sub.amount, 0)
+  const { upcomingPayments, upcomingTotal } = useMemo(() => {
+    const upcoming = getUpcomingPayments(subscriptions, 7)
+    return {
+      upcomingPayments: upcoming,
+      upcomingTotal: upcoming.reduce((sum, sub) => sum + sub.amount, 0),
+    }
+  }, [subscriptions])
 
   useEffect(() => {
     fetchSubscriptions()
@@ -127,6 +132,8 @@ export function Dashboard() {
         )}
       </header>
 
+      <WebBackendBanner error={subscriptionsError || categoriesError || settingsError} />
+
       <section className="stagger-children grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5 lg:grid-cols-4 xl:gap-6">
         <StatCard
           label={isNormalized ? `Monthly Subs (${normSuffix})` : 'Monthly Subscriptions'}
@@ -138,7 +145,7 @@ export function Dashboard() {
           )}
           subtitle={`${monthlySubsCount} subscription${monthlySubsCount !== 1 ? 's' : ''}`}
           icon={CalendarDays}
-          iconBg="bg-primary/10"
+          iconBg="bg-surface-highest/50"
           iconColor="text-primary"
         />
         <StatCard
@@ -151,8 +158,8 @@ export function Dashboard() {
           )}
           subtitle={`${yearlySubsCount} subscription${yearlySubsCount !== 1 ? 's' : ''}`}
           icon={Calendar}
-          iconBg="bg-accent-cyan/10"
-          iconColor="text-accent-cyan"
+          iconBg="bg-surface-highest/50"
+          iconColor="text-primary"
         />
         <StatCard
           label="Due This Week"
@@ -162,10 +169,10 @@ export function Dashboard() {
               ? `${formatCurrency(upcomingTotal, currency)} total`
               : undefined
           }
-          subtitleColor="text-accent-orange"
+          subtitleColor="text-primary"
           icon={CalendarClock}
-          iconBg="bg-accent-orange/10"
-          iconColor="text-accent-orange"
+          iconBg="bg-surface-highest/50"
+          iconColor="text-primary"
         />
         <StatCard
           label="Active Subscriptions"
@@ -176,8 +183,8 @@ export function Dashboard() {
               : `${formatCurrency(totalMonthly, currency)}/mo total`
           }
           icon={CreditCard}
-          iconBg="bg-muted"
-          iconColor="text-muted-foreground"
+          iconBg="bg-surface-highest/50"
+          iconColor="text-primary"
         />
       </section>
 
@@ -227,26 +234,30 @@ export function Dashboard() {
 
       <SpendingTrends currency={currency} />
 
-      <section className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-        <TrialAlertCard subscriptions={subscriptions} />
-        <PriceChangesCard currency={currency} />
-      </section>
+      <TrialAlertCard subscriptions={subscriptions} />
 
-      <section className="flex flex-col gap-6 lg:flex-row">
-        <div className="glass-card flex-1 p-6">
-          <h3 className="mb-5 text-lg font-bold">Upcoming Payments</h3>
-          {upcomingPayments.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <span className="mb-2 text-4xl">🎉</span>
-              <p className="text-muted-foreground">No payments in the next 7 days</p>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {upcomingPayments.slice(0, 4).map((sub) => (
-                <UpcomingPaymentRow key={sub.id} subscription={sub} currency={currency} />
-              ))}
-            </div>
-          )}
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="flex flex-col gap-6">
+          <PriceChangesCard currency={currency} />
+
+          <div className="glass-card p-6">
+            <h3 className="mb-5 text-lg font-bold">Upcoming Payments</h3>
+            {upcomingPayments.length === 0 ? (
+              <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-[var(--color-border-hover)] bg-[var(--color-card)] py-12 text-center backdrop-blur-xl">
+                <div className="bg-success/10 animate-gentle-float mb-4 rounded-full p-4">
+                  <span className="text-3xl leading-none">🎉</span>
+                </div>
+                <p className="text-foreground mb-1 text-lg font-semibold">All caught up!</p>
+                <p className="text-muted-foreground text-sm">No payments due in the next 7 days</p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {upcomingPayments.slice(0, 4).map((sub) => (
+                  <UpcomingPaymentRow key={sub.id} subscription={sub} currency={currency} />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <InsightsCard activeCount={activeCount} totalMonthly={totalMonthly} currency={currency} />

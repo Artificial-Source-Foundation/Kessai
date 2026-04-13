@@ -1,7 +1,8 @@
 import { memo } from 'react'
 import dayjs from 'dayjs'
 import { TrendingUp, TrendingDown } from 'lucide-react'
-import { formatCurrency, type CurrencyCode } from '@/lib/currency'
+import type { CurrencyCode } from '@/lib/currency'
+import { getPriceChangeDisplay } from '@/lib/price-history-display'
 import type { PriceChange } from '@/types/price-history'
 
 interface PriceHistoryTimelineProps {
@@ -22,15 +23,17 @@ export const PriceHistoryTimeline = memo(function PriceHistoryTimeline({
   return (
     <div className="flex flex-col gap-3">
       {changes.map((change) => {
-        const increased = change.new_amount > change.old_amount
+        const display = getPriceChangeDisplay(change, currency)
         return (
           <div key={change.id} className="flex items-center gap-3">
             <div
               className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
-                increased ? 'bg-red-400/15 text-red-400' : 'bg-emerald-400/15 text-emerald-400'
+                display.isIncrease
+                  ? 'bg-destructive/15 text-destructive'
+                  : 'bg-success/15 text-success'
               }`}
             >
-              {increased ? (
+              {display.isIncrease ? (
                 <TrendingUp className="h-3 w-3" />
               ) : (
                 <TrendingDown className="h-3 w-3" />
@@ -39,11 +42,11 @@ export const PriceHistoryTimeline = memo(function PriceHistoryTimeline({
             <div className="flex flex-1 items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-muted-foreground font-[family-name:var(--font-mono)] text-xs line-through">
-                  {formatCurrency(change.old_amount, currency)}
+                  {display.oldNative}
                 </span>
                 <span className="text-muted-foreground text-xs">&rarr;</span>
                 <span className="text-foreground font-[family-name:var(--font-mono)] text-xs font-medium">
-                  {formatCurrency(change.new_amount, currency)}
+                  {display.newNative}
                 </span>
               </div>
               <span className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px]">

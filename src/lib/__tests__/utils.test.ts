@@ -25,11 +25,11 @@ describe('cn', () => {
   })
 
   it('merges conflicting Tailwind color classes', () => {
-    expect(cn('text-red-500', 'text-blue-500')).toBe('text-blue-500')
+    expect(cn('text-destructive', 'text-info')).toBe('text-info')
   })
 
   it('merges conflicting Tailwind background classes', () => {
-    expect(cn('bg-red-500', 'bg-blue-500')).toBe('bg-blue-500')
+    expect(cn('bg-destructive', 'bg-info')).toBe('bg-info')
   })
 
   it('preserves non-conflicting Tailwind classes', () => {

@@ -48,15 +48,15 @@ describe('TrialBadge', () => {
     const soonDate = dayjs().startOf('day').add(2, 'day').format('YYYY-MM-DD')
     const { container } = render(<TrialBadge trialEndDate={soonDate} />)
     const badge = container.firstChild as HTMLElement
-    expect(badge.className).toContain('border-amber-500')
+    expect(badge.className).toContain('border-warning')
   })
 
   it('applies non-urgent styling when trial is far in the future', () => {
     const farDate = dayjs().startOf('day').add(30, 'day').format('YYYY-MM-DD')
     const { container } = render(<TrialBadge trialEndDate={farDate} />)
     const badge = container.firstChild as HTMLElement
-    expect(badge.className).toContain('border-amber-500')
-    // Non-urgent uses bg-amber-500/15 (not /20)
-    expect(badge.className).toContain('bg-amber-500/15')
+    expect(badge.className).toContain('border-warning')
+    // Non-urgent uses bg-warning/15 (not /20)
+    expect(badge.className).toContain('bg-warning/15')
   })
 })

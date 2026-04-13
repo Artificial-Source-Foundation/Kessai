@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import type { NormalizationPeriod } from '@/types/subscription'
 
-const COST_NORMALIZATION_KEY = 'subby-cost-normalization'
+const COST_NORMALIZATION_KEY = 'kessai-cost-normalization'
 
 function loadCostNormalization(): NormalizationPeriod {
   try {

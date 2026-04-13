@@ -33,6 +33,7 @@ describe('usePriceHistoryStore', () => {
   beforeEach(() => {
     usePriceHistoryStore.setState({
       recentChanges: [],
+      latestBySubscription: {},
       isLoading: false,
       error: null,
     })
@@ -124,6 +125,99 @@ describe('usePriceHistoryStore', () => {
       const result = await usePriceHistoryStore.getState().getLatest('sub-1')
 
       expect(result).toBeNull()
+    })
+
+    it('uses cache after first fetch', async () => {
+      mockInvoke.mockResolvedValue(mockPriceChanges)
+
+      const first = await usePriceHistoryStore.getState().getLatest('sub-1')
+      const second = await usePriceHistoryStore.getState().getLatest('sub-1')
+
+      expect(first).toEqual(mockPriceChanges[0])
+      expect(second).toEqual(mockPriceChanges[0])
+      expect(mockInvoke).toHaveBeenCalledTimes(1)
+    })
+
+    it('refetches after cache invalidation', async () => {
+      mockInvoke.mockResolvedValue(mockPriceChanges)
+
+      await usePriceHistoryStore.getState().getLatest('sub-1')
+      usePriceHistoryStore.getState().invalidateLatest(['sub-1'])
+      await usePriceHistoryStore.getState().getLatest('sub-1')
+
+      expect(mockInvoke).toHaveBeenCalledTimes(2)
+    })
+  })
+
+  describe('fetchLatestForSubscriptions', () => {
+    it('fetches latest changes in batch and fills missing with null', async () => {
+      mockInvoke.mockResolvedValue([
+        {
+          id: 'pc-3',
+          subscription_id: 'sub-1',
+          old_amount: 10,
+          new_amount: 12,
+          old_currency: 'USD',
+          new_currency: 'USD',
+          changed_at: '2025-10-01T00:00:00Z',
+        },
+      ] satisfies PriceChange[])
+
+      await usePriceHistoryStore.getState().fetchLatestForSubscriptions(['sub-1', 'sub-2', 'sub-1'])
+
+      expect(mockInvoke).toHaveBeenCalledWith('list_latest_price_history', {
+        subscriptionIds: ['sub-1', 'sub-2'],
+      })
+
+      const state = usePriceHistoryStore.getState()
+      expect(state.latestBySubscription['sub-1']?.id).toBe('pc-3')
+      expect(state.latestBySubscription['sub-2']).toBeNull()
+    })
+
+    it('getLatest reads from batch-populated cache', async () => {
+      mockInvoke.mockResolvedValue([
+        {
+          id: 'pc-batch-1',
+          subscription_id: 'sub-1',
+          old_amount: 8,
+          new_amount: 10,
+          old_currency: 'USD',
+          new_currency: 'USD',
+          changed_at: '2025-11-01T00:00:00Z',
+        },
+      ] satisfies PriceChange[])
+
+      await usePriceHistoryStore.getState().fetchLatestForSubscriptions(['sub-1'])
+
+      vi.clearAllMocks()
+      const cached = await usePriceHistoryStore.getState().getLatest('sub-1')
+
+      expect(cached?.id).toBe('pc-batch-1')
+      expect(mockInvoke).not.toHaveBeenCalled()
+    })
+
+    it('invalidate + getLatest refetches after batch cache', async () => {
+      mockInvoke.mockResolvedValue([
+        {
+          id: 'pc-batch-1',
+          subscription_id: 'sub-1',
+          old_amount: 8,
+          new_amount: 10,
+          old_currency: 'USD',
+          new_currency: 'USD',
+          changed_at: '2025-11-01T00:00:00Z',
+        },
+      ] satisfies PriceChange[])
+      await usePriceHistoryStore.getState().fetchLatestForSubscriptions(['sub-1'])
+      usePriceHistoryStore.getState().invalidateLatest(['sub-1'])
+
+      vi.clearAllMocks()
+      mockInvoke.mockResolvedValue(mockPriceChanges)
+
+      const refetched = await usePriceHistoryStore.getState().getLatest('sub-1')
+
+      expect(mockInvoke).toHaveBeenCalledWith('list_price_history', { subscriptionId: 'sub-1' })
+      expect(refetched).toEqual(mockPriceChanges[0])
     })
   })
 })

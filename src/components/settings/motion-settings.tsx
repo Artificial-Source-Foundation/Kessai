@@ -1,4 +1,5 @@
 import { useSettingsStore } from '@/stores/settings-store'
+import { useShallow } from 'zustand/react/shallow'
 import { Switch } from '@/components/ui/switch'
 import {
   Select,
@@ -15,7 +16,14 @@ type MotionSettingsProps = {
 
 export function MotionSettings({ settings }: MotionSettingsProps) {
   const { setReduceMotion, setEnableTransitions, setEnableHoverEffects, setAnimationSpeed } =
-    useSettingsStore()
+    useSettingsStore(
+      useShallow((state) => ({
+        setReduceMotion: state.setReduceMotion,
+        setEnableTransitions: state.setEnableTransitions,
+        setEnableHoverEffects: state.setEnableHoverEffects,
+        setAnimationSpeed: state.setAnimationSpeed,
+      }))
+    )
 
   const isDisabledByReduceMotion = settings.reduce_motion
 

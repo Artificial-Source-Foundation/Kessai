@@ -20,7 +20,7 @@ const LOG_LEVELS: Record<LogLevel, number> = {
 }
 
 const MAX_BUFFER_SIZE = 500
-const STORAGE_KEY = 'subby-logs'
+const STORAGE_KEY = 'kessai-logs'
 
 const minLevel: LogLevel = import.meta.env.DEV ? 'debug' : 'info'
 
@@ -94,7 +94,7 @@ export const logger = {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `subby-logs-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.txt`
+    a.download = `kessai-logs-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.txt`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)

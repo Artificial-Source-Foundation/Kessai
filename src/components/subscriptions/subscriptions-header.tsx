@@ -27,6 +27,9 @@ export const SubscriptionsHeader = React.memo(function SubscriptionsHeader({
     <header className="flex flex-wrap items-end justify-between gap-4">
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-bold tracking-tight">My Subscriptions</h1>
+        <p className="text-muted-foreground text-sm">
+          Totals are converted into {currency}. Change this in Settings under Display Currency.
+        </p>
         <div className="flex flex-wrap items-center gap-3">
           {costNormalization !== 'as-is' && normalizedTotal !== null ? (
             <div className="flex items-center gap-3">
@@ -45,7 +48,7 @@ export const SubscriptionsHeader = React.memo(function SubscriptionsHeader({
                   <span className="text-muted-foreground font-[family-name:var(--font-mono)] text-[11px] tracking-wider uppercase">
                     Monthly:
                   </span>
-                  <span className="bg-primary/10 text-primary rounded px-2.5 py-1 font-[family-name:var(--font-mono)] text-[11px] font-bold">
+                  <span className="bg-surface-highest/50 text-primary rounded px-2.5 py-1 font-[family-name:var(--font-mono)] text-[11px] font-bold">
                     {formatCurrency(monthlySubsTotal, currency)}/mo
                   </span>
                 </div>
@@ -55,7 +58,7 @@ export const SubscriptionsHeader = React.memo(function SubscriptionsHeader({
                   <span className="text-muted-foreground font-[family-name:var(--font-mono)] text-[11px] tracking-wider uppercase">
                     Yearly:
                   </span>
-                  <span className="bg-accent-cyan/10 text-accent-cyan rounded px-2.5 py-1 font-[family-name:var(--font-mono)] text-[11px] font-bold">
+                  <span className="bg-surface-highest/50 text-primary rounded px-2.5 py-1 font-[family-name:var(--font-mono)] text-[11px] font-bold">
                     {formatCurrency(yearlySubsTotal, currency)}/yr
                   </span>
                 </div>

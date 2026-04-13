@@ -1,10 +1,10 @@
-# Contributing to Subby
+# Contributing to Kessai
 
-Thank you for your interest in contributing to Subby! This document provides guidelines for contributions.
+Thank you for your interest in contributing to Kessai! This document provides guidelines for contributions.
 
 ## Reporting Bugs
 
-1. Check existing [Issues](https://github.com/Artificial-Source-Foundation/Subby/issues) to avoid duplicates
+1. Check existing [Issues](https://github.com/Artificial-Source-Foundation/Kessai/issues) to avoid duplicates
 2. Use the "bug" label
 3. Include:
    - OS and version
@@ -23,8 +23,8 @@ Thank you for your interest in contributing to Subby! This document provides gui
 ### Setup
 
 ```bash
-git clone https://github.com/Artificial-Source-Foundation/Subby.git
-cd subby
+git clone https://github.com/Artificial-Source-Foundation/Kessai.git
+cd kessai
 pnpm install
 pnpm tauri dev
 ```

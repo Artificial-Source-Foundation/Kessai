@@ -6,16 +6,16 @@ import type { CategorySpend } from '@/types/analytics'
 
 // Fixed palette for categories so colors are consistent
 const CATEGORY_COLORS = [
-  '#bf5af2',
-  '#30d158',
-  '#ff9f0a',
-  '#64d2ff',
-  '#ff453a',
-  '#ffd60a',
-  '#ac8e68',
-  '#5e5ce6',
-  '#ff6482',
-  '#98989d',
+  'var(--color-cat-entertainment)',
+  'var(--color-cat-software)',
+  'var(--color-cat-music)',
+  'var(--color-cat-health)',
+  'var(--color-cat-shopping)',
+  'var(--color-cat-ai)',
+  'var(--color-cat-cloud)',
+  'var(--color-cat-productivity)',
+  'var(--color-cat-development)',
+  'var(--color-cat-security)',
 ]
 
 interface CategoryBreakdownChartProps {
@@ -30,7 +30,7 @@ export const CategoryBreakdownChart = memo(function CategoryBreakdownChart({
   return (
     <div className="glass-card p-6">
       <div className="mb-5 flex items-center gap-3">
-        <div className="bg-accent-orange/15 text-accent-orange flex h-8 w-8 items-center justify-center rounded-lg">
+        <div className="bg-surface-highest/50 text-primary flex h-8 w-8 items-center justify-center rounded-lg">
           <Layers className="h-4 w-4" />
         </div>
         <h3 className="text-foreground font-[family-name:var(--font-heading)] text-lg font-bold">

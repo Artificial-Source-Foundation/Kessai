@@ -1,6 +1,6 @@
 # Testing Guide
 
-Subby uses unit/component tests and E2E tests.
+Kessai uses unit/component tests and E2E tests.
 
 ## Test Stack
 

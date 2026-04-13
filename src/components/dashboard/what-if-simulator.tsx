@@ -59,8 +59,8 @@ export const WhatIfSimulator = memo(function WhatIfSimulator({
           <SummaryCard
             label="Savings"
             value={formatCurrency(annualSavings, currency)}
-            className={annualSavings > 0 ? 'border-emerald-500/30' : 'border-border'}
-            valueColor={annualSavings > 0 ? 'text-emerald-400' : undefined}
+            className={annualSavings > 0 ? 'border-success/30' : 'border-border'}
+            valueColor={annualSavings > 0 ? 'text-success' : undefined}
           />
         </div>
 

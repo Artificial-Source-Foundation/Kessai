@@ -3,7 +3,8 @@ import dayjs from 'dayjs'
 import { TrendingUp, TrendingDown } from 'lucide-react'
 import { usePriceHistoryStore } from '@/stores/price-history-store'
 import { useSubscriptionStore } from '@/stores/subscription-store'
-import { formatCurrency, type CurrencyCode } from '@/lib/currency'
+import type { CurrencyCode } from '@/lib/currency'
+import { getPriceChangeDisplay } from '@/lib/price-history-display'
 
 interface PriceChangesCardProps {
   currency: CurrencyCode
@@ -39,9 +40,7 @@ export const PriceChangesCard = memo(function PriceChangesCard({
 
       <div className="flex flex-col gap-3">
         {recentChanges.slice(0, 5).map((change) => {
-          const diff = change.new_amount - change.old_amount
-          const isIncrease = diff > 0
-          const percentage = change.old_amount > 0 ? Math.abs(diff / change.old_amount) * 100 : 0
+          const display = getPriceChangeDisplay(change, currency)
 
           return (
             <div
@@ -54,29 +53,40 @@ export const PriceChangesCard = memo(function PriceChangesCard({
                 </span>
                 <div className="flex flex-wrap items-center gap-1 sm:gap-2">
                   <span className="text-muted-foreground font-[family-name:var(--font-mono)] text-xs">
-                    {formatCurrency(change.old_amount, currency)}
+                    {display.oldNative}
                   </span>
                   <span className="text-muted-foreground text-xs">&rarr;</span>
                   <span className="text-foreground font-[family-name:var(--font-mono)] text-xs font-semibold">
-                    {formatCurrency(change.new_amount, currency)}
+                    {display.newNative}
                   </span>
                 </div>
+                {display.convertedRangeLabel && (
+                  <span className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px]">
+                    {display.convertedRangeLabel}
+                  </span>
+                )}
               </div>
 
               <div className="flex flex-col items-end gap-1">
-                <div
-                  className={`inline-flex items-center gap-1 font-[family-name:var(--font-mono)] text-xs font-semibold ${
-                    isIncrease ? 'text-amber-400' : 'text-emerald-400'
-                  }`}
-                >
-                  {isIncrease ? (
-                    <TrendingUp className="h-3.5 w-3.5" />
-                  ) : (
-                    <TrendingDown className="h-3.5 w-3.5" />
-                  )}
-                  {isIncrease ? '+' : '-'}
-                  {percentage.toFixed(0)}%
-                </div>
+                {display.canCompare ? (
+                  <div
+                    className={`inline-flex items-center gap-1 font-[family-name:var(--font-mono)] text-xs font-semibold ${
+                      display.isIncrease ? 'text-warning' : 'text-success'
+                    }`}
+                  >
+                    {display.isIncrease ? (
+                      <TrendingUp className="h-3.5 w-3.5" />
+                    ) : (
+                      <TrendingDown className="h-3.5 w-3.5" />
+                    )}
+                    {display.isIncrease ? '+' : '-'}
+                    {display.percentage.toFixed(0)}%
+                  </div>
+                ) : display.currenciesChanged ? (
+                  <div className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px] font-semibold uppercase">
+                    Currency changed
+                  </div>
+                ) : null}
                 <span className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px]">
                   {dayjs(change.changed_at).format('MMM D, YYYY')}
                 </span>

@@ -45,9 +45,9 @@ export const TrialAlertCard = memo(function TrialAlertCard({ subscriptions }: Tr
   if (totalCount === 0) return null
 
   return (
-    <div className="glass-card border-amber-500/20 p-5">
+    <div className="glass-card border-warning/20 p-5">
       <div className="mb-4 flex items-center gap-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500">
+        <div className="bg-warning/10 text-warning flex h-8 w-8 items-center justify-center rounded-lg">
           <FlaskConical className="h-4 w-4" />
         </div>
         <h3 className="text-foreground font-[family-name:var(--font-heading)] text-lg font-bold">
@@ -66,8 +66,8 @@ export const TrialAlertCard = memo(function TrialAlertCard({ subscriptions }: Tr
         )}
 
         {expiringThisWeek.length > 0 && (
-          <div className="border-border rounded-lg border bg-amber-500/5 p-3">
-            <p className="mb-2 font-[family-name:var(--font-mono)] text-[10px] tracking-wider text-amber-500 uppercase">
+          <div className="border-border bg-warning/5 rounded-lg border p-3">
+            <p className="text-warning mb-2 font-[family-name:var(--font-mono)] text-[10px] tracking-wider uppercase">
               Expiring this week
             </p>
             <div className="flex flex-col gap-1.5">
@@ -76,7 +76,7 @@ export const TrialAlertCard = memo(function TrialAlertCard({ subscriptions }: Tr
                 return (
                   <div key={sub.id} className="flex items-center justify-between gap-2">
                     <span className="text-foreground min-w-0 truncate text-sm">{sub.name}</span>
-                    <span className="shrink-0 font-[family-name:var(--font-mono)] text-[10px] font-medium tracking-wider text-amber-500">
+                    <span className="text-warning shrink-0 font-[family-name:var(--font-mono)] text-[10px] font-medium tracking-wider">
                       {daysLeft === 0 ? 'TODAY' : `${daysLeft}D LEFT`}
                     </span>
                   </div>

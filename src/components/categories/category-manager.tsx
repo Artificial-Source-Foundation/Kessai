@@ -150,7 +150,10 @@ function CategoryItem({ category, onEdit, onDelete }: CategoryItemProps) {
           className="flex h-8 w-8 items-center justify-center rounded-lg"
           style={{ backgroundColor: category.color }}
         >
-          <CategoryIconDisplay icon={category.icon} className="h-4 w-4 text-white" />
+          <CategoryIconDisplay
+            icon={category.icon}
+            className="h-4 w-4 text-[color:var(--color-swatch-foreground)]"
+          />
         </div>
         <span className="text-foreground font-medium">{category.name}</span>
       </div>

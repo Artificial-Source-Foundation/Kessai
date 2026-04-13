@@ -1,6 +1,6 @@
 # Architecture Overview
 
-Subby is a local-first desktop app built with a Tauri backend and React frontend.
+Kessai is a local-first desktop app built with a Tauri backend and React frontend.
 
 ## Stack
 
@@ -8,7 +8,7 @@ Subby is a local-first desktop app built with a Tauri backend and React frontend
 - Frontend: React 19 + TypeScript + Vite
 - Styling: Tailwind CSS + shadcn/ui
 - State: Zustand
-- Data: SQLite via rusqlite (subby-core crate)
+- Data: SQLite via rusqlite (kessai-core crate)
 - Validation: Zod + React Hook Form
 
 ## High-Level Flow
@@ -28,13 +28,13 @@ Subby is a local-first desktop app built with a Tauri backend and React frontend
 
 ## App Data
 
-- Linux: `~/.local/share/subby/`
-- macOS: `~/Library/Application Support/subby/`
-- Windows: `%APPDATA%/subby/`
+- Linux: `~/.local/share/com.asf.kessai/`
+- macOS: `~/Library/Application Support/com.asf.kessai/`
+- Windows: `%APPDATA%/com.asf.kessai/`
 
 ## Design System
 
-Subby uses an ASF brutalist glassmorphic design language:
+Kessai uses an ASF brutalist glassmorphic design language:
 
 - **Typography**: 3-font system — Space Grotesk (headings), Outfit (body/UI), Space Mono (labels/data)
 - **Colors**: Void black (#0a0a0a) background, Plasma Violet (#bf5af2) accent, glass-transparent surfaces

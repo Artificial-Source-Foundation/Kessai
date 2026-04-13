@@ -5,7 +5,7 @@ Branch: `docs/publish-asf-readiness`
 
 ## Baseline Snapshot
 
-- Product: Subby desktop app (Tauri 2 + React + TypeScript) with optional Discord bot package.
+- Product: Kessai desktop app (Tauri 2 + React + TypeScript) with optional Discord bot package.
 - Current app version across manifests: `0.1.0`.
 - Release flow tooling: `release-it` + `scripts/sync-versions.js`.
 - Database migrations are inline in `src-tauri/src/lib.rs` (`get_migrations()`), not in a `src-tauri/migrations/` folder.

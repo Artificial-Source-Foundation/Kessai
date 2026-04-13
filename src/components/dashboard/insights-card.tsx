@@ -45,7 +45,7 @@ export const InsightsCard = memo(function InsightsCard({
         />
         <div className="bg-border h-px w-full" />
         <InsightItem
-          color="bg-emerald-400"
+          color="bg-success"
           title="Daily Breakdown"
           description={
             <>

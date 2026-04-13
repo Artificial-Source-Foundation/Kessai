@@ -150,7 +150,7 @@ export const SpendingTrends = memo(function SpendingTrends({ currency }: Spendin
     <div className="glass-card p-6">
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="bg-primary/15 text-primary flex h-8 w-8 items-center justify-center rounded-lg">
+          <div className="bg-surface-highest/50 text-primary flex h-8 w-8 items-center justify-center rounded-lg">
             <TrendingUp className="h-4 w-4" />
           </div>
           <div>
@@ -168,7 +168,7 @@ export const SpendingTrends = memo(function SpendingTrends({ currency }: Spendin
             onClick={() => handleToggle(6)}
             className={`min-w-[40px] px-3 py-1.5 font-[family-name:var(--font-mono)] text-[10px] tracking-wider uppercase transition-colors ${
               range === 6
-                ? 'bg-primary text-white'
+                ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:text-foreground bg-transparent'
             }`}
           >
@@ -178,7 +178,7 @@ export const SpendingTrends = memo(function SpendingTrends({ currency }: Spendin
             onClick={() => handleToggle(12)}
             className={`border-border min-w-[40px] border-l px-3 py-1.5 font-[family-name:var(--font-mono)] text-[10px] tracking-wider uppercase transition-colors ${
               range === 12
-                ? 'bg-primary text-white'
+                ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:text-foreground bg-transparent'
             }`}
           >
@@ -192,8 +192,8 @@ export const SpendingTrends = memo(function SpendingTrends({ currency }: Spendin
           <AreaChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -12 }}>
             <defs>
               <linearGradient id="spendingGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#bf5af2" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="#bf5af2" stopOpacity={0} />
+                <stop offset="0%" stopColor="var(--color-primary)" stopOpacity={0.15} />
+                <stop offset="100%" stopColor="var(--color-primary)" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--grid-line-color)" vertical={false} />
@@ -202,7 +202,7 @@ export const SpendingTrends = memo(function SpendingTrends({ currency }: Spendin
               axisLine={false}
               tickLine={false}
               tick={{
-                fill: '#888888',
+                fill: 'var(--color-muted-foreground)',
                 fontSize: 10,
                 fontFamily: 'var(--font-mono)',
               }}
@@ -212,7 +212,7 @@ export const SpendingTrends = memo(function SpendingTrends({ currency }: Spendin
               axisLine={false}
               tickLine={false}
               tick={{
-                fill: '#888888',
+                fill: 'var(--color-muted-foreground)',
                 fontSize: 10,
                 fontFamily: 'var(--font-mono)',
               }}
@@ -222,18 +222,18 @@ export const SpendingTrends = memo(function SpendingTrends({ currency }: Spendin
                 return value.toString()
               }}
             />
-            <Tooltip content={tooltipRenderer} cursor={{ stroke: 'rgba(191,90,242,0.3)' }} />
+            <Tooltip content={tooltipRenderer} cursor={{ stroke: 'var(--color-border-hover)' }} />
             <Area
               type="monotone"
               dataKey="amount"
-              stroke="#bf5af2"
+              stroke="var(--color-primary)"
               strokeWidth={2}
               fill="url(#spendingGradient)"
               dot={false}
               activeDot={{
                 r: 4,
-                fill: '#bf5af2',
-                stroke: '#0a0a0a',
+                fill: 'var(--color-primary)',
+                stroke: 'var(--color-surface)',
                 strokeWidth: 2,
               }}
             />

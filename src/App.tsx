@@ -1,6 +1,5 @@
 import { lazy, Suspense, useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { invoke } from '@tauri-apps/api/core'
 import { Toaster } from 'sonner'
 import { ThemeProvider } from '@/components/theme-provider'
 import { ErrorBoundary } from '@/components/error-boundary'
@@ -39,7 +38,7 @@ export default function App() {
 
   // Log app startup
   useEffect(() => {
-    logger.info('app', 'Subby started')
+    logger.info('app', 'Kessai started')
     logger.info('app', 'version: 0.2.0')
   }, [])
 
@@ -75,25 +74,8 @@ export default function App() {
     void initializeUpdater().then(() => checkForUpdates({ silent: true }))
   }, [checkForUpdates, initializeUpdater])
 
-  // Update system tray badge when subscriptions change
-  useEffect(() => {
-    const updateTray = () => {
-      invoke('update_tray_badge').catch(() => {
-        // Tray may not be available (e.g., web mode)
-      })
-    }
-    // Update on initial load
-    const timer = setTimeout(updateTray, 1000)
-    // Update whenever subscriptions change
-    const unsub = useSubscriptionStore.subscribe(updateTray)
-    return () => {
-      clearTimeout(timer)
-      unsub()
-    }
-  }, [])
-
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="subby-theme">
+    <ThemeProvider defaultTheme="dark" storageKey="kessai-theme">
       <ErrorBoundary>
         <BrowserRouter>
           <Suspense fallback={<LoadingSpinner />}>

@@ -11,10 +11,10 @@ export const TrialCountdown = memo(function TrialCountdown({ trialEndDate }: Tri
   if (!formattedCountdown) return null
 
   const colorClass = isExpired
-    ? 'text-red-400 bg-red-400/10'
+    ? 'text-destructive bg-destructive/10'
     : isExpiringSoon
-      ? 'text-amber-400 bg-amber-400/10'
-      : 'text-blue-400 bg-blue-400/10'
+      ? 'text-warning bg-warning/10'
+      : 'text-info bg-info/10'
 
   return (
     <span

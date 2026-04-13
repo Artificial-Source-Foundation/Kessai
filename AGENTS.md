@@ -1,10 +1,10 @@
-# AGENTS.md — Subby AI Agent Guidelines
+# AGENTS.md — Kessai AI Agent Guidelines
 
-> Guidelines for AI agents working on the Subby codebase.
+> Guidelines for AI agents working on the Kessai codebase.
 
 ## Project Overview
 
-Subby is a Tauri 2 desktop subscription tracker (React + TypeScript + Rust + SQLite). See `CLAUDE.md` for full project context, tech stack, design system, and code conventions.
+Kessai is a Tauri 2 desktop subscription tracker (React + TypeScript + Rust + SQLite). See `CLAUDE.md` for full project context, tech stack, design system, and code conventions.
 
 ## Before Making Changes
 

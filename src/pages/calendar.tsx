@@ -10,6 +10,8 @@ import { useCalendarStats } from '@/hooks/use-calendar-stats'
 import { usePaymentStore } from '@/stores/payment-store'
 import { useUiStore } from '@/stores/ui-store'
 import { useSettingsStore } from '@/stores/settings-store'
+import { useSubscriptionStore } from '@/stores/subscription-store'
+import { WebBackendBanner } from '@/components/ui/web-backend-banner'
 import type { CurrencyCode } from '@/lib/currency'
 import type { Subscription } from '@/types/subscription'
 
@@ -20,8 +22,10 @@ export function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
 
-  const { settings, fetch: fetchSettings } = useSettingsStore()
-  const currency = (settings?.currency || 'USD') as CurrencyCode
+  const fetchSettings = useSettingsStore((state) => state.fetch)
+  const settingsError = useSettingsStore((state) => state.error)
+  const currency = useSettingsStore((state) => (state.settings?.currency || 'USD') as CurrencyCode)
+  const subscriptionsError = useSubscriptionStore((state) => state.error)
 
   const { calendarDays, monthStats, getPaymentsForDate, refetchPayments } =
     useCalendarStats(currentDate)
@@ -147,6 +151,8 @@ export function CalendarPage() {
             </div>
           </div>
         </header>
+
+        <WebBackendBanner error={subscriptionsError || settingsError} />
 
         <MonthSummaryHeader
           totalAmount={monthStats.totalAmount}

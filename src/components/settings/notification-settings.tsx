@@ -3,7 +3,6 @@ import { toast } from 'sonner'
 import { Bell, BellOff, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { ReminderPreview } from '@/components/settings/reminder-preview'
 import type { Settings } from '@/types/settings'
 import {
   isPermissionGranted,
@@ -98,7 +97,7 @@ export function NotificationSettings({
       }
 
       sendNotification({
-        title: 'Subby — Test Notification',
+        title: 'Kessai — Test Notification',
         body: 'Notifications are working. You will be reminded about upcoming renewals.',
       })
 
@@ -191,14 +190,6 @@ export function NotificationSettings({
             <p className="text-muted-foreground text-xs">
               When to check and send daily renewal reminders
             </p>
-          </div>
-
-          {/* Upcoming reminders preview */}
-          <div className="flex flex-col gap-3">
-            <span className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px] tracking-widest uppercase">
-              Upcoming Reminders
-            </span>
-            <ReminderPreview daysBefore={activeDays} />
           </div>
 
           {/* Test notification */}

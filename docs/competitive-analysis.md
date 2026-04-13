@@ -1,13 +1,13 @@
 # Competitive Analysis — Subscription Trackers (March 2026)
 
-## Subby's Unique Position
+## Kessai's Unique Position
 
-Subby occupies a genuinely underserved niche: **a native desktop app that's local-first, open-source, and cross-platform** — no server, no bank access, no cloud dependency.
+Kessai occupies a genuinely underserved niche: **a native desktop app that's local-first, open-source, and cross-platform** — no server, no bank access, no cloud dependency.
 
 | Advantage | Why it matters |
 |-----------|---------------|
 | True local-first desktop app | No competitor is a native desktop app — they're all web apps (Wallos, Subs) or mobile-only (Bobby, Chronicle) |
-| Zero infrastructure | Unlike Wallos (Docker/server), Subby just installs and runs |
+| Zero infrastructure | Unlike Wallos (Docker/server), Kessai just installs and runs |
 | Cross-platform | Linux + macOS + Windows via Tauri. Chronicle is Apple-only, Finanzguru is mobile-only |
 | Rich features + privacy | Dashboard, calendar, payments, categories — comparable to Wallos without a server |
 | Open source | Transparent and auditable, unlike Chronicle or Finanzguru |
@@ -73,7 +73,7 @@ Subby occupies a genuinely underserved niche: **a native desktop app that's loca
 
 ## Feature Gap Analysis
 
-### What Subby already has that competitors lack
+### What Kessai already has that competitors lack
 - Native desktop app (unique in the market)
 - Zero-infrastructure local-first (vs Wallos needing Docker)
 - Cross-platform desktop (vs Chronicle Apple-only)
@@ -111,11 +111,11 @@ Subby occupies a genuinely underserved niche: **a native desktop app that's loca
 
 ## Key Market Insights
 
-1. **Privacy vs automation tension**: Biggest market split. Bank-linking = automatic but invasive. Manual-entry = private but more work. Subby is firmly in the privacy camp — lean into it.
+1. **Privacy vs automation tension**: Biggest market split. Bank-linking = automatic but invasive. Manual-entry = private but more work. Kessai is firmly in the privacy camp — lean into it.
 2. **One-time pricing wins hearts**: Users hate paying a subscription for a subscription tracker. Bobby and Subtrack's one-time purchases are frequently cited as why users chose them.
 3. **Notifications are make-or-break**: When Bobby's notifications broke, users left en masse. Reliable reminders are the #1 most important feature after basic CRUD.
 4. **The "spreadsheet problem"**: Many users say a spreadsheet handles 80% of the use case. Trackers need clear value beyond basic listing — charts, notifications, insights.
-5. **Open-source advantage**: Privacy-conscious users actively seek open-source. Wallos's 7.5k stars prove the demand. Subby's native desktop approach is a unique differentiator in this space.
+5. **Open-source advantage**: Privacy-conscious users actively seek open-source. Wallos's 7.5k stars prove the demand. Kessai's native desktop approach is a unique differentiator in this space.
 
 ---
 

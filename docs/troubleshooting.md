@@ -1,6 +1,6 @@
 # Troubleshooting Guide
 
-Common issues and solutions for Subby users and developers.
+Common issues and solutions for Kessai users and developers.
 
 ## User Issues
 
@@ -16,9 +16,9 @@ Common issues and solutions for Subby users and developers.
    - Linux: WebKitGTK 4.1+ installed
 
 2. **Reset app data** (last resort):
-   - Linux: Delete `~/.local/share/subby/`
-   - macOS: Delete `~/Library/Application Support/subby/`
-   - Windows: Delete `%APPDATA%/subby/`
+   - Linux: Delete `~/.local/share/com.asf.kessai/`
+   - macOS: Delete `~/Library/Application Support/com.asf.kessai/`
+   - Windows: Delete `%APPDATA%/com.asf.kessai/`
 
 3. **Linux users**: Ensure dependencies are installed:
    ```bash
@@ -55,7 +55,7 @@ Common issues and solutions for Subby users and developers.
 **Solutions**:
 
 1. Ensure the file is valid JSON (open in text editor to verify)
-2. Check that it's a Subby backup (has `version`, `subscriptions`, `categories` keys)
+2. Check that it's a Kessai backup (has `version`, `subscriptions`, `categories` keys)
 3. File must be under the size limits:
    - Max 10,000 subscriptions
    - Max 1,000 categories
@@ -123,11 +123,11 @@ await act(async () => {
 
 #### E2E tests timing out
 
-Playwright tests need the dev server running:
+Playwright tests need the full web stack running:
 
 ```bash
 # Terminal 1
-pnpm dev
+pnpm dev:web
 
 # Terminal 2
 pnpm test:e2e
@@ -147,10 +147,10 @@ Delete the SQLite file:
 
 ```bash
 # Linux
-rm ~/.local/share/subby/*.db
+rm ~/.local/share/com.asf.kessai/*.db
 
 # macOS
-rm ~/Library/Application\ Support/subby/*.db
+rm ~/Library/Application\ Support/com.asf.kessai/*.db
 ```
 
 The database will be recreated with default data on next launch.
@@ -164,7 +164,7 @@ Use any SQLite viewer:
 sudo apt install sqlite3
 
 # Open database
-sqlite3 ~/.local/share/subby/subby.db
+sqlite3 ~/.local/share/com.asf.kessai/kessai.db
 
 # Query tables
 .tables
@@ -173,7 +173,7 @@ SELECT * FROM subscriptions;
 
 ## Getting Help
 
-1. **Search existing issues**: https://github.com/Artificial-Source-Foundation/Subby/issues
+1. **Search existing issues**: https://github.com/Artificial-Source-Foundation/Kessai/issues
 2. **Create new issue** with:
    - OS and version
    - Steps to reproduce
@@ -182,7 +182,7 @@ SELECT * FROM subscriptions;
 
 ## Logs
 
-Currently, Subby doesn't write log files. Error messages appear in:
+Currently, Kessai doesn't write log files. Error messages appear in:
 
 - The app UI (toast notifications)
 - Browser console (for web view errors)

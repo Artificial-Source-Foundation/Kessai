@@ -124,6 +124,6 @@ describe('SubscriptionLogo', () => {
     const { container } = render(<SubscriptionLogo logoUrl={null} name="Netflix" />)
 
     const el = container.firstChild as HTMLElement
-    expect(el).toHaveStyle({ backgroundColor: '#bf5af2' })
+    expect(el).toHaveStyle({ backgroundColor: 'var(--color-surface-highest)' })
   })
 })

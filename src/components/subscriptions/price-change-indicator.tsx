@@ -16,7 +16,7 @@ export const PriceChangeIndicator = memo(function PriceChangeIndicator({
   return (
     <span
       className={`inline-flex items-center gap-0.5 rounded px-1 py-0.5 font-[family-name:var(--font-mono)] text-[9px] font-medium ${
-        increased ? 'bg-red-400/10 text-red-400' : 'bg-emerald-400/10 text-emerald-400'
+        increased ? 'bg-destructive/10 text-destructive' : 'bg-success/10 text-success'
       }`}
       title={`Price ${increased ? 'increased' : 'decreased'} by ${pctChange.toFixed(0)}%`}
     >

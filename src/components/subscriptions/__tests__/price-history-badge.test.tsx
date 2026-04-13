@@ -89,7 +89,7 @@ describe('PriceHistoryBadge', () => {
 
     await waitFor(() => {
       const badge = screen.getByRole('button')
-      expect(badge.className).toContain('border-amber-500')
+      expect(badge.className).toContain('border-warning')
     })
   })
 
@@ -109,7 +109,7 @@ describe('PriceHistoryBadge', () => {
 
     await waitFor(() => {
       const badge = screen.getByRole('button')
-      expect(badge.className).toContain('border-emerald-500')
+      expect(badge.className).toContain('border-success')
     })
   })
 
@@ -143,6 +143,35 @@ describe('PriceHistoryBadge', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Price History')).toBeInTheDocument()
+    })
+  })
+
+  it('clears stale badge state when latestChange becomes undefined and fallback is disabled', async () => {
+    const { rerender, container } = render(
+      <PriceHistoryBadge
+        subscriptionId="sub-1"
+        currency="USD"
+        latestChange={{
+          id: 'ph-1',
+          subscription_id: 'sub-1',
+          old_amount: 10,
+          new_amount: 12,
+          old_currency: 'USD',
+          new_currency: 'USD',
+          changed_at: '2026-01-15T00:00:00.000Z',
+        }}
+        disableFallbackFetch
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByRole('button')).toBeInTheDocument()
+    })
+
+    rerender(<PriceHistoryBadge subscriptionId="sub-1" currency="USD" disableFallbackFetch />)
+
+    await waitFor(() => {
+      expect(container.querySelector('button')).toBeNull()
     })
   })
 })

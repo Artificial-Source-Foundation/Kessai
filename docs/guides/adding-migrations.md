@@ -1,6 +1,6 @@
 # Adding Migrations
 
-Migrations are defined inline in `crates/subby-core/src/migrations.rs`.
+Migrations are defined inline in `crates/kessai-core/src/migrations.rs`.
 
 ## Process
 

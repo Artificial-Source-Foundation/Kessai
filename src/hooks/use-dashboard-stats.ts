@@ -64,7 +64,7 @@ export function useDashboardStats() {
   // Use selective subscriptions for better performance
   const subscriptions = useSubscriptionStore((state) => state.subscriptions)
   const categories = useCategoryStore((state) => state.categories)
-  const displayCurrency = (useSettingsStore((s) => s.settings)?.currency || 'USD') as CurrencyCode
+  const displayCurrency = useSettingsStore((s) => (s.settings?.currency || 'USD') as CurrencyCode)
 
   const activeSubscriptions = useMemo(
     () => subscriptions.filter((s) => s.is_active),

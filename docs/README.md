@@ -1,4 +1,4 @@
-# Subby Documentation
+# Kessai Documentation
 
 This directory is organized by audience: onboarding, architecture, implementation guides, and reference.
 

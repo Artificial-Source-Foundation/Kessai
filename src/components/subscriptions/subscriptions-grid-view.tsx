@@ -19,6 +19,7 @@ import type { CurrencyCode } from '@/lib/currency'
 import type { Subscription } from '@/types/subscription'
 import type { Category } from '@/types/category'
 import type { Tag } from '@/types/tag'
+import type { PriceChange } from '@/types/price-history'
 import { TagBadge } from '@/components/tags/tag-badge'
 
 interface SubscriptionsGridViewProps {
@@ -33,8 +34,9 @@ interface SubscriptionsGridViewProps {
   onMarkAsPaid: (sub: Subscription) => void
   canMarkAsPaid: (sub: Subscription) => boolean
   onTogglePinned: (sub: Subscription) => void
-  allTags?: Tag[]
+  tagById?: Record<string, Tag>
   subscriptionTagMap?: Record<string, string[]>
+  latestPriceChangeMap?: Record<string, PriceChange | null>
 }
 
 function getCategoryVariant(categoryName?: string): BadgeVariant {
@@ -54,8 +56,9 @@ export const SubscriptionsGridView = memo(function SubscriptionsGridView({
   onMarkAsPaid,
   canMarkAsPaid,
   onTogglePinned,
-  allTags = [],
+  tagById = {},
   subscriptionTagMap = {},
+  latestPriceChangeMap = {},
 }: SubscriptionsGridViewProps) {
   const isNormalized = costNormalization !== 'as-is'
   return (
@@ -72,7 +75,7 @@ export const SubscriptionsGridView = memo(function SubscriptionsGridView({
                 <Pin className="h-3.5 w-3.5 fill-[var(--color-primary)] text-[var(--color-primary)]" />
               </div>
             )}
-            <div className="absolute top-2 right-2 z-10 flex gap-1 rounded-lg bg-[var(--color-surface-elevated)] p-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+            <div className="absolute top-3 right-3 z-20 flex gap-1 rounded-lg bg-[var(--color-surface-elevated)] p-1 opacity-0 shadow-lg transition-opacity group-hover:opacity-100 focus-within:opacity-100">
               <button
                 onClick={() => onTogglePinned(sub)}
                 aria-label={sub.is_pinned ? `Unpin ${sub.name}` : `Pin ${sub.name}`}
@@ -115,16 +118,20 @@ export const SubscriptionsGridView = memo(function SubscriptionsGridView({
             </div>
 
             <div className="flex flex-col gap-4 p-6">
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4">
                 <SubscriptionLogo
                   logoUrl={sub.logo_url}
                   name={sub.name}
                   color={sub.color || category?.color}
                   size="lg"
-                  className="rounded-xl"
+                  className="shrink-0 rounded-xl"
                 />
                 {category && (
-                  <Badge variant={getCategoryVariant(category.name)} size="sm">
+                  <Badge
+                    variant={getCategoryVariant(category.name)}
+                    size="sm"
+                    className="mt-1 shrink-0 transition-opacity group-hover:opacity-0 focus-within:opacity-0"
+                  >
                     {category.name}
                   </Badge>
                 )}
@@ -146,12 +153,17 @@ export const SubscriptionsGridView = memo(function SubscriptionsGridView({
                   {sub.status === 'trial' && (
                     <TrialBadge trialEndDate={sub.trial_end_date ?? null} />
                   )}
-                  <PriceHistoryBadge subscriptionId={sub.id} currency={currency} />
+                  <PriceHistoryBadge
+                    subscriptionId={sub.id}
+                    currency={currency}
+                    latestChange={latestPriceChangeMap[sub.id]}
+                    disableFallbackFetch
+                  />
                 </div>
                 {(subscriptionTagMap[sub.id] || []).length > 0 && (
                   <div className="flex flex-wrap gap-1">
                     {(subscriptionTagMap[sub.id] || []).map((tagId) => {
-                      const tag = allTags.find((t) => t.id === tagId)
+                      const tag = tagById[tagId]
                       return tag ? <TagBadge key={tag.id} tag={tag} /> : null
                     })}
                   </div>
@@ -215,12 +227,12 @@ export const SubscriptionsGridView = memo(function SubscriptionsGridView({
                 <div className="flex items-center gap-1.5">
                   <span
                     className={`h-2 w-2 rounded-full ${
-                      sub.is_active ? 'bg-emerald-500' : 'bg-amber-500'
+                      sub.is_active ? 'bg-success' : 'bg-warning'
                     }`}
                   />
                   <span
                     className={`font-[family-name:var(--font-mono)] text-[10px] font-medium ${
-                      sub.is_active ? 'text-emerald-500' : 'text-amber-500'
+                      sub.is_active ? 'text-success' : 'text-warning'
                     }`}
                   >
                     {sub.is_active ? 'Active' : 'Paused'}
@@ -233,7 +245,7 @@ export const SubscriptionsGridView = memo(function SubscriptionsGridView({
                   size="sm"
                   variant="outline"
                   onClick={() => onMarkAsPaid(sub)}
-                  className="w-full border-emerald-500/30 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
+                  className="border-success/30 bg-success/10 text-success hover:bg-success/20 w-full"
                 >
                   Mark as Paid
                 </Button>

@@ -27,7 +27,7 @@ export const TemplateCard = memo(function TemplateCard({ template, onClick }: Te
         />
       ) : (
         <div
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg font-[family-name:var(--font-heading)] text-sm font-bold text-white"
+          className="text-primary-foreground flex h-9 w-9 shrink-0 items-center justify-center rounded-lg font-[family-name:var(--font-heading)] text-sm font-bold"
           style={{ backgroundColor: template.color }}
         >
           {template.name.charAt(0).toUpperCase()}

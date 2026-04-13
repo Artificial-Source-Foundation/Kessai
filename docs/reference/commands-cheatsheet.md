@@ -34,20 +34,28 @@
 - `pnpm bot:build`
 - `pnpm bot:start`
 
-## CLI (subby-mcp)
+## Unified Command
 
-- `subby-mcp list` — List all subscriptions
-- `subby-mcp add <name> <amount> <cycle> <next-date>` — Add a subscription
-- `subby-mcp update <id> [--name X] [--amount X] ...` — Update a subscription
-- `subby-mcp remove <id>` — Remove a subscription
-- `subby-mcp toggle <id>` — Pause/resume a subscription
-- `subby-mcp pay <sub-id> <due-date> <amount>` — Record a payment
-- `subby-mcp skip <sub-id> <due-date> <amount>` — Skip a payment
-- `subby-mcp categories` — List all categories
-- `subby-mcp add-category <name> <color> <icon>` — Add a category
-- `subby-mcp upcoming [--days 7]` — Show upcoming payments
-- `subby-mcp stats` — Show dashboard statistics
-- `subby-mcp export [--output file.json]` — Export data
-- `subby-mcp import <file.json> [--clear]` — Import data
-- `subby-mcp serve` — Start MCP server explicitly
-- `subby-mcp` — Start MCP server (default)
+- `kessai` — Open the desktop app
+- `kessai app` — Open the desktop app explicitly
+- `kessai list` — List all subscriptions
+- `kessai add <name> <amount> <cycle> <next-date>` — Add a subscription
+- `kessai update <id> [--name X] [--amount X] ...` — Update a subscription
+- `kessai remove <id>` — Remove a subscription
+- `kessai toggle <id>` — Pause/resume a subscription
+- `kessai pay <sub-id> <due-date> <amount>` — Record a payment
+- `kessai skip <sub-id> <due-date> <amount>` — Skip a payment
+- `kessai categories` — List all categories
+- `kessai add-category <name> <color> <icon>` — Add a category
+- `kessai upcoming [--days 7]` — Show upcoming payments
+- `kessai stats` — Show dashboard statistics
+- `kessai export [--output file.json]` — Export data
+- `kessai import <file.json> [--clear]` — Import data
+- `kessai mcp` — Start MCP server (default MCP mode)
+- `kessai web --port 3000` — Start the web server
+
+## Specialist Binaries
+
+- `kessai-desktop` — Desktop app executable
+- `kessai-mcp` — Raw CLI + MCP binary
+- `kessai-web` — Raw web server binary

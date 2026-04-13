@@ -89,20 +89,13 @@ export function SubscriptionDialog() {
     // Get current tags for this subscription
     const currentTags = await fetchForSubscription(subId)
     const currentTagIds = currentTags.map((t) => t.id)
+    const tagsToRemove = currentTagIds.filter((tagId) => !newTagIds.includes(tagId))
+    const tagsToAdd = newTagIds.filter((tagId) => !currentTagIds.includes(tagId))
 
-    // Remove tags that were deselected
-    for (const tagId of currentTagIds) {
-      if (!newTagIds.includes(tagId)) {
-        await removeFromSubscription(subId, tagId)
-      }
-    }
-
-    // Add tags that were newly selected
-    for (const tagId of newTagIds) {
-      if (!currentTagIds.includes(tagId)) {
-        await addToSubscription(subId, tagId)
-      }
-    }
+    await Promise.all([
+      ...tagsToRemove.map((tagId) => removeFromSubscription(subId, tagId)),
+      ...tagsToAdd.map((tagId) => addToSubscription(subId, tagId)),
+    ])
   }
 
   const handleSubmit = async (data: SubscriptionFormData, tagIds?: string[]) => {
@@ -155,9 +148,7 @@ export function SubscriptionDialog() {
         })
 
         if (tagIds && tagIds.length > 0 && created) {
-          for (const tagId of tagIds) {
-            await addToSubscription(created.id, tagId)
-          }
+          await Promise.all(tagIds.map((tagId) => addToSubscription(created.id, tagId)))
         }
 
         toast.success('Subscription added', {

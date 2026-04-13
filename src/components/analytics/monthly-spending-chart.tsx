@@ -79,7 +79,7 @@ export const MonthlySpendingChart = memo(function MonthlySpendingChart({
   return (
     <div className="glass-card p-6">
       <div className="mb-6 flex items-center gap-3">
-        <div className="bg-primary/15 text-primary flex h-8 w-8 items-center justify-center rounded-lg">
+        <div className="bg-surface-highest/50 text-primary flex h-8 w-8 items-center justify-center rounded-lg">
           <BarChart3 className="h-4 w-4" />
         </div>
         <div>
@@ -102,8 +102,8 @@ export const MonthlySpendingChart = memo(function MonthlySpendingChart({
             <BarChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: -12 }}>
               <defs>
                 <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#bf5af2" stopOpacity={0.9} />
-                  <stop offset="100%" stopColor="#bf5af2" stopOpacity={0.4} />
+                  <stop offset="0%" stopColor="var(--color-primary)" stopOpacity={0.9} />
+                  <stop offset="100%" stopColor="var(--color-primary)" stopOpacity={0.2} />
                 </linearGradient>
               </defs>
               <CartesianGrid
@@ -116,7 +116,7 @@ export const MonthlySpendingChart = memo(function MonthlySpendingChart({
                 axisLine={false}
                 tickLine={false}
                 tick={{
-                  fill: '#888888',
+                  fill: 'var(--color-muted-foreground)',
                   fontSize: 10,
                   fontFamily: 'var(--font-mono)',
                 }}
@@ -126,7 +126,7 @@ export const MonthlySpendingChart = memo(function MonthlySpendingChart({
                 axisLine={false}
                 tickLine={false}
                 tick={{
-                  fill: '#888888',
+                  fill: 'var(--color-muted-foreground)',
                   fontSize: 10,
                   fontFamily: 'var(--font-mono)',
                 }}
@@ -136,7 +136,10 @@ export const MonthlySpendingChart = memo(function MonthlySpendingChart({
                   return value.toString()
                 }}
               />
-              <Tooltip content={tooltipRenderer} cursor={{ fill: 'rgba(191,90,242,0.08)' }} />
+              <Tooltip
+                content={tooltipRenderer}
+                cursor={{ fill: 'var(--color-surface-highest)' }}
+              />
               <Bar dataKey="total" fill="url(#barGradient)" radius={[2, 2, 0, 0]} maxBarSize={40} />
             </BarChart>
           </ResponsiveContainer>

@@ -35,7 +35,7 @@ export function MonthSummaryHeader({
               <span
                 className={cn(
                   'flex items-center gap-1',
-                  isUp ? 'text-rose-400' : 'text-emerald-400'
+                  isUp ? 'text-destructive' : 'text-success'
                 )}
               >
                 {isUp ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
@@ -54,10 +54,10 @@ export function MonthSummaryHeader({
         <div className="bg-border mx-6 hidden h-12 w-px md:block" />
 
         <div className="flex flex-col">
-          <span className="mb-1 flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-[10px] font-normal tracking-widest text-emerald-500 uppercase">
+          <span className="text-success mb-1 flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-[10px] font-normal tracking-widest uppercase">
             <CheckCircle2 className="h-3 w-3" /> Paid ({paidCount})
           </span>
-          <span className="font-[family-name:var(--font-heading)] text-2xl leading-none font-bold tracking-tight text-emerald-500">
+          <span className="text-success font-[family-name:var(--font-heading)] text-2xl leading-none font-bold tracking-tight">
             {formatCurrency(paidAmount, currency)}
           </span>
           <span className="text-muted-foreground mt-1 font-[family-name:var(--font-mono)] text-[10px]">

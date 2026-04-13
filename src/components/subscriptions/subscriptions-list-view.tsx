@@ -15,6 +15,7 @@ import type { CurrencyCode } from '@/lib/currency'
 import type { Subscription } from '@/types/subscription'
 import type { Category } from '@/types/category'
 import type { Tag } from '@/types/tag'
+import type { PriceChange } from '@/types/price-history'
 import { TagBadge } from '@/components/tags/tag-badge'
 
 interface SubscriptionsListViewProps {
@@ -28,8 +29,9 @@ interface SubscriptionsListViewProps {
   onCancel: (sub: Subscription) => void
   onToggleActive: (sub: Subscription) => void
   onTogglePinned: (sub: Subscription) => void
-  allTags?: Tag[]
+  tagById?: Record<string, Tag>
   subscriptionTagMap?: Record<string, string[]>
+  latestPriceChangeMap?: Record<string, PriceChange | null>
 }
 
 function getCategoryVariant(categoryName?: string): BadgeVariant {
@@ -48,8 +50,9 @@ export const SubscriptionsListView = memo(function SubscriptionsListView({
   onCancel,
   onToggleActive,
   onTogglePinned,
-  allTags = [],
+  tagById = {},
   subscriptionTagMap = {},
+  latestPriceChangeMap = {},
 }: SubscriptionsListViewProps) {
   const isNormalized = costNormalization !== 'as-is'
   return (
@@ -106,7 +109,7 @@ export const SubscriptionsListView = memo(function SubscriptionsListView({
                             </Badge>
                           )}
                           {(subscriptionTagMap[sub.id] || []).map((tagId) => {
-                            const tag = allTags.find((t) => t.id === tagId)
+                            const tag = tagById[tagId]
                             return tag ? <TagBadge key={tag.id} tag={tag} /> : null
                           })}
                         </div>
@@ -192,7 +195,12 @@ export const SubscriptionsListView = memo(function SubscriptionsListView({
                       {sub.status === 'trial' && (
                         <TrialBadge trialEndDate={sub.trial_end_date ?? null} />
                       )}
-                      <PriceHistoryBadge subscriptionId={sub.id} currency={currency} />
+                      <PriceHistoryBadge
+                        subscriptionId={sub.id}
+                        currency={currency}
+                        latestChange={latestPriceChangeMap[sub.id]}
+                        disableFallbackFetch
+                      />
                     </div>
                   </td>
                   <td className="px-4 py-4">

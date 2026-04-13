@@ -79,8 +79,7 @@ export function CSVImportWizard({ open, onOpenChange, onDataChanged }: CSVImport
 
   const { subscriptions, add: addSubscription } = useSubscriptionStore()
   const { categories } = useCategoryStore()
-  const { settings } = useSettingsStore()
-  const currency = (settings?.currency || 'USD') as CurrencyCode
+  const currency = (useSettingsStore((s) => s.settings?.currency) || 'USD') as CurrencyCode
 
   const existingNames = useMemo(
     () => new Set(subscriptions.map((s) => s.name.toLowerCase())),
@@ -303,7 +302,7 @@ export function CSVImportWizard({ open, onOpenChange, onDataChanged }: CSVImport
                 <div
                   className={`flex h-6 w-6 items-center justify-center rounded-full font-[family-name:var(--font-mono)] text-[10px] font-bold transition-colors ${
                     s === stepNumber
-                      ? 'bg-primary text-white'
+                      ? 'bg-primary text-primary-foreground'
                       : s < stepNumber
                         ? 'bg-primary/20 text-primary'
                         : 'bg-border text-muted-foreground'
@@ -482,7 +481,7 @@ function UploadStep({
             <p className="text-foreground truncate text-sm font-medium">{fileName}</p>
             <p className="text-muted-foreground text-[11px]">{formatFileSize(fileSize)}</p>
           </div>
-          <Check className="h-4 w-4 flex-shrink-0 text-emerald-500" />
+          <Check className="text-success h-4 w-4 flex-shrink-0" />
         </div>
       )}
 
@@ -529,8 +528,8 @@ function MappingStep({
   return (
     <div className="flex flex-col gap-5 py-4">
       {hasAutoDetected && (
-        <div className="flex items-start gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3">
-          <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-500" />
+        <div className="border-success/30 bg-success/5 flex items-start gap-2 rounded-lg border p-3">
+          <Check className="text-success mt-0.5 h-4 w-4 flex-shrink-0" />
           <p className="text-muted-foreground text-xs">
             Some columns were auto-detected. Verify the mappings below.
           </p>
@@ -659,8 +658,8 @@ function ReviewStep({
 
       {/* Duplicate warning */}
       {duplicateCount > 0 && (
-        <div className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
-          <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-400" />
+        <div className="border-warning/30 bg-warning/5 flex items-start gap-2 rounded-lg border p-3">
+          <AlertCircle className="text-warning mt-0.5 h-4 w-4 flex-shrink-0" />
           <p className="text-muted-foreground text-xs">
             {duplicateCount} subscription{duplicateCount !== 1 ? 's' : ''} already exist and will be
             skipped during import.
@@ -687,7 +686,7 @@ function ReviewStep({
                         : 'border-border hover:border-foreground'
                     }`}
                   >
-                    {allIncluded && <Check className="h-3 w-3 text-white" />}
+                    {allIncluded && <Check className="text-primary-foreground h-3 w-3" />}
                   </button>
                 </th>
                 <th className="text-muted-foreground px-3 py-2.5 text-left font-[family-name:var(--font-mono)] text-[10px] font-normal tracking-widest uppercase">
@@ -716,7 +715,7 @@ function ReviewStep({
                     key={`detected-${sub.name}-${i}`}
                     className={`transition-colors ${
                       sub.include ? 'bg-[var(--color-subtle-overlay)]' : 'opacity-40'
-                    } ${isDuplicate ? 'bg-amber-500/5' : ''}`}
+                    } ${isDuplicate ? 'bg-warning/5' : ''}`}
                   >
                     <td className="px-3 py-2.5">
                       <button
@@ -729,14 +728,14 @@ function ReviewStep({
                             : 'border-border hover:border-foreground'
                         }`}
                       >
-                        {sub.include && <Check className="h-3 w-3 text-white" />}
+                        {sub.include && <Check className="text-primary-foreground h-3 w-3" />}
                       </button>
                     </td>
                     <td className="px-3 py-2.5">
                       <div className="flex items-center gap-2">
                         <span className="text-foreground text-sm">{sub.name}</span>
                         {isDuplicate && (
-                          <span className="rounded border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 font-[family-name:var(--font-mono)] text-[9px] tracking-wider text-amber-400 uppercase">
+                          <span className="border-warning/30 bg-warning/10 text-warning rounded border px-1.5 py-0.5 font-[family-name:var(--font-mono)] text-[9px] tracking-wider uppercase">
                             Exists
                           </span>
                         )}
@@ -805,11 +804,11 @@ function ReviewStep({
 
 function ConfidenceBadge({ confidence }: { confidence: number }) {
   const pct = Math.round(confidence * 100)
-  let colorClass = 'border-red-500/30 bg-red-500/10 text-red-400'
+  let colorClass = 'border-destructive/30 bg-destructive/10 text-destructive'
   if (confidence >= 0.8) {
-    colorClass = 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
+    colorClass = 'border-success/30 bg-success/10 text-success'
   } else if (confidence >= 0.5) {
-    colorClass = 'border-amber-500/30 bg-amber-500/10 text-amber-400'
+    colorClass = 'border-warning/30 bg-warning/10 text-warning'
   }
 
   return (
@@ -836,19 +835,19 @@ function ResultsStep({ results }: { results: ImportResults }) {
         </p>
         <div className="text-muted-foreground mt-2 flex flex-col gap-1 text-sm">
           {results.imported > 0 && (
-            <p className="text-emerald-400">
+            <p className="text-success">
               {results.imported} subscription{results.imported !== 1 ? 's' : ''} imported
             </p>
           )}
           {results.skipped > 0 && (
-            <p className="text-amber-400">{results.skipped} skipped (already exist)</p>
+            <p className="text-warning">{results.skipped} skipped (already exist)</p>
           )}
         </div>
       </div>
 
       {results.errors.length > 0 && (
-        <div className="w-full rounded-lg border border-red-500/30 bg-red-500/5 p-3">
-          <p className="mb-1 text-xs font-medium text-red-400">
+        <div className="border-destructive/30 bg-destructive/5 w-full rounded-lg border p-3">
+          <p className="text-destructive mb-1 text-xs font-medium">
             {results.errors.length} error{results.errors.length !== 1 ? 's' : ''}
           </p>
           <div className="max-h-24 overflow-y-auto">

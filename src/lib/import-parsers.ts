@@ -14,7 +14,7 @@ export interface ParsedSubscription {
 export interface ParseResult {
   subscriptions: ParsedSubscription[]
   errors: string[]
-  source: 'csv' | 'subby-json' | 'wallos-json' | 'unknown'
+  source: 'csv' | 'kessai-json' | 'wallos-json' | 'unknown'
 }
 
 // ── CSV Parsing ────────────────────────────────────────────────────────
@@ -263,9 +263,9 @@ export function parseWallosJSON(data: unknown): ParseResult {
   return { subscriptions, errors, source: 'wallos-json' }
 }
 
-// ── Subby JSON Parsing ─────────────────────────────────────────────────
+// ── Kessai JSON Parsing ─────────────────────────────────────────────────
 
-interface SubbyBackup {
+interface KessaiBackup {
   version?: string
   exportedAt?: string
   subscriptions?: Array<{
@@ -283,11 +283,15 @@ interface SubbyBackup {
   }>
 }
 
-export function parseSubbyJSON(data: unknown): ParseResult {
-  const backup = data as SubbyBackup
+export function parseKessaiJSON(data: unknown): ParseResult {
+  const backup = data as KessaiBackup
 
   if (!backup.version || !backup.subscriptions || !Array.isArray(backup.subscriptions)) {
-    return { subscriptions: [], errors: ['Not a valid Subby backup format'], source: 'subby-json' }
+    return {
+      subscriptions: [],
+      errors: ['Not a valid Kessai backup format'],
+      source: 'kessai-json',
+    }
   }
 
   const categoryMap = new Map<string, string>()
@@ -323,7 +327,7 @@ export function parseSubbyJSON(data: unknown): ParseResult {
     })
   }
 
-  return { subscriptions, errors, source: 'subby-json' }
+  return { subscriptions, errors, source: 'kessai-json' }
 }
 
 // ── Auto-detect format ─────────────────────────────────────────────────
@@ -331,9 +335,9 @@ export function parseSubbyJSON(data: unknown): ParseResult {
 export function detectAndParseJSON(data: unknown): ParseResult {
   const obj = data as Record<string, unknown>
 
-  // Check for Subby format first (has version and exportedAt)
+  // Check for Kessai format first (has version and exportedAt)
   if (obj.version && obj.exportedAt && obj.subscriptions) {
-    return parseSubbyJSON(data)
+    return parseKessaiJSON(data)
   }
 
   // Check for Wallos format (has subscriptions array with price/cycle fields)
@@ -346,7 +350,7 @@ export function detectAndParseJSON(data: unknown): ParseResult {
 
   return {
     subscriptions: [],
-    errors: ['Unknown JSON format. Supported: Subby backup, Wallos export.'],
+    errors: ['Unknown JSON format. Supported: Kessai backup, Wallos export.'],
     source: 'unknown',
   }
 }

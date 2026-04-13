@@ -12,7 +12,7 @@ Required variables:
 
 - `DISCORD_TOKEN`
 - `DISCORD_USER_ID`
-- `SUBBY_BACKUP_PATH`
+- `KESSAI_BACKUP_PATH`
 
 Optional variables:
 

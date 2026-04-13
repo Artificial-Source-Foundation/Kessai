@@ -4,24 +4,24 @@ Date: 2026-02-14
 
 ## Recommended Path
 
-Use GitHub repository transfer from personal namespace to `ASF/Subby`.
+Use GitHub repository transfer from personal namespace to `ASF/Kessai`.
 
 ## Pre-Cutover Checklist
 
 1. Ensure ASF GitHub organization exists and you have owner/admin rights.
 2. Ensure repository working tree is clean and changes are merged.
 3. Confirm backup exists (local clone + optional mirror clone).
-4. Confirm docs/metadata in repo point to `ASF/Subby`.
+4. Confirm docs/metadata in repo point to `ASF/Kessai`.
 
 ## Cutover Steps
 
 1. Open repository settings in current namespace.
-2. Transfer repository to organization `ASF` with name `Subby`.
+2. Transfer repository to organization `ASF` with name `Kessai`.
 3. Accept transfer in org (if required).
 4. Update local remote URL:
 
 ```bash
-git remote set-url origin https://github.com/Artificial-Source-Foundation/Subby.git
+git remote set-url origin https://github.com/Artificial-Source-Foundation/Kessai.git
 git remote -v
 ```
 

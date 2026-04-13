@@ -24,7 +24,7 @@ export function AppShell() {
 
       <Sidebar />
 
-      <main id="main-content" className="grid-bg flex-1 overflow-y-auto">
+      <main id="main-content" className="grid-bg relative z-0 flex-1 overflow-y-auto">
         <div className="mx-auto max-w-7xl p-4 pb-24 md:p-6 md:pb-6">
           <Outlet />
         </div>

@@ -1,4 +1,4 @@
-# Subby — Feature Backlog
+# Kessai — Feature Backlog
 
 > Prioritized based on competitive research (March 2026)
 
@@ -13,7 +13,7 @@
 - [x] **Free Trial Tracking** — Dedicated trial status with countdown timer, expiry alerts, and dashboard widget
 - [x] **Logo Auto-Fetch** — Auto-fetch service logos/favicons via Google favicon API when adding subscriptions
 - [x] **Price Increase Detection** — Track historical price changes per subscription with timeline and alert cards
-- [x] **CSV/JSON Import from Competitors** — Import from Wallos, Bobby, generic CSV, and Subby JSON backups
+- [x] **CSV/JSON Import from Competitors** — Import from Wallos, Bobby, generic CSV, and Kessai JSON backups
 - [x] **Household/Family Sharing** — Shared subscription splitting with configurable split count
 
 ## Quick Wins

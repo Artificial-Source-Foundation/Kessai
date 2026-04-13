@@ -17,8 +17,8 @@ export const SpendingVelocityCard = memo(function SpendingVelocityCard({
   const changeColor = isFlat
     ? 'text-muted-foreground'
     : isDown
-      ? 'text-emerald-400'
-      : 'text-red-400'
+      ? 'text-success'
+      : 'text-destructive'
 
   return (
     <div className="glass-card p-6">

@@ -36,7 +36,7 @@ export async function saveBackupToFile(data: BackupData): Promise<boolean> {
     // In web mode, trigger a browser download instead
     const json = JSON.stringify(data, null, 2)
     const date = new Date().toISOString().split('T')[0]
-    const filename = `subby-backup-${date}.json`
+    const filename = `kessai-backup-${date}.json`
     const blob = new Blob([json], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -52,12 +52,12 @@ export async function saveBackupToFile(data: BackupData): Promise<boolean> {
 
   const json = JSON.stringify(data, null, 2)
   const date = new Date().toISOString().split('T')[0]
-  const defaultFilename = `subby-backup-${date}.json`
+  const defaultFilename = `kessai-backup-${date}.json`
 
   const filePath = await save({
     defaultPath: defaultFilename,
     filters: [{ name: 'JSON', extensions: ['json'] }],
-    title: 'Export Subby Backup',
+    title: 'Export Kessai Backup',
   })
 
   if (!filePath) {

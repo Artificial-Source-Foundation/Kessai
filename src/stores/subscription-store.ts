@@ -1,7 +1,13 @@
 import { create } from 'zustand'
 import { apiInvoke as invoke } from '@/lib/api'
 import { logger } from '@/lib/logger'
-import type { Subscription, NewSubscription, SubscriptionStatus } from '@/types/subscription'
+import { usePriceHistoryStore } from '@/stores/price-history-store'
+import {
+  compareSubscriptionDisplayPriority,
+  type Subscription,
+  type NewSubscription,
+  type SubscriptionStatus,
+} from '@/types/subscription'
 
 type SubscriptionState = {
   subscriptions: Subscription[]
@@ -22,9 +28,8 @@ type SubscriptionState = {
 }
 
 const sortByPaymentDate = (a: Subscription, b: Subscription) => {
-  // Pinned subscriptions always come first
-  if (a.is_pinned && !b.is_pinned) return -1
-  if (!a.is_pinned && b.is_pinned) return 1
+  const priority = compareSubscriptionDisplayPriority(a, b)
+  if (priority !== 0) return priority
 
   if (!a.next_payment_date && !b.next_payment_date) return 0
   if (!a.next_payment_date) return 1
@@ -121,6 +126,11 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
           .map((s) => (s.id === id ? updated : s))
           .sort(sortByPaymentDate),
       }))
+
+      if (data.amount !== undefined || data.currency !== undefined) {
+        usePriceHistoryStore.getState().invalidateLatest([id])
+        void usePriceHistoryStore.getState().fetchLatestForSubscriptions([id])
+      }
     } catch (error) {
       set({ subscriptions: previousSubscriptions })
       console.error('Failed to update subscription:', error)

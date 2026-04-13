@@ -43,7 +43,7 @@ export function useSubscriptions() {
     }))
   )
 
-  const displayCurrency = (useSettingsStore((s) => s.settings)?.currency || 'USD') as CurrencyCode
+  const displayCurrency = useSettingsStore((s) => (s.settings?.currency || 'USD') as CurrencyCode)
 
   useEffect(() => {
     fetch()

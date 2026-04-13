@@ -10,15 +10,15 @@ use tauri::menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem};
 use tauri::tray::TrayIconBuilder;
 use tauri::Manager;
 
-use subby_core::models::{
+use kessai_core::models::{
     BackupData, CategorySpend, MonthlySpend, NewCategory, NewPayment, NewPaymentCard,
     NewSubscription, NewTag, PaymentWithSubscription, PriceChange, SpendingVelocity,
-    SubscriptionStatus, Tag, UpdateCategory, UpdatePayment, UpdatePaymentCard, UpdateSettings,
-    UpdateSubscription, UpdateTag, YearSummary,
+    SubscriptionStatus, SubscriptionTagLink, Tag, UpdateCategory, UpdatePayment, UpdatePaymentCard,
+    UpdateSettings, UpdateSubscription, UpdateTag, YearSummary,
 };
-use subby_core::{
+use kessai_core::{
     models::{Category, ImportResult, Payment, PaymentCard, Settings, Subscription},
-    SubbyCore,
+    KessaiCore,
 };
 
 /// Global flag to track whether the app should truly quit or just hide to tray.
@@ -31,14 +31,22 @@ struct UpdaterContext {
     bundle_type: Option<String>,
 }
 
+fn show_main_window(app: &tauri::AppHandle) {
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.show();
+        let _ = window.unminimize();
+        let _ = window.set_focus();
+    }
+}
+
 // ── Logo commands (unchanged) ──────────────────────────────────────────────
 
 fn get_logos_dir(app_handle: &tauri::AppHandle) -> PathBuf {
-    let resource_dir = app_handle
+    let data_dir = app_handle
         .path()
-        .resource_dir()
+        .app_data_dir()
         .unwrap_or_else(|_| PathBuf::from("."));
-    let logos_dir = resource_dir.join("data").join("logos");
+    let logos_dir = data_dir.join("logos");
     fs::create_dir_all(&logos_dir).ok();
     logos_dir
 }
@@ -68,7 +76,10 @@ fn save_logo(
 
     // Validate filename to prevent path traversal
     if !is_valid_logo_filename(&filename) {
-        tracing::error!("invalid subscription ID for logo filename: {}", subscription_id);
+        tracing::error!(
+            "invalid subscription ID for logo filename: {}",
+            subscription_id
+        );
         return Err("Invalid subscription ID for logo filename".to_string());
     }
 
@@ -201,7 +212,7 @@ async fn fetch_logo(
 // ── Subscription commands ──────────────────────────────────────────────────
 
 #[tauri::command]
-fn list_subscriptions(core: tauri::State<'_, SubbyCore>) -> Result<Vec<Subscription>, String> {
+fn list_subscriptions(core: tauri::State<'_, KessaiCore>) -> Result<Vec<Subscription>, String> {
     tracing::debug!("listing subscriptions");
     core.subscriptions().list().map_err(|e| {
         tracing::error!("failed to list subscriptions: {}", e);
@@ -210,7 +221,10 @@ fn list_subscriptions(core: tauri::State<'_, SubbyCore>) -> Result<Vec<Subscript
 }
 
 #[tauri::command]
-fn get_subscription(core: tauri::State<'_, SubbyCore>, id: String) -> Result<Subscription, String> {
+fn get_subscription(
+    core: tauri::State<'_, KessaiCore>,
+    id: String,
+) -> Result<Subscription, String> {
     tracing::debug!("getting subscription: {}", id);
     core.subscriptions().get(&id).map_err(|e| {
         tracing::error!("failed to get subscription {}: {}", id, e);
@@ -220,7 +234,7 @@ fn get_subscription(core: tauri::State<'_, SubbyCore>, id: String) -> Result<Sub
 
 #[tauri::command]
 fn create_subscription(
-    core: tauri::State<'_, SubbyCore>,
+    core: tauri::State<'_, KessaiCore>,
     data: NewSubscription,
 ) -> Result<Subscription, String> {
     tracing::info!("creating subscription: {}", data.name);
@@ -232,7 +246,7 @@ fn create_subscription(
 
 #[tauri::command]
 fn update_subscription(
-    core: tauri::State<'_, SubbyCore>,
+    core: tauri::State<'_, KessaiCore>,
     id: String,
     data: UpdateSubscription,
 ) -> Result<Subscription, String> {
@@ -247,10 +261,7 @@ fn update_subscription(
                     existing.amount,
                     new_amount
                 );
-                let new_currency = data
-                    .currency
-                    .as_deref()
-                    .unwrap_or(&existing.currency);
+                let new_currency = data.currency.as_deref().unwrap_or(&existing.currency);
                 let _ = core.price_history().record(
                     &id,
                     existing.amount,
@@ -262,16 +273,14 @@ fn update_subscription(
         }
     }
 
-    core.subscriptions()
-        .update(&id, data)
-        .map_err(|e| {
-            tracing::error!("failed to update subscription {}: {}", id, e);
-            e.to_string()
-        })
+    core.subscriptions().update(&id, data).map_err(|e| {
+        tracing::error!("failed to update subscription {}: {}", id, e);
+        e.to_string()
+    })
 }
 
 #[tauri::command]
-fn delete_subscription(core: tauri::State<'_, SubbyCore>, id: String) -> Result<(), String> {
+fn delete_subscription(core: tauri::State<'_, KessaiCore>, id: String) -> Result<(), String> {
     tracing::info!("deleting subscription: {}", id);
     core.subscriptions().delete(&id).map_err(|e| {
         tracing::error!("failed to delete subscription {}: {}", id, e);
@@ -281,35 +290,31 @@ fn delete_subscription(core: tauri::State<'_, SubbyCore>, id: String) -> Result<
 
 #[tauri::command]
 fn toggle_subscription_active(
-    core: tauri::State<'_, SubbyCore>,
+    core: tauri::State<'_, KessaiCore>,
     id: String,
 ) -> Result<Subscription, String> {
     tracing::info!("toggling active: {}", id);
-    core.subscriptions()
-        .toggle_active(&id)
-        .map_err(|e| {
-            tracing::error!("failed to toggle active {}: {}", id, e);
-            e.to_string()
-        })
+    core.subscriptions().toggle_active(&id).map_err(|e| {
+        tracing::error!("failed to toggle active {}: {}", id, e);
+        e.to_string()
+    })
 }
 
 #[tauri::command]
 fn toggle_subscription_pinned(
-    core: tauri::State<'_, SubbyCore>,
+    core: tauri::State<'_, KessaiCore>,
     id: String,
 ) -> Result<Subscription, String> {
     tracing::debug!("toggling pinned: {}", id);
-    core.subscriptions()
-        .toggle_pinned(&id)
-        .map_err(|e| {
-            tracing::error!("failed to toggle pinned {}: {}", id, e);
-            e.to_string()
-        })
+    core.subscriptions().toggle_pinned(&id).map_err(|e| {
+        tracing::error!("failed to toggle pinned {}: {}", id, e);
+        e.to_string()
+    })
 }
 
 #[tauri::command]
 fn cancel_subscription(
-    core: tauri::State<'_, SubbyCore>,
+    core: tauri::State<'_, KessaiCore>,
     id: String,
     reason: Option<String>,
 ) -> Result<Subscription, String> {
@@ -324,37 +329,32 @@ fn cancel_subscription(
 
 #[tauri::command]
 fn mark_subscription_reviewed(
-    core: tauri::State<'_, SubbyCore>,
+    core: tauri::State<'_, KessaiCore>,
     id: String,
 ) -> Result<Subscription, String> {
     tracing::debug!("marking reviewed: {}", id);
-    core.subscriptions()
-        .mark_reviewed(&id)
-        .map_err(|e| {
-            tracing::error!("failed to mark reviewed {}: {}", id, e);
-            e.to_string()
-        })
+    core.subscriptions().mark_reviewed(&id).map_err(|e| {
+        tracing::error!("failed to mark reviewed {}: {}", id, e);
+        e.to_string()
+    })
 }
 
 #[tauri::command]
 fn list_subscriptions_needing_review(
-    core: tauri::State<'_, SubbyCore>,
+    core: tauri::State<'_, KessaiCore>,
     days: i64,
 ) -> Result<Vec<Subscription>, String> {
     tracing::debug!("listing subscriptions needing review (days: {})", days);
-    core.subscriptions()
-        .list_needing_review(days)
-        .map_err(|e| {
-            tracing::error!("failed to list subscriptions needing review: {}", e);
-            e.to_string()
-        })
+    core.subscriptions().list_needing_review(days).map_err(|e| {
+        tracing::error!("failed to list subscriptions needing review: {}", e);
+        e.to_string()
+    })
 }
-
 
 // ── Category commands ──────────────────────────────────────────────────────
 
 #[tauri::command]
-fn list_categories(core: tauri::State<'_, SubbyCore>) -> Result<Vec<Category>, String> {
+fn list_categories(core: tauri::State<'_, KessaiCore>) -> Result<Vec<Category>, String> {
     tracing::debug!("listing categories");
     core.categories().list().map_err(|e| {
         tracing::error!("failed to list categories: {}", e);
@@ -364,7 +364,7 @@ fn list_categories(core: tauri::State<'_, SubbyCore>) -> Result<Vec<Category>, S
 
 #[tauri::command]
 fn create_category(
-    core: tauri::State<'_, SubbyCore>,
+    core: tauri::State<'_, KessaiCore>,
     data: NewCategory,
 ) -> Result<Category, String> {
     tracing::info!("creating category: {}", data.name);
@@ -376,21 +376,19 @@ fn create_category(
 
 #[tauri::command]
 fn update_category(
-    core: tauri::State<'_, SubbyCore>,
+    core: tauri::State<'_, KessaiCore>,
     id: String,
     data: UpdateCategory,
 ) -> Result<Category, String> {
     tracing::info!("updating category: {}", id);
-    core.categories()
-        .update(&id, data)
-        .map_err(|e| {
-            tracing::error!("failed to update category {}: {}", id, e);
-            e.to_string()
-        })
+    core.categories().update(&id, data).map_err(|e| {
+        tracing::error!("failed to update category {}: {}", id, e);
+        e.to_string()
+    })
 }
 
 #[tauri::command]
-fn delete_category(core: tauri::State<'_, SubbyCore>, id: String) -> Result<(), String> {
+fn delete_category(core: tauri::State<'_, KessaiCore>, id: String) -> Result<(), String> {
     tracing::info!("deleting category: {}", id);
     core.categories().delete(&id).map_err(|e| {
         tracing::error!("failed to delete category {}: {}", id, e);
@@ -401,7 +399,7 @@ fn delete_category(core: tauri::State<'_, SubbyCore>, id: String) -> Result<(), 
 // ── Payment commands ───────────────────────────────────────────────────────
 
 #[tauri::command]
-fn list_payments(core: tauri::State<'_, SubbyCore>) -> Result<Vec<Payment>, String> {
+fn list_payments(core: tauri::State<'_, KessaiCore>) -> Result<Vec<Payment>, String> {
     tracing::debug!("listing payments");
     core.payments().list().map_err(|e| {
         tracing::error!("failed to list payments: {}", e);
@@ -411,37 +409,36 @@ fn list_payments(core: tauri::State<'_, SubbyCore>) -> Result<Vec<Payment>, Stri
 
 #[tauri::command]
 fn list_payments_by_month(
-    core: tauri::State<'_, SubbyCore>,
+    core: tauri::State<'_, KessaiCore>,
     year: i32,
     month: u32,
 ) -> Result<Vec<Payment>, String> {
     tracing::debug!("listing payments for {}-{:02}", year, month);
-    core.payments()
-        .list_by_month(year, month)
-        .map_err(|e| {
-            tracing::error!("failed to list payments by month: {}", e);
-            e.to_string()
-        })
+    core.payments().list_by_month(year, month).map_err(|e| {
+        tracing::error!("failed to list payments by month: {}", e);
+        e.to_string()
+    })
 }
 
 #[tauri::command]
 fn list_payments_with_details(
-    core: tauri::State<'_, SubbyCore>,
+    core: tauri::State<'_, KessaiCore>,
     year: i32,
     month: u32,
 ) -> Result<Vec<PaymentWithSubscription>, String> {
     tracing::debug!("listing payments with details for {}-{:02}", year, month);
-    core.payments()
-        .list_with_details(year, month)
-        .map_err(|e| {
-            tracing::error!("failed to list payments with details: {}", e);
-            e.to_string()
-        })
+    core.payments().list_with_details(year, month).map_err(|e| {
+        tracing::error!("failed to list payments with details: {}", e);
+        e.to_string()
+    })
 }
 
 #[tauri::command]
-fn create_payment(core: tauri::State<'_, SubbyCore>, data: NewPayment) -> Result<Payment, String> {
-    tracing::info!("creating payment for subscription: {}", data.subscription_id);
+fn create_payment(core: tauri::State<'_, KessaiCore>, data: NewPayment) -> Result<Payment, String> {
+    tracing::info!(
+        "creating payment for subscription: {}",
+        data.subscription_id
+    );
     core.payments().create(data).map_err(|e| {
         tracing::error!("failed to create payment: {}", e);
         e.to_string()
@@ -450,7 +447,7 @@ fn create_payment(core: tauri::State<'_, SubbyCore>, data: NewPayment) -> Result
 
 #[tauri::command]
 fn update_payment(
-    core: tauri::State<'_, SubbyCore>,
+    core: tauri::State<'_, KessaiCore>,
     id: String,
     data: UpdatePayment,
 ) -> Result<Payment, String> {
@@ -462,7 +459,7 @@ fn update_payment(
 }
 
 #[tauri::command]
-fn delete_payment(core: tauri::State<'_, SubbyCore>, id: String) -> Result<(), String> {
+fn delete_payment(core: tauri::State<'_, KessaiCore>, id: String) -> Result<(), String> {
     tracing::info!("deleting payment: {}", id);
     core.payments().delete(&id).map_err(|e| {
         tracing::error!("failed to delete payment {}: {}", id, e);
@@ -472,7 +469,7 @@ fn delete_payment(core: tauri::State<'_, SubbyCore>, id: String) -> Result<(), S
 
 #[tauri::command]
 fn mark_payment_paid(
-    core: tauri::State<'_, SubbyCore>,
+    core: tauri::State<'_, KessaiCore>,
     subscription_id: String,
     due_date: String,
     amount: f64,
@@ -488,7 +485,7 @@ fn mark_payment_paid(
 
 #[tauri::command]
 fn skip_payment(
-    core: tauri::State<'_, SubbyCore>,
+    core: tauri::State<'_, KessaiCore>,
     subscription_id: String,
     due_date: String,
     amount: f64,
@@ -504,11 +501,15 @@ fn skip_payment(
 
 #[tauri::command]
 fn is_payment_recorded(
-    core: tauri::State<'_, SubbyCore>,
+    core: tauri::State<'_, KessaiCore>,
     subscription_id: String,
     due_date: String,
 ) -> Result<bool, String> {
-    tracing::debug!("checking payment recorded: {} on {}", subscription_id, due_date);
+    tracing::debug!(
+        "checking payment recorded: {} on {}",
+        subscription_id,
+        due_date
+    );
     core.payments()
         .is_recorded(&subscription_id, &due_date)
         .map_err(|e| {
@@ -520,7 +521,7 @@ fn is_payment_recorded(
 // ── Payment card commands ──────────────────────────────────────────────────
 
 #[tauri::command]
-fn list_payment_cards(core: tauri::State<'_, SubbyCore>) -> Result<Vec<PaymentCard>, String> {
+fn list_payment_cards(core: tauri::State<'_, KessaiCore>) -> Result<Vec<PaymentCard>, String> {
     tracing::debug!("listing payment cards");
     core.payment_cards().list().map_err(|e| {
         tracing::error!("failed to list payment cards: {}", e);
@@ -530,7 +531,7 @@ fn list_payment_cards(core: tauri::State<'_, SubbyCore>) -> Result<Vec<PaymentCa
 
 #[tauri::command]
 fn create_payment_card(
-    core: tauri::State<'_, SubbyCore>,
+    core: tauri::State<'_, KessaiCore>,
     data: NewPaymentCard,
 ) -> Result<PaymentCard, String> {
     tracing::info!("creating payment card: {}", data.name);
@@ -542,21 +543,19 @@ fn create_payment_card(
 
 #[tauri::command]
 fn update_payment_card(
-    core: tauri::State<'_, SubbyCore>,
+    core: tauri::State<'_, KessaiCore>,
     id: String,
     data: UpdatePaymentCard,
 ) -> Result<PaymentCard, String> {
     tracing::info!("updating payment card: {}", id);
-    core.payment_cards()
-        .update(&id, data)
-        .map_err(|e| {
-            tracing::error!("failed to update payment card {}: {}", id, e);
-            e.to_string()
-        })
+    core.payment_cards().update(&id, data).map_err(|e| {
+        tracing::error!("failed to update payment card {}: {}", id, e);
+        e.to_string()
+    })
 }
 
 #[tauri::command]
-fn delete_payment_card(core: tauri::State<'_, SubbyCore>, id: String) -> Result<(), String> {
+fn delete_payment_card(core: tauri::State<'_, KessaiCore>, id: String) -> Result<(), String> {
     tracing::info!("deleting payment card: {}", id);
     core.payment_cards().delete(&id).map_err(|e| {
         tracing::error!("failed to delete payment card {}: {}", id, e);
@@ -568,13 +567,13 @@ fn delete_payment_card(core: tauri::State<'_, SubbyCore>, id: String) -> Result<
 
 #[tauri::command]
 fn transition_subscription_status(
-    core: tauri::State<'_, SubbyCore>,
+    core: tauri::State<'_, KessaiCore>,
     id: String,
     status: String,
 ) -> Result<Subscription, String> {
     tracing::info!("transitioning subscription {} to status: {}", id, status);
-    let new_status = SubscriptionStatus::from_str(&status)
-        .ok_or_else(|| format!("Invalid status: {status}"))?;
+    let new_status =
+        SubscriptionStatus::from_str(&status).ok_or_else(|| format!("Invalid status: {status}"))?;
     core.subscriptions()
         .transition_status(&id, new_status)
         .map_err(|e| {
@@ -585,7 +584,7 @@ fn transition_subscription_status(
 
 #[tauri::command]
 fn get_expiring_trials(
-    core: tauri::State<'_, SubbyCore>,
+    core: tauri::State<'_, KessaiCore>,
     days: Option<i64>,
 ) -> Result<Vec<Subscription>, String> {
     let days = days.unwrap_or(7);
@@ -594,7 +593,7 @@ fn get_expiring_trials(
         tracing::error!("failed to list subscriptions for expiring trials: {}", e);
         e.to_string()
     })?;
-    let trials = subby_core::utils::get_expiring_trials(&subs, days);
+    let trials = kessai_core::utils::get_expiring_trials(&subs, days);
     Ok(trials.into_iter().cloned().collect())
 }
 
@@ -602,7 +601,7 @@ fn get_expiring_trials(
 
 #[tauri::command]
 fn list_price_history(
-    core: tauri::State<'_, SubbyCore>,
+    core: tauri::State<'_, KessaiCore>,
     subscription_id: String,
 ) -> Result<Vec<PriceChange>, String> {
     tracing::debug!("listing price history for: {}", subscription_id);
@@ -616,15 +615,30 @@ fn list_price_history(
 
 #[tauri::command]
 fn get_recent_price_changes(
-    core: tauri::State<'_, SubbyCore>,
+    core: tauri::State<'_, KessaiCore>,
     days: Option<i64>,
 ) -> Result<Vec<PriceChange>, String> {
     let days = days.unwrap_or(90);
     tracing::debug!("getting recent price changes (days: {})", days);
+    core.price_history().list_recent(days).map_err(|e| {
+        tracing::error!("failed to get recent price changes: {}", e);
+        e.to_string()
+    })
+}
+
+#[tauri::command]
+fn list_latest_price_history(
+    core: tauri::State<'_, KessaiCore>,
+    subscription_ids: Vec<String>,
+) -> Result<Vec<PriceChange>, String> {
+    tracing::debug!(
+        "getting latest price changes for {} subscriptions",
+        subscription_ids.len()
+    );
     core.price_history()
-        .list_recent(days)
+        .list_latest_for_subscriptions(&subscription_ids)
         .map_err(|e| {
-            tracing::error!("failed to get recent price changes: {}", e);
+            tracing::error!("failed to get latest price changes: {}", e);
             e.to_string()
         })
 }
@@ -632,7 +646,7 @@ fn get_recent_price_changes(
 // ── Tag commands ──────────────────────────────────────────────────────────
 
 #[tauri::command]
-fn list_tags(core: tauri::State<'_, SubbyCore>) -> Result<Vec<Tag>, String> {
+fn list_tags(core: tauri::State<'_, KessaiCore>) -> Result<Vec<Tag>, String> {
     tracing::debug!("listing tags");
     core.tags().list().map_err(|e| {
         tracing::error!("failed to list tags: {}", e);
@@ -641,7 +655,7 @@ fn list_tags(core: tauri::State<'_, SubbyCore>) -> Result<Vec<Tag>, String> {
 }
 
 #[tauri::command]
-fn create_tag(core: tauri::State<'_, SubbyCore>, data: NewTag) -> Result<Tag, String> {
+fn create_tag(core: tauri::State<'_, KessaiCore>, data: NewTag) -> Result<Tag, String> {
     tracing::info!("creating tag: {}", data.name);
     core.tags().create(data).map_err(|e| {
         tracing::error!("failed to create tag: {}", e);
@@ -651,7 +665,7 @@ fn create_tag(core: tauri::State<'_, SubbyCore>, data: NewTag) -> Result<Tag, St
 
 #[tauri::command]
 fn update_tag(
-    core: tauri::State<'_, SubbyCore>,
+    core: tauri::State<'_, KessaiCore>,
     id: String,
     data: UpdateTag,
 ) -> Result<Tag, String> {
@@ -663,7 +677,7 @@ fn update_tag(
 }
 
 #[tauri::command]
-fn delete_tag(core: tauri::State<'_, SubbyCore>, id: String) -> Result<(), String> {
+fn delete_tag(core: tauri::State<'_, KessaiCore>, id: String) -> Result<(), String> {
     tracing::info!("deleting tag: {}", id);
     core.tags().delete(&id).map_err(|e| {
         tracing::error!("failed to delete tag {}: {}", id, e);
@@ -673,7 +687,7 @@ fn delete_tag(core: tauri::State<'_, SubbyCore>, id: String) -> Result<(), Strin
 
 #[tauri::command]
 fn add_subscription_tag(
-    core: tauri::State<'_, SubbyCore>,
+    core: tauri::State<'_, KessaiCore>,
     subscription_id: String,
     tag_id: String,
 ) -> Result<(), String> {
@@ -688,11 +702,15 @@ fn add_subscription_tag(
 
 #[tauri::command]
 fn remove_subscription_tag(
-    core: tauri::State<'_, SubbyCore>,
+    core: tauri::State<'_, KessaiCore>,
     subscription_id: String,
     tag_id: String,
 ) -> Result<(), String> {
-    tracing::info!("removing tag {} from subscription {}", tag_id, subscription_id);
+    tracing::info!(
+        "removing tag {} from subscription {}",
+        tag_id,
+        subscription_id
+    );
     core.tags()
         .remove_from_subscription(&subscription_id, &tag_id)
         .map_err(|e| {
@@ -703,7 +721,7 @@ fn remove_subscription_tag(
 
 #[tauri::command]
 fn list_subscription_tags(
-    core: tauri::State<'_, SubbyCore>,
+    core: tauri::State<'_, KessaiCore>,
     subscription_id: String,
 ) -> Result<Vec<Tag>, String> {
     tracing::debug!("listing tags for subscription: {}", subscription_id);
@@ -715,11 +733,28 @@ fn list_subscription_tags(
         })
 }
 
+#[tauri::command]
+fn list_subscription_tags_batch(
+    core: tauri::State<'_, KessaiCore>,
+    subscription_ids: Vec<String>,
+) -> Result<Vec<SubscriptionTagLink>, String> {
+    tracing::debug!(
+        "listing tag links for {} subscriptions",
+        subscription_ids.len()
+    );
+    core.tags()
+        .list_links_for_subscriptions(&subscription_ids)
+        .map_err(|e| {
+            tracing::error!("failed to list subscription tag links: {}", e);
+            e.to_string()
+        })
+}
+
 // ── Analytics commands ─────────────────────────────────────────────────────
 
 #[tauri::command]
 fn get_monthly_spending(
-    core: tauri::State<'_, SubbyCore>,
+    core: tauri::State<'_, KessaiCore>,
     months: Option<i32>,
 ) -> Result<Vec<MonthlySpend>, String> {
     tracing::debug!("getting monthly spending");
@@ -732,35 +767,26 @@ fn get_monthly_spending(
 }
 
 #[tauri::command]
-fn get_year_summary(
-    core: tauri::State<'_, SubbyCore>,
-    year: i32,
-) -> Result<YearSummary, String> {
+fn get_year_summary(core: tauri::State<'_, KessaiCore>, year: i32) -> Result<YearSummary, String> {
     tracing::debug!("getting year summary for {}", year);
-    core.analytics()
-        .year_summary(year)
-        .map_err(|e| {
-            tracing::error!("failed to get year summary: {}", e);
-            e.to_string()
-        })
+    core.analytics().year_summary(year).map_err(|e| {
+        tracing::error!("failed to get year summary: {}", e);
+        e.to_string()
+    })
 }
 
 #[tauri::command]
-fn get_spending_velocity(
-    core: tauri::State<'_, SubbyCore>,
-) -> Result<SpendingVelocity, String> {
+fn get_spending_velocity(core: tauri::State<'_, KessaiCore>) -> Result<SpendingVelocity, String> {
     tracing::debug!("getting spending velocity");
-    core.analytics()
-        .spending_velocity()
-        .map_err(|e| {
-            tracing::error!("failed to get spending velocity: {}", e);
-            e.to_string()
-        })
+    core.analytics().spending_velocity().map_err(|e| {
+        tracing::error!("failed to get spending velocity: {}", e);
+        e.to_string()
+    })
 }
 
 #[tauri::command]
 fn get_category_spending(
-    core: tauri::State<'_, SubbyCore>,
+    core: tauri::State<'_, KessaiCore>,
     months: Option<i32>,
 ) -> Result<Vec<CategorySpend>, String> {
     tracing::debug!("getting category spending");
@@ -772,11 +798,10 @@ fn get_category_spending(
         })
 }
 
-
 // ── Settings commands ──────────────────────────────────────────────────────
 
 #[tauri::command]
-fn get_settings(core: tauri::State<'_, SubbyCore>) -> Result<Settings, String> {
+fn get_settings(core: tauri::State<'_, KessaiCore>) -> Result<Settings, String> {
     tracing::debug!("getting settings");
     core.settings().get().map_err(|e| {
         tracing::error!("failed to get settings: {}", e);
@@ -786,7 +811,7 @@ fn get_settings(core: tauri::State<'_, SubbyCore>) -> Result<Settings, String> {
 
 #[tauri::command]
 fn update_settings(
-    core: tauri::State<'_, SubbyCore>,
+    core: tauri::State<'_, KessaiCore>,
     data: UpdateSettings,
 ) -> Result<Settings, String> {
     tracing::info!("updating settings");
@@ -799,23 +824,24 @@ fn update_settings(
 // ── Data management commands ───────────────────────────────────────────────
 
 #[tauri::command]
-fn export_data(core: tauri::State<'_, SubbyCore>) -> Result<BackupData, String> {
+fn export_data(core: tauri::State<'_, KessaiCore>) -> Result<BackupData, String> {
     tracing::info!("exporting data");
-    core.data_management()
-        .export_data()
-        .map_err(|e| {
-            tracing::error!("failed to export data: {}", e);
-            e.to_string()
-        })
+    core.data_management().export_data().map_err(|e| {
+        tracing::error!("failed to export data: {}", e);
+        e.to_string()
+    })
 }
 
 #[tauri::command]
 fn import_data(
-    core: tauri::State<'_, SubbyCore>,
+    core: tauri::State<'_, KessaiCore>,
     data: BackupData,
     clear_existing: Option<bool>,
 ) -> Result<ImportResult, String> {
-    tracing::info!("importing data (clear_existing: {})", clear_existing.unwrap_or(false));
+    tracing::info!(
+        "importing data (clear_existing: {})",
+        clear_existing.unwrap_or(false)
+    );
     core.data_management()
         .import_data(data, clear_existing.unwrap_or(false))
         .map_err(|e| {
@@ -827,7 +853,7 @@ fn import_data(
 // ── System tray helpers ─────────────────────────────────────────────────────
 
 /// Count subscriptions with `next_payment_date` within the next 7 days.
-fn count_upcoming_payments(core: &SubbyCore) -> usize {
+fn count_upcoming_payments(core: &KessaiCore) -> usize {
     let subs = match core.subscriptions().list() {
         Ok(s) => s,
         Err(_) => return 0,
@@ -855,7 +881,7 @@ fn build_tray_menu(app: &tauri::AppHandle, count: usize) -> tauri::Result<()> {
         format!("Upcoming payments: {}", count)
     };
 
-    let open_item = MenuItemBuilder::with_id("open", "Open Subby").build(app)?;
+    let open_item = MenuItemBuilder::with_id("open", "Open Kessai").build(app)?;
     let upcoming_item = MenuItemBuilder::with_id("upcoming", &upcoming_label)
         .enabled(false)
         .build(app)?;
@@ -873,9 +899,9 @@ fn build_tray_menu(app: &tauri::AppHandle, count: usize) -> tauri::Result<()> {
     if let Some(tray) = app.tray_by_id("main-tray") {
         tray.set_menu(Some(menu))?;
         let tooltip = if count == 0 {
-            "Subby".to_string()
+            "Kessai".to_string()
         } else {
-            format!("Subby — {} upcoming", count)
+            format!("Kessai — {} upcoming", count)
         };
         tray.set_tooltip(Some(&tooltip))?;
     }
@@ -884,7 +910,10 @@ fn build_tray_menu(app: &tauri::AppHandle, count: usize) -> tauri::Result<()> {
 }
 
 #[tauri::command]
-fn update_tray_badge(app: tauri::AppHandle, core: tauri::State<'_, SubbyCore>) -> Result<(), String> {
+fn update_tray_badge(
+    app: tauri::AppHandle,
+    core: tauri::State<'_, KessaiCore>,
+) -> Result<(), String> {
     let count = count_upcoming_payments(&core);
     build_tray_menu(&app, count).map_err(|e| e.to_string())
 }
@@ -909,7 +938,16 @@ fn get_updater_context() -> Result<UpdaterContext, String> {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let mut builder = tauri::Builder::default();
+
+    #[cfg(desktop)]
+    {
+        builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            show_main_window(app);
+        }));
+    }
+
+    builder
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_fs::init())
@@ -927,18 +965,18 @@ pub fn run() {
             let logs_dir = app_data_dir.join("logs");
             fs::create_dir_all(&logs_dir).expect("Failed to create logs dir");
 
-            let file_appender = tracing_appender::rolling::daily(&logs_dir, "subby.log");
+            let file_appender = tracing_appender::rolling::daily(&logs_dir, "kessai.log");
             let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
 
             // Keep the guard alive for the lifetime of the app
             // by leaking it (it's a singleton that lives forever anyway)
             std::mem::forget(_guard);
 
-            let env_filter = tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| {
+            let env_filter =
+                tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
                     tracing_subscriber::EnvFilter::new("info")
-                        .add_directive("subby_lib=debug".parse().unwrap())
-                        .add_directive("subby_core=debug".parse().unwrap())
+                        .add_directive("kessai_lib=debug".parse().unwrap())
+                        .add_directive("kessai_core=debug".parse().unwrap())
                 });
 
             use tracing_subscriber::layer::SubscriberExt;
@@ -946,24 +984,21 @@ pub fn run() {
 
             tracing_subscriber::registry()
                 .with(env_filter)
-                .with(
-                    tracing_subscriber::fmt::layer()
-                        .with_writer(std::io::stderr)
-                )
+                .with(tracing_subscriber::fmt::layer().with_writer(std::io::stderr))
                 .with(
                     tracing_subscriber::fmt::layer()
                         .with_writer(non_blocking)
-                        .with_ansi(false)
+                        .with_ansi(false),
                 )
                 .init();
 
-            tracing::info!("Subby starting up");
+            tracing::info!("Kessai starting up");
             tracing::info!("Logs directory: {}", logs_dir.display());
 
-            let db_path = app_data_dir.join("subby.db");
+            let db_path = app_data_dir.join("kessai.db");
             tracing::info!("Opening database at: {}", db_path.display());
 
-            let core = SubbyCore::new(&db_path).expect("Failed to initialize SubbyCore database");
+            let core = KessaiCore::new(&db_path).expect("Failed to initialize KessaiCore database");
             let upcoming_count = count_upcoming_payments(&core);
 
             app.manage(core);
@@ -978,14 +1013,12 @@ pub fn run() {
                 format!("Upcoming payments: {}", upcoming_count)
             };
 
-            let open_item = MenuItemBuilder::with_id("open", "Open Subby")
-                .build(&handle)?;
+            let open_item = MenuItemBuilder::with_id("open", "Open Kessai").build(&handle)?;
             let upcoming_item = MenuItemBuilder::with_id("upcoming", &upcoming_label)
                 .enabled(false)
                 .build(&handle)?;
             let separator = PredefinedMenuItem::separator(&handle)?;
-            let quit_item = MenuItemBuilder::with_id("quit", "Quit")
-                .build(&handle)?;
+            let quit_item = MenuItemBuilder::with_id("quit", "Quit").build(&handle)?;
 
             let menu = MenuBuilder::new(&handle)
                 .item(&open_item)
@@ -995,9 +1028,9 @@ pub fn run() {
                 .build()?;
 
             let tooltip = if upcoming_count == 0 {
-                "Subby".to_string()
+                "Kessai".to_string()
             } else {
-                format!("Subby — {} upcoming", upcoming_count)
+                format!("Kessai — {} upcoming", upcoming_count)
             };
 
             TrayIconBuilder::with_id("main-tray")
@@ -1006,11 +1039,7 @@ pub fn run() {
                 .menu(&menu)
                 .on_menu_event(move |app, event| match event.id().as_ref() {
                     "open" => {
-                        if let Some(window) = app.get_webview_window("main") {
-                            let _ = window.show();
-                            let _ = window.unminimize();
-                            let _ = window.set_focus();
-                        }
+                        show_main_window(app);
                     }
                     "quit" => {
                         QUITTING.store(true, Ordering::SeqCst);
@@ -1025,24 +1054,18 @@ pub fn run() {
                     } = event
                     {
                         let app = tray.app_handle();
-                        if let Some(window) = app.get_webview_window("main") {
-                            let _ = window.show();
-                            let _ = window.unminimize();
-                            let _ = window.set_focus();
-                        }
+                        show_main_window(&app);
                     }
                 })
                 .build(app)?;
 
             // ── Periodic tray badge refresh (every 5 minutes) ──────────────
             let periodic_handle = app.handle().clone();
-            std::thread::spawn(move || {
-                loop {
-                    std::thread::sleep(std::time::Duration::from_secs(300));
-                    if let Some(core) = periodic_handle.try_state::<SubbyCore>() {
-                        let count = count_upcoming_payments(&core);
-                        let _ = build_tray_menu(&periodic_handle, count);
-                    }
+            std::thread::spawn(move || loop {
+                std::thread::sleep(std::time::Duration::from_secs(300));
+                if let Some(core) = periodic_handle.try_state::<KessaiCore>() {
+                    let count = count_upcoming_payments(&core);
+                    let _ = build_tray_menu(&periodic_handle, count);
                 }
             });
 
@@ -1094,6 +1117,7 @@ pub fn run() {
             // Price history
             list_price_history,
             get_recent_price_changes,
+            list_latest_price_history,
             // Analytics
             get_monthly_spending,
             get_year_summary,
@@ -1112,6 +1136,7 @@ pub fn run() {
             add_subscription_tag,
             remove_subscription_tag,
             list_subscription_tags,
+            list_subscription_tags_batch,
             // Settings
             get_settings,
             update_settings,

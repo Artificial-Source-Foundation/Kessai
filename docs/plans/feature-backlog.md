@@ -91,7 +91,7 @@
 
 ## Competitive Context
 
-| Dimension | Market Leader | Subby Position |
+| Dimension | Market Leader | Kessai Position |
 |-----------|--------------|----------------|
 | Auto-detection | Rocket Money, Trim | Manual entry (privacy advantage) |
 | Bill negotiation | Rocket Money, Pine AI | Out of scope (local-first) |

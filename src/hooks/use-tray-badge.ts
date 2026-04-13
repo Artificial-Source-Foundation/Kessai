@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { invoke } from '@tauri-apps/api/core'
+import { apiInvoke } from '@/lib/api'
 import { useSubscriptionStore } from '@/stores/subscription-store'
 
 /**
@@ -10,7 +10,12 @@ export function useTrayBadge() {
   const subscriptions = useSubscriptionStore((s) => s.subscriptions)
 
   useEffect(() => {
-    invoke('update_tray_badge').catch(() => {
+    // `update_tray_badge` is Tauri-only; avoid web-mode adapter errors.
+    if (typeof window === 'undefined' || !('__TAURI_INTERNALS__' in window)) {
+      return
+    }
+
+    apiInvoke('update_tray_badge').catch(() => {
       // Tray may not be available (e.g., web mode)
     })
   }, [subscriptions])

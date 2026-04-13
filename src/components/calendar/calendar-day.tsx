@@ -45,8 +45,8 @@ const PaymentLogo = memo(function PaymentLogo({
 
   return (
     <div
-      className="flex h-5 w-5 shrink-0 items-center justify-center text-[9px] font-bold text-white"
-      style={{ backgroundColor: color || '#bf5af2', borderRadius: '3px' }}
+      className="text-primary flex h-5 w-5 shrink-0 items-center justify-center text-[9px] font-bold"
+      style={{ backgroundColor: color || 'var(--color-surface-highest)', borderRadius: '3px' }}
     >
       {name.charAt(0).toUpperCase()}
     </div>
@@ -105,7 +105,7 @@ export const CalendarDay = memo(function CalendarDay({
       {/* Payment items */}
       <div className="flex flex-1 flex-col gap-1">
         {visiblePayments.map((p) => {
-          const color = p.subscription.color || '#bf5af2'
+          const color = p.subscription.color || 'var(--color-primary)'
           const isPaidOrSkipped = p.isPaid || p.isSkipped
 
           return (
@@ -116,7 +116,9 @@ export const CalendarDay = memo(function CalendarDay({
                 isPaidOrSkipped && 'opacity-50'
               )}
               style={{
-                backgroundColor: `${color}15`,
+                backgroundColor: p.subscription.color
+                  ? `${color}15`
+                  : 'var(--color-surface-highest)',
                 borderRadius: '3px',
               }}
             >

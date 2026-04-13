@@ -1,6 +1,6 @@
 # State Management
 
-Subby uses Zustand stores with focused responsibilities.
+Kessai uses Zustand stores with focused responsibilities.
 
 ## Stores
 

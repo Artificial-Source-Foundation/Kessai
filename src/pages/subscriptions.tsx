@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, lazy, Suspense } from 'react'
 import { toast } from 'sonner'
+import { useShallow } from 'zustand/react/shallow'
 import dayjs from 'dayjs'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import { Plus, Search } from 'lucide-react'
@@ -21,9 +22,16 @@ import { SORT_LABELS } from '@/components/subscriptions/subscriptions-sort'
 import type { SortOption } from '@/components/subscriptions/subscriptions-sort'
 import { CancelledSubscriptionsSection } from '@/components/subscriptions/cancelled-subscriptions-section'
 import { useTagStore } from '@/stores/tag-store'
+import { usePriceHistoryStore } from '@/stores/price-history-store'
 import { SubscriptionsSkeleton } from '@/components/subscriptions/subscriptions-skeleton'
+import { WebBackendBanner } from '@/components/ui/web-backend-banner'
 import type { CurrencyCode } from '@/lib/currency'
-import { isBillableStatus, calculateNormalizedAmount } from '@/types/subscription'
+import type { Tag } from '@/types/tag'
+import {
+  compareSubscriptionDisplayPriority,
+  isBillableStatus,
+  calculateNormalizedAmount,
+} from '@/types/subscription'
 import type { Subscription } from '@/types/subscription'
 
 dayjs.extend(isSameOrBefore)
@@ -42,17 +50,27 @@ const CancelDialog = lazy(() =>
 )
 
 export function Subscriptions() {
-  const { subscriptions, isLoading, remove, toggleActive, togglePinned, cancel, getCategory } =
-    useSubscriptions()
+  const {
+    subscriptions,
+    isLoading,
+    error,
+    remove,
+    toggleActive,
+    togglePinned,
+    cancel,
+    getCategory,
+  } = useSubscriptions()
   const categories = useCategoryStore((state) => state.categories)
+  const categoriesError = useCategoryStore((state) => state.error)
   const { openSubscriptionDialog, costNormalization } = useUiStore()
-  const { settings, fetch: fetchSettings } = useSettingsStore()
+  const fetchSettings = useSettingsStore((state) => state.fetch)
+  const settingsError = useSettingsStore((state) => state.error)
+  const currency = useSettingsStore((state) => (state.settings?.currency || 'USD') as CurrencyCode)
   const { markAsPaid } = usePaymentStore()
-  const currency = (settings?.currency || 'USD') as CurrencyCode
 
   const [viewMode, setViewMode] = useState<'grid' | 'list' | 'bento'>(() => {
     try {
-      const saved = localStorage.getItem('subby-view-mode')
+      const saved = localStorage.getItem('kessai-view-mode')
       if (saved === 'grid' || saved === 'list' || saved === 'bento') return saved
     } catch {
       // ignore
@@ -62,11 +80,21 @@ export function Subscriptions() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [selectedTags, setSelectedTags] = useState<string[]>([])
-  const { tags: allTags, fetch: fetchTags, fetchForSubscription } = useTagStore()
+  const { tags: allTags, fetch: fetchTags, fetchForSubscriptions, error: tagsError } = useTagStore()
+  const { latestBySubscription, fetchLatestForSubscriptions } = usePriceHistoryStore(
+    useShallow((state) => ({
+      latestBySubscription: state.latestBySubscription,
+      fetchLatestForSubscriptions: state.fetchLatestForSubscriptions,
+    }))
+  )
   const [subscriptionTagMap, setSubscriptionTagMap] = useState<Record<string, string[]>>({})
+  const tagById = useMemo<Record<string, Tag>>(
+    () => Object.fromEntries(allTags.map((tag) => [tag.id, tag])),
+    [allTags]
+  )
   const [sortOption, setSortOption] = useState<SortOption>(() => {
     try {
-      const saved = localStorage.getItem('subby-sort-option')
+      const saved = localStorage.getItem('kessai-sort-option')
       if (saved && saved in SORT_LABELS) return saved as SortOption
     } catch {
       // ignore
@@ -77,6 +105,10 @@ export function Subscriptions() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [cancelTarget, setCancelTarget] = useState<Subscription | null>(null)
   const [isCancelling, setIsCancelling] = useState(false)
+  const subscriptionIdsKey = useMemo(
+    () => JSON.stringify(subscriptions.map((sub) => sub.id).sort()),
+    [subscriptions]
+  )
 
   useEffect(() => {
     fetchSettings()
@@ -88,28 +120,27 @@ export function Subscriptions() {
   }, [fetchTags])
 
   useEffect(() => {
-    if (subscriptions.length === 0) return
+    if (!subscriptionIdsKey) {
+      setSubscriptionTagMap({})
+      return
+    }
     let cancelled = false
 
     const loadTagMap = async () => {
-      const map: Record<string, string[]> = {}
-      for (const sub of subscriptions) {
-        const tags = await fetchForSubscription(sub.id)
-        if (cancelled) return
-        map[sub.id] = tags.map((t) => t.id)
-      }
-      if (!cancelled) setSubscriptionTagMap(map)
+      const map = await fetchForSubscriptions(JSON.parse(subscriptionIdsKey) as string[])
+      if (cancelled) return
+      setSubscriptionTagMap(map)
     }
 
     loadTagMap()
     return () => {
       cancelled = true
     }
-  }, [subscriptions, fetchForSubscription])
+  }, [subscriptionIdsKey, fetchForSubscriptions])
 
   useEffect(() => {
     try {
-      localStorage.setItem('subby-view-mode', viewMode)
+      localStorage.setItem('kessai-view-mode', viewMode)
     } catch {
       // ignore
     }
@@ -117,7 +148,7 @@ export function Subscriptions() {
 
   useEffect(() => {
     try {
-      localStorage.setItem('subby-sort-option', sortOption)
+      localStorage.setItem('kessai-sort-option', sortOption)
     } catch {
       // ignore
     }
@@ -128,6 +159,15 @@ export function Subscriptions() {
     () => subscriptions.filter((sub) => sub.status !== 'cancelled'),
     [subscriptions]
   )
+  const activeSubscriptionIdsKey = useMemo(
+    () => JSON.stringify(activeSubscriptions.map((sub) => sub.id).sort()),
+    [activeSubscriptions]
+  )
+
+  useEffect(() => {
+    if (!activeSubscriptionIdsKey) return
+    void fetchLatestForSubscriptions(JSON.parse(activeSubscriptionIdsKey) as string[])
+  }, [activeSubscriptionIdsKey, fetchLatestForSubscriptions])
 
   const cancelledSubscriptions = useMemo(
     () =>
@@ -166,9 +206,8 @@ export function Subscriptions() {
     })
 
     return filtered.sort((a, b) => {
-      // Pinned subscriptions always come first
-      if (a.is_pinned && !b.is_pinned) return -1
-      if (!a.is_pinned && b.is_pinned) return 1
+      const priority = compareSubscriptionDisplayPriority(a, b)
+      if (priority !== 0) return priority
 
       switch (sortOption) {
         case 'name-asc':
@@ -215,7 +254,9 @@ export function Subscriptions() {
   // Separate totals by billing cycle (converted to display currency)
   const monthlySubsTotal = useMemo(() => {
     return subscriptions
-      .filter((sub) => isBillableStatus(sub.status) && sub.billing_cycle === 'monthly')
+      .filter(
+        (sub) => sub.is_active && isBillableStatus(sub.status) && sub.billing_cycle === 'monthly'
+      )
       .reduce((total, sub) => {
         const amount = sub.amount / Math.max(sub.shared_count, 1)
         const subCurrency = (sub.currency || currency) as CurrencyCode
@@ -227,7 +268,9 @@ export function Subscriptions() {
 
   const yearlySubsTotal = useMemo(() => {
     return subscriptions
-      .filter((sub) => isBillableStatus(sub.status) && sub.billing_cycle === 'yearly')
+      .filter(
+        (sub) => sub.is_active && isBillableStatus(sub.status) && sub.billing_cycle === 'yearly'
+      )
       .reduce((total, sub) => {
         const amount = sub.amount / Math.max(sub.shared_count, 1)
         const subCurrency = (sub.currency || currency) as CurrencyCode
@@ -241,7 +284,7 @@ export function Subscriptions() {
   const normalizedTotal = useMemo(() => {
     if (costNormalization === 'as-is') return null
     return subscriptions
-      .filter((sub) => isBillableStatus(sub.status))
+      .filter((sub) => sub.is_active && isBillableStatus(sub.status))
       .reduce((total, sub) => {
         const amount = sub.amount / Math.max(sub.shared_count, 1)
         const subCurrency = (sub.currency || currency) as CurrencyCode
@@ -353,6 +396,8 @@ export function Subscriptions() {
           openSubscriptionDialog={() => openSubscriptionDialog()}
         />
 
+        <WebBackendBanner error={error || settingsError || categoriesError || tagsError} />
+
         {activeSubscriptions.length > 0 && (
           <SubscriptionsToolbar
             searchQuery={searchQuery}
@@ -424,8 +469,9 @@ export function Subscriptions() {
             onTogglePinned={handleTogglePinned}
             onMarkAsPaid={handleMarkAsPaid}
             canMarkAsPaid={canMarkAsPaid}
-            allTags={allTags}
+            tagById={tagById}
             subscriptionTagMap={subscriptionTagMap}
+            latestPriceChangeMap={latestBySubscription}
           />
         ) : (
           <SubscriptionsListView
@@ -439,8 +485,9 @@ export function Subscriptions() {
             onCancel={setCancelTarget}
             onToggleActive={handleToggleActive}
             onTogglePinned={handleTogglePinned}
-            allTags={allTags}
+            tagById={tagById}
             subscriptionTagMap={subscriptionTagMap}
+            latestPriceChangeMap={latestBySubscription}
           />
         )}
 

@@ -12,7 +12,7 @@ function isTauri(): boolean {
 }
 
 const CHECK_INTERVAL_MS = 60 * 60 * 1000 // 1 hour
-const SENT_NOTIFICATIONS_KEY = 'subby-sent-notifications'
+const SENT_NOTIFICATIONS_KEY = 'kessai-sent-notifications'
 const CLEANUP_THRESHOLD_DAYS = 60
 
 interface SentNotificationRecord {

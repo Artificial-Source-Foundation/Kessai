@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { apiInvoke as invoke } from '@/lib/api'
 import { logger } from '@/lib/logger'
-import type { Tag, NewTag } from '@/types/tag'
+import type { Tag, NewTag, SubscriptionTagLink } from '@/types/tag'
 
 type TagState = {
   tags: Tag[]
@@ -15,6 +15,7 @@ type TagState = {
   addToSubscription: (subscriptionId: string, tagId: string) => Promise<void>
   removeFromSubscription: (subscriptionId: string, tagId: string) => Promise<void>
   fetchForSubscription: (subscriptionId: string) => Promise<Tag[]>
+  fetchForSubscriptions: (subscriptionIds: string[]) => Promise<Record<string, string[]>>
 }
 
 export const useTagStore = create<TagState>((set, get) => ({
@@ -123,6 +124,34 @@ export const useTagStore = create<TagState>((set, get) => ({
     } catch (error) {
       console.error('Failed to fetch tags for subscription:', error)
       return []
+    }
+  },
+
+  fetchForSubscriptions: async (subscriptionIds) => {
+    const uniqueSubscriptionIds = [...new Set(subscriptionIds)]
+    if (uniqueSubscriptionIds.length === 0) return {}
+
+    try {
+      const links = await invoke<SubscriptionTagLink[]>('list_subscription_tags_batch', {
+        subscriptionIds: uniqueSubscriptionIds,
+      })
+
+      const map: Record<string, string[]> = Object.fromEntries(
+        uniqueSubscriptionIds.map((subscriptionId) => [subscriptionId, [] as string[]])
+      )
+
+      for (const { subscription_id, tag_id } of links) {
+        if (!map[subscription_id]) {
+          map[subscription_id] = []
+        }
+        map[subscription_id].push(tag_id)
+      }
+
+      return map
+    } catch (error) {
+      set({ error: String(error) })
+      console.error('Failed to fetch tags for subscriptions:', error)
+      return {}
     }
   },
 }))
