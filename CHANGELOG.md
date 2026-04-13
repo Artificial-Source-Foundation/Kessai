@@ -3,6 +3,24 @@
 All notable changes to Subby will be documented in this file.
 
 
+## [0.3.1](https://github.com/Artificial-Source-Foundation/Kessai/compare/v0.3.0...v0.3.1) (2026-04-13)
+
+### Features
+
+* add manual display exchange rates ([47c5fe1](https://github.com/Artificial-Source-Foundation/Kessai/commit/47c5fe15cc993ef2124da9e1777be900feec998e))
+
+### Bug Fixes
+
+* export web api availability helper ([33a8c98](https://github.com/Artificial-Source-Foundation/Kessai/commit/33a8c988bbc85e1ffac0ae8cf4b916ab82e26127))
+* include missing CI dependencies ([2b50f81](https://github.com/Artificial-Source-Foundation/Kessai/commit/2b50f818a7865e1bb0f7c8fb4c590ed72802a48a))
+* override vulnerable lodash version ([c619678](https://github.com/Artificial-Source-Foundation/Kessai/commit/c619678d07590b6e90afa0a9ee08cdcaa7b1ffec))
+* restore Kessai sidebar branding ([107ac32](https://github.com/Artificial-Source-Foundation/Kessai/commit/107ac32d06a419945ee545f3d133944d01599496))
+* update all GitHub URLs to Artificial-Source-Foundation org ([db4ac6f](https://github.com/Artificial-Source-Foundation/Kessai/commit/db4ac6fe9efbec6b934202a9ed89db7339c99823))
+
+### Tests
+
+* align sidebar checks with compact rail ([4a29680](https://github.com/Artificial-Source-Foundation/Kessai/commit/4a296803fa7225412cdef286fe3117a0f225e5bf))
+
 ## [0.3.0](https://github.com/AI-Strategic-Forum/Subby/compare/v0.2.0...v0.3.0) (2026-03-27)
 
 ### Features
