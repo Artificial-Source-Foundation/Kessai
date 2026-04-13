@@ -2,6 +2,19 @@
 
 All notable changes to Kessai will be documented in this file.
 
+
+## [0.4.0](https://github.com/Artificial-Source-Foundation/Kessai/compare/v0.3.1...v0.4.0) (2026-04-13)
+
+### Features
+
+* add unified local installer workflow ([cab7a56](https://github.com/Artificial-Source-Foundation/Kessai/commit/cab7a56770aec27da9c57cc3e4888b00120fd9f8))
+* finalize Kessai rebrand and release prep ([3d8ed57](https://github.com/Artificial-Source-Foundation/Kessai/commit/3d8ed57fb96f6c0ca4a04fec8eb34176b2b17ff0))
+
+### Bug Fixes
+
+* expose updater runtime context ([5b505ea](https://github.com/Artificial-Source-Foundation/Kessai/commit/5b505ea422a393702b12c87c067e926901b49e29))
+* handle unsupported Linux updater installs ([34bbf49](https://github.com/Artificial-Source-Foundation/Kessai/commit/34bbf49437549eb6acb83428959494295f86d05b))
+
 ## [0.3.1](https://github.com/Artificial-Source-Foundation/Kessai/compare/v0.3.0...v0.3.1) (2026-04-13)
 
 ### Features
