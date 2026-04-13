@@ -3,6 +3,12 @@
 All notable changes to Kessai will be documented in this file.
 
 
+## [0.4.1](https://github.com/Artificial-Source-Foundation/Kessai/compare/v0.4.0...v0.4.1) (2026-04-13)
+
+### Bug Fixes
+
+* patch settings and release workflow regressions ([b35dbea](https://github.com/Artificial-Source-Foundation/Kessai/commit/b35dbea869e6ceb95593c3d1d69b1a53f8bd077b))
+
 ## [0.4.0](https://github.com/Artificial-Source-Foundation/Kessai/compare/v0.3.1...v0.4.0) (2026-04-13)
 
 ### Features
