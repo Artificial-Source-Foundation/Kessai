@@ -58,7 +58,7 @@
 
 ### Recommended: Download a Prebuilt Release
 
-Most users should install a prebuilt binary from [Releases](https://github.com/Artificial-Source-Foundation/Kessai/releases). You do **not** need Rust for this.
+Most users should install a prebuilt binary from [Releases](https://github.com/Artificial-Source/Kessai/releases). You do **not** need Rust for this.
 
 | Platform          | What to download | Install                                                     |
 | ----------------- | ---------------- | ----------------------------------------------------------- |
@@ -102,7 +102,7 @@ sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicat
 Build:
 
 ```bash
-git clone https://github.com/Artificial-Source-Foundation/Kessai.git
+git clone https://github.com/Artificial-Source/Kessai.git
 cd Kessai
 pnpm install --reporter=silent
 pnpm tauri build
@@ -118,7 +118,7 @@ pnpm tauri dev
 
 ## CLI & MCP
 
-Prebuilt `kessai-mcp` binaries are also attached to each [Release](https://github.com/Artificial-Source-Foundation/Kessai/releases):
+Prebuilt `kessai-mcp` binaries are also attached to each [Release](https://github.com/Artificial-Source/Kessai/releases):
 
 | Platform                  | What to download                                       | Run              |
 | ------------------------- | ------------------------------------------------------ | ---------------- |
@@ -186,4 +186,4 @@ Browse the full docs set in [`docs/index.md`](./docs/index.md) for tutorials, ta
 
 ## License
 
-[MIT](./LICENSE) -- Built by [Artificial Source Foundation](https://github.com/Artificial-Source-Foundation)
+[MIT](./LICENSE) -- Built by [Artificial Source](https://github.com/Artificial-Source)

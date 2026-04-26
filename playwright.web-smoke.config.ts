@@ -24,7 +24,7 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'pnpm serve:smoke',
+    command: 'node scripts/run-web-smoke.js',
     url: smokeBaseUrl,
     reuseExistingServer: false,
     timeout: 180000,

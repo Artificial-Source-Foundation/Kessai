@@ -46,6 +46,24 @@ Optional database override:
 KESSAI_DB_PATH=/absolute/path/to/kessai.db cargo run -p kessai-web -- --port 3000
 ```
 
+## Reproduce the CI web smoke flow locally
+
+```bash
+pnpm test:e2e:web-smoke
+```
+
+That command uses `pnpm serve:smoke`, which:
+
+- builds `dist/`
+- starts `kessai-web` on port `3001`
+- passes an isolated temporary `--db-path` so your normal app database is not touched
+
+If you want the server without Playwright, run:
+
+```bash
+pnpm serve:smoke
+```
+
 ## Run MCP/CLI locally
 
 CLI examples:

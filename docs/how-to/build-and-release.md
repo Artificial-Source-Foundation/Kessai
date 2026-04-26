@@ -40,6 +40,8 @@ pnpm test:run
 cargo test --workspace
 ```
 
+`pnpm release` now runs the same frontend checks plus `cargo test --workspace` in `.release-it.json` before it starts a real release.
+
 ## Create a release (maintainers)
 
 Repository release process is automated via `release-it` + GitHub Actions.
@@ -55,6 +57,8 @@ Dry run:
 ```bash
 pnpm release:dry
 ```
+
+`pnpm release:dry` uses a wrapper script that restores `package.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml`, and `CHANGELOG.md` after the preview finishes, so the repo does not stay dirty or version-skewed from a dry-run.
 
 Real release:
 

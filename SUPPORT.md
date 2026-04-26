@@ -2,8 +2,8 @@
 
 ## Where to Get Help
 
-- Usage issues and bugs: <https://github.com/Artificial-Source-Foundation/Kessai/issues>
-- Feature requests: <https://github.com/Artificial-Source-Foundation/Kessai/issues>
+- Usage issues and bugs: <https://github.com/Artificial-Source/Kessai/issues>
+- Feature requests: <https://github.com/Artificial-Source/Kessai/issues>
 - Security concerns: see `SECURITY.md`
 
 ## Before Opening an Issue

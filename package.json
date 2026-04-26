@@ -7,11 +7,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Artificial-Source-Foundation/Kessai.git"
+    "url": "https://github.com/Artificial-Source/Kessai.git"
   },
-  "homepage": "https://github.com/Artificial-Source-Foundation/Kessai",
+  "homepage": "https://github.com/Artificial-Source/Kessai",
   "bugs": {
-    "url": "https://github.com/Artificial-Source-Foundation/Kessai/issues"
+    "url": "https://github.com/Artificial-Source/Kessai/issues"
   },
   "keywords": [
     "tauri",
@@ -44,11 +44,11 @@
     "test:installer": "bash scripts/test-installer.sh",
     "prepare": "husky",
     "release": "release-it",
-    "release:dry": "release-it --dry-run",
+    "release:dry": "node scripts/release-dry-run.js",
     "sync-versions": "node scripts/sync-versions.js",
     "serve": "cargo build --release -p kessai-web && pnpm build && ./target/release/kessai-web",
     "serve:dev": "cargo run -p kessai-web -- --dist-dir dist --port 3000",
-    "serve:smoke": "pnpm build && cargo run -p kessai-web -- --dist-dir dist --port 3001"
+    "serve:smoke": "node scripts/run-web-smoke.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

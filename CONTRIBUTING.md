@@ -4,7 +4,7 @@ Thank you for your interest in contributing to Kessai! This document provides gu
 
 ## Reporting Bugs
 
-1. Check existing [Issues](https://github.com/Artificial-Source-Foundation/Kessai/issues) to avoid duplicates
+1. Check existing [Issues](https://github.com/Artificial-Source/Kessai/issues) to avoid duplicates
 2. Use the "bug" label
 3. Include:
    - OS and version
@@ -23,7 +23,7 @@ Thank you for your interest in contributing to Kessai! This document provides gu
 ### Setup
 
 ```bash
-git clone https://github.com/Artificial-Source-Foundation/Kessai.git
+git clone https://github.com/Artificial-Source/Kessai.git
 cd Kessai
 pnpm install
 pnpm tauri dev

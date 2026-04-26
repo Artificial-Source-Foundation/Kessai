@@ -23,7 +23,7 @@ set -euo pipefail
 # ============================================================================
 
 VERSION="2.0.0"
-GITHUB_REPO="Artificial-Source-Foundation/Kessai"
+GITHUB_REPO="Artificial-Source/Kessai"
 
 # Colors
 RED='\033[0;31m'

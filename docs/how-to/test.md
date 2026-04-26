@@ -46,6 +46,33 @@ cargo test --workspace
 pnpm test:e2e
 ```
 
+## Run the CI-style web smoke test locally
+
+Install the browser once if needed:
+
+```bash
+npx playwright install --with-deps chromium
+```
+
+Then run the dedicated smoke spec:
+
+```bash
+pnpm test:e2e:web-smoke
+```
+
+What this does:
+
+- builds the frontend bundle
+- starts `kessai-web` on port `3001`
+- uses an isolated temporary SQLite database instead of your default app database
+- runs `e2e/web-smoke.spec.ts` through `playwright.web-smoke.config.ts`
+
+If you only want to boot the smoke server without Playwright, run:
+
+```bash
+pnpm serve:smoke
+```
+
 For interactive troubleshooting UI:
 
 ```bash

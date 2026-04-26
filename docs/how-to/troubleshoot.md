@@ -114,7 +114,7 @@ When filing an issue, include:
 - Error output
 - Whether you were in desktop mode, web mode, or MCP mode
 
-Issue tracker: <https://github.com/Artificial-Source-Foundation/Kessai/issues>
+Issue tracker: <https://github.com/Artificial-Source/Kessai/issues>
 
 ## See also
 

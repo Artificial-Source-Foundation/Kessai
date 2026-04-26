@@ -6,7 +6,7 @@ Use this page when you want a working install quickly.
 
 Download assets from:
 
-- <https://github.com/Artificial-Source-Foundation/Kessai/releases>
+- <https://github.com/Artificial-Source/Kessai/releases>
 
 ### Desktop packages by platform
 
@@ -43,7 +43,7 @@ sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicat
 Build and run:
 
 ```bash
-git clone https://github.com/Artificial-Source-Foundation/Kessai.git
+git clone https://github.com/Artificial-Source/Kessai.git
 cd Kessai
 pnpm install --reporter=silent
 pnpm tauri dev

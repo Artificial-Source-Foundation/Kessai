@@ -45,7 +45,7 @@
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDg1RDU1RTJGNTg3MTlBNkIKUldScm1uRllMMTdWaFNoUU5xMkdiWDUwZDJxUlBCQmU4UUdqV2xZckdONlFORHpQenhLUkJxeUcK",
       "endpoints": [
-        "https://github.com/Artificial-Source-Foundation/Kessai/releases/latest/download/latest.json"
+        "https://github.com/Artificial-Source/Kessai/releases/latest/download/latest.json"
       ]
     }
   }

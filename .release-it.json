@@ -13,7 +13,7 @@
     "publish": false
   },
   "hooks": {
-    "before:init": ["pnpm check", "pnpm test:run"],
+    "before:init": ["pnpm check", "pnpm test:run", "cargo test --workspace"],
     "after:bump": "pnpm run sync-versions"
   },
   "plugins": {
