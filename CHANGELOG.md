@@ -3,6 +3,13 @@
 All notable changes to Kessai will be documented in this file.
 
 
+## [0.4.3](https://github.com/Artificial-Source/Kessai/compare/v0.4.2...v0.4.3) (2026-04-26)
+
+### Bug Fixes
+
+* polish desktop titlebar and xdg paths ([e99c113](https://github.com/Artificial-Source/Kessai/commit/e99c11379bb5db667b631d6ede7cf367da52f3f1))
+* update release links and checks ([12405ee](https://github.com/Artificial-Source/Kessai/commit/12405eed3e13b1e13e874a9cbd38a0081cbf5b69))
+
 ## [0.4.2](https://github.com/Artificial-Source-Foundation/Kessai/compare/v0.4.1...v0.4.2) (2026-04-14)
 
 ### Bug Fixes
