@@ -11,13 +11,13 @@ set -euo pipefail
 # Default: Downloads pre-built binary from GitHub Releases (fast, ~10s)
 # Fallback: Builds from source if no release available (slower, ~2min)
 #
-# Files installed:
-#   ~/.local/bin/kessai                              (unified launcher)
-#   ~/.local/bin/kessai-desktop                      (desktop app)
-#   ~/.local/bin/kessai-mcp                          (CLI + MCP server, source installs)
-#   ~/.local/bin/kessai-web                          (web server, source installs)
-#   ~/.local/share/applications/kessai.desktop       (desktop entry)
-#   ~/.local/share/icons/hicolor/128x128/apps/kessai.png  (icon)
+# Files installed by default:
+#   ${XDG_BIN_HOME:-~/.local/bin}/kessai                         (unified launcher)
+#   ${XDG_BIN_HOME:-~/.local/bin}/kessai-desktop                 (desktop app)
+#   ${XDG_BIN_HOME:-~/.local/bin}/kessai-mcp                     (CLI + MCP server, source installs)
+#   ${XDG_BIN_HOME:-~/.local/bin}/kessai-web                     (web server, source installs)
+#   ${XDG_DATA_HOME:-~/.local/share}/applications/kessai.desktop (desktop entry)
+#   ${XDG_DATA_HOME:-~/.local/share}/icons/hicolor/128x128/apps/kessai.png (icon)
 #
 # To uninstall: ./uninstall.sh
 # ============================================================================
@@ -122,6 +122,12 @@ cleanup() {
 trap cleanup INT TERM
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+XDG_BIN_HOME="${XDG_BIN_HOME:-$HOME/.local/bin}"
+BIN_DIR="$XDG_BIN_HOME"
+APPLICATIONS_DIR="$XDG_DATA_HOME/applications"
+ICON_THEME_DIR="$XDG_DATA_HOME/icons/hicolor"
+ICON_DIR="$ICON_THEME_DIR/128x128/apps"
 
 # Default options
 DRY_RUN=false
@@ -150,17 +156,17 @@ ${BOLD}EXAMPLES:${NC}
 ${BOLD}WHAT THIS SCRIPT DOES:${NC}
     Default (pre-built):
       1. Downloads the latest release from GitHub
-      2. Extracts the desktop app to ~/.local/bin/kessai-desktop
-      3. Installs a unified ~/.local/bin/kessai launcher
+      2. Extracts the desktop app to $BIN_DIR/kessai-desktop
+      3. Installs a unified $BIN_DIR/kessai launcher
       4. Creates desktop menu entry + icon
 
     From source (--from-source):
       1. Checks for build tools (pnpm, cargo/rust)
       2. Installs missing Tauri build dependencies (one-time, needs sudo)
       3. Builds the app with 'pnpm tauri build'
-      4. Copies the desktop app to ~/.local/bin/kessai-desktop
-      5. Copies kessai-mcp and kessai-web to ~/.local/bin/
-      6. Installs a unified ~/.local/bin/kessai launcher
+      4. Copies the desktop app to $BIN_DIR/kessai-desktop
+      5. Copies kessai-mcp and kessai-web to $BIN_DIR/
+      6. Installs a unified $BIN_DIR/kessai launcher
       7. Creates desktop menu entry + icon
 
 ${BOLD}SUPPORTED DISTROS:${NC}
@@ -168,13 +174,13 @@ ${BOLD}SUPPORTED DISTROS:${NC}
     Fedora, RHEL, CentOS, Nobara (dnf)
 
 ${BOLD}FILES CREATED:${NC}
-    Desktop app (all in \$HOME, no sudo):
-      ~/.local/bin/kessai
-      ~/.local/bin/kessai-desktop
-      ~/.local/bin/kessai-mcp
-      ~/.local/bin/kessai-web
-      ~/.local/share/applications/kessai.desktop
-      ~/.local/share/icons/hicolor/128x128/apps/kessai.png
+    Desktop app (XDG user dirs, no sudo):
+      $BIN_DIR/kessai
+      $BIN_DIR/kessai-desktop
+      $BIN_DIR/kessai-mcp
+      $BIN_DIR/kessai-web
+      $APPLICATIONS_DIR/kessai.desktop
+      $ICON_DIR/kessai.png
 
 ${BOLD}TO UNINSTALL:${NC}
     ./uninstall.sh
@@ -408,8 +414,8 @@ if [[ "$FROM_SOURCE" == "false" ]]; then
     if [[ "$DRY_RUN" == "true" ]]; then
         printf "\r\033[K" >&2
         print_dry "Would download latest release from GitHub"
-        print_dry "Would install desktop app to ~/.local/bin/kessai-desktop"
-        print_dry "Would install ~/.local/bin/kessai launcher"
+        print_dry "Would install desktop app to $BIN_DIR/kessai-desktop"
+        print_dry "Would install $BIN_DIR/kessai launcher"
     else
         if try_download_binary; then
             printf "\r\033[K" >&2
@@ -651,7 +657,7 @@ if [[ "$FROM_SOURCE" == "true" && -z "$BINARY_PATH" ]]; then
 fi
 
 # ============================================================================
-# Install to ~/.local
+# Install to XDG locations
 # ============================================================================
 # Icon source: prefer transparent desktop asset, then fall back to Tauri icon.
 if [[ -z "$ICON_SRC" && -f "$SCRIPT_DIR/public/icon-transparent.png" ]]; then
@@ -661,40 +667,38 @@ elif [[ -z "$ICON_SRC" && -f "$SCRIPT_DIR/src-tauri/icons/128x128.png" ]]; then
 fi
 
 echo ""
-print_step "Installing to ~/.local (no sudo needed)..."
+print_step "Installing to XDG user directories (no sudo needed)..."
 
 if [[ "$DRY_RUN" == "true" ]]; then
-    print_dry "Would copy desktop app to ~/.local/bin/kessai-desktop"
-    print_dry "Would install ~/.local/bin/kessai launcher"
+    print_dry "Would copy desktop app to $BIN_DIR/kessai-desktop"
+    print_dry "Would install $BIN_DIR/kessai launcher"
     if [[ "$FROM_SOURCE" == "true" ]]; then
-        print_dry "Would copy kessai-mcp and kessai-web to ~/.local/bin/"
+        print_dry "Would copy kessai-mcp and kessai-web to $BIN_DIR/"
     fi
-    print_dry "Would create desktop entry"
-    print_dry "Would install icon"
+    print_dry "Would create desktop entry at $APPLICATIONS_DIR/kessai.desktop"
+    print_dry "Would install icon at $ICON_DIR/kessai.png"
 else
     draw_progress 92 "Installing binaries..." 5
 
-    mkdir -p "$HOME/.local/bin"
+    mkdir -p "$BIN_DIR"
     if [[ "${BINARY_IS_APPIMAGE:-false}" == "true" ]]; then
-        cp "$BINARY_PATH" "$HOME/.local/bin/kessai-desktop"
+        cp "$BINARY_PATH" "$BIN_DIR/kessai-desktop"
     else
-        cp "$BINARY_PATH" "$HOME/.local/bin/kessai-desktop"
+        cp "$BINARY_PATH" "$BIN_DIR/kessai-desktop"
     fi
-    chmod +x "$HOME/.local/bin/kessai-desktop"
+    chmod +x "$BIN_DIR/kessai-desktop"
 
-    cp "$SCRIPT_DIR/scripts/kessai" "$HOME/.local/bin/kessai"
-    chmod +x "$HOME/.local/bin/kessai"
+    cp "$SCRIPT_DIR/scripts/kessai" "$BIN_DIR/kessai"
+    chmod +x "$BIN_DIR/kessai"
 
     if [[ "$FROM_SOURCE" == "true" ]]; then
-        cp "$SCRIPT_DIR/target/release/kessai-mcp" "$HOME/.local/bin/kessai-mcp"
-        cp "$SCRIPT_DIR/target/release/kessai-web" "$HOME/.local/bin/kessai-web"
-        chmod +x "$HOME/.local/bin/kessai-mcp" "$HOME/.local/bin/kessai-web"
+        cp "$SCRIPT_DIR/target/release/kessai-mcp" "$BIN_DIR/kessai-mcp"
+        cp "$SCRIPT_DIR/target/release/kessai-web" "$BIN_DIR/kessai-web"
+        chmod +x "$BIN_DIR/kessai-mcp" "$BIN_DIR/kessai-web"
     fi
 
     draw_progress 95 "Installing icon..." 5
 
-    # Icon
-    ICON_DIR="$HOME/.local/share/icons/hicolor/128x128/apps"
     mkdir -p "$ICON_DIR"
     if [[ -n "$ICON_SRC" && -f "$ICON_SRC" ]]; then
         cp "$ICON_SRC" "$ICON_DIR/kessai.png"
@@ -703,13 +707,13 @@ else
     draw_progress 97 "Creating desktop entry..." 5
 
     # Desktop entry
-    mkdir -p "$HOME/.local/share/applications"
-    rm -f "$HOME/.local/share/applications/Kessai.desktop"
-    cat > "$HOME/.local/share/applications/kessai.desktop" << EOF
+    mkdir -p "$APPLICATIONS_DIR"
+    rm -f "$APPLICATIONS_DIR/Kessai.desktop"
+    cat > "$APPLICATIONS_DIR/kessai.desktop" << EOF
 [Desktop Entry]
 Name=Kessai
 Comment=Know where your money flows
-Exec=$HOME/.local/bin/kessai
+Exec=$BIN_DIR/kessai
 Icon=kessai
 Terminal=false
 Type=Application
@@ -718,7 +722,7 @@ EOF
 
     # Update icon cache if available
     if command -v gtk-update-icon-cache &>/dev/null; then
-        gtk-update-icon-cache -f -t "$HOME/.local/share/icons/hicolor" 2>/dev/null || true
+        gtk-update-icon-cache -f -t "$ICON_THEME_DIR" 2>/dev/null || true
     fi
 
     draw_progress 100 "Done!" 5
@@ -732,11 +736,11 @@ EOF
     print_success "Desktop entry created"
 
     # Check PATH
-    if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+    if [[ ":$PATH:" != *":$BIN_DIR:"* ]]; then
         echo ""
-        print_warning "~/.local/bin is not in your PATH"
+        print_warning "$BIN_DIR is not in your PATH"
         print_info "Add this to your shell config (~/.bashrc or ~/.zshrc):"
-        print_info "  export PATH=\"\$HOME/.local/bin:\$PATH\""
+        print_info "  export PATH=\"$BIN_DIR:\$PATH\""
     fi
 fi
 

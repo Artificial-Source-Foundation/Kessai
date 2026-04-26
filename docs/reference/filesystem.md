@@ -4,13 +4,13 @@ This page describes where Kessai stores data and support files for each surface.
 
 ## Desktop app storage
 
-The desktop app uses Tauri's app data directory via `app_handle.path().app_data_dir()` in `src-tauri/src/lib.rs`.
+The desktop app uses Tauri's app data directory via `app_handle.path().app_data_dir()` in `src-tauri/src/lib.rs`. On Linux this honors `XDG_DATA_HOME`, falling back to `~/.local/share`.
 
 ### Typical root paths
 
 | Platform | Root directory |
 | --- | --- |
-| Linux | `~/.local/share/com.asf.kessai/` |
+| Linux | `${XDG_DATA_HOME:-~/.local/share}/com.asf.kessai/` |
 | macOS | `~/Library/Application Support/com.asf.kessai/` |
 | Windows | `%APPDATA%/com.asf.kessai/` |
 
@@ -24,7 +24,7 @@ The desktop app uses Tauri's app data directory via `app_handle.path().app_data_
 
 ## Web server storage
 
-`crates/kessai-web/src/main.rs` resolves its database path like this:
+`crates/kessai-web/src/main.rs` resolves its database path like this. On Linux, `dirs::data_dir()` honors `XDG_DATA_HOME`.
 
 1. `--db-path` or `KESSAI_DB_PATH` if provided.
 2. `dirs::data_dir()/com.asf.kessai/kessai.db`.
@@ -67,16 +67,16 @@ That notification key is not an OS scheduler. It is part of an in-app polling mo
 
 ## Local installer paths
 
-`install.sh`, `uninstall.sh`, and `scripts/kessai` assume a Linux local install layout under `$HOME`.
+`install.sh`, `uninstall.sh`, and `scripts/kessai` use Linux user install locations. `XDG_DATA_HOME` and `XDG_BIN_HOME` are honored when set; the defaults are shown below.
 
 | Path | Purpose |
 | --- | --- |
-| `~/.local/bin/kessai` | Unified launcher |
-| `~/.local/bin/kessai-desktop` | Desktop binary |
-| `~/.local/bin/kessai-mcp` | CLI + MCP binary |
-| `~/.local/bin/kessai-web` | Web server binary |
-| `~/.local/share/applications/kessai.desktop` | Desktop launcher entry |
-| `~/.local/share/icons/hicolor/128x128/apps/kessai.png` | Installed app icon |
+| `${XDG_BIN_HOME:-~/.local/bin}/kessai` | Unified launcher |
+| `${XDG_BIN_HOME:-~/.local/bin}/kessai-desktop` | Desktop binary |
+| `${XDG_BIN_HOME:-~/.local/bin}/kessai-mcp` | CLI + MCP binary |
+| `${XDG_BIN_HOME:-~/.local/bin}/kessai-web` | Web server binary |
+| `${XDG_DATA_HOME:-~/.local/share}/applications/kessai.desktop` | Desktop launcher entry |
+| `${XDG_DATA_HOME:-~/.local/share}/icons/hicolor/128x128/apps/kessai.png` | Installed app icon |
 
 ## See also
 

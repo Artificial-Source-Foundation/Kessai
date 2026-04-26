@@ -209,6 +209,6 @@ The app uses **Tauri's updater plugin** to deliver updates to installed instance
 
 SQLite database stored in Tauri app data directory:
 
-- Linux: `~/.local/share/com.asf.kessai/`
+- Linux: `${XDG_DATA_HOME:-~/.local/share}/com.asf.kessai/`
 - macOS: `~/Library/Application Support/com.asf.kessai/`
 - Windows: `%APPDATA%/com.asf.kessai/`

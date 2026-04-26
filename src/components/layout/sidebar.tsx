@@ -19,7 +19,7 @@ export function Sidebar() {
 
   return (
     <aside
-      className="glass-sidebar shadow-ambient bg-surface-highest/20 relative z-30 hidden h-screen flex-col overflow-visible md:flex"
+      className="glass-sidebar shadow-ambient bg-surface-highest/20 relative z-30 hidden h-full flex-col overflow-visible md:flex"
       style={{
         width: SIDEBAR_COLLAPSED_WIDTH,
         minWidth: SIDEBAR_COLLAPSED_WIDTH,

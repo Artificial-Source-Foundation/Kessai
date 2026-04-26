@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom'
 import { Sidebar } from './sidebar'
 import { BottomTabBar } from './bottom-tab-bar'
+import { WindowTitlebar } from './window-titlebar'
 import { useMotionSettings } from '@/hooks/use-motion-settings'
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
 import { useNotificationScheduler } from '@/hooks/use-notification-scheduler'
@@ -13,7 +14,7 @@ export function AppShell() {
   useNotificationScheduler()
 
   return (
-    <div className="bg-background flex h-screen overflow-hidden">
+    <div className="bg-background flex h-screen flex-col overflow-hidden">
       {/* Skip to main content link for keyboard navigation */}
       <a
         href="#main-content"
@@ -22,13 +23,17 @@ export function AppShell() {
         Skip to main content
       </a>
 
-      <Sidebar />
+      <WindowTitlebar />
 
-      <main id="main-content" className="grid-bg relative z-0 flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-7xl p-4 pb-24 md:p-6 md:pb-6">
-          <Outlet />
-        </div>
-      </main>
+      <div className="flex min-h-0 flex-1 overflow-hidden">
+        <Sidebar />
+
+        <main id="main-content" className="grid-bg relative z-0 flex-1 overflow-y-auto">
+          <div className="mx-auto max-w-7xl p-4 pb-24 md:p-6 md:pb-6">
+            <Outlet />
+          </div>
+        </main>
+      </div>
 
       <BottomTabBar />
       <KeyboardShortcutsDialog />

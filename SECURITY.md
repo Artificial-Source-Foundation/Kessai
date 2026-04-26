@@ -19,7 +19,7 @@ Kessai is a **local-first application** with the following security characterist
 
 | Platform | Location                               |
 | -------- | -------------------------------------- |
-| Linux    | `~/.local/share/com.asf.kessai/`                |
+| Linux    | `${XDG_DATA_HOME:-~/.local/share}/com.asf.kessai/` |
 | macOS    | `~/Library/Application Support/com.asf.kessai/` |
 | Windows  | `%APPDATA%/com.asf.kessai/`                     |
 

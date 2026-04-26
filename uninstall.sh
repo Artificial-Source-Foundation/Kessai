@@ -42,6 +42,13 @@ print_card() {
 }
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+XDG_BIN_HOME="${XDG_BIN_HOME:-$HOME/.local/bin}"
+BIN_DIR="$XDG_BIN_HOME"
+APPLICATIONS_DIR="$XDG_DATA_HOME/applications"
+ICON_THEME_DIR="$XDG_DATA_HOME/icons/hicolor"
+ICON_DIR="$ICON_THEME_DIR/128x128/apps"
+APP_DATA_DIR="$XDG_DATA_HOME/com.asf.kessai"
 
 # Default options
 UNINSTALL_APP=false
@@ -105,15 +112,15 @@ APP_INSTALLED=false
 DATA_EXISTS=false
 
 # App: check local install and legacy system installs
-[[ -f "$HOME/.local/bin/kessai" ]] && APP_INSTALLED=true
-[[ -f "$HOME/.local/bin/kessai-desktop" ]] && APP_INSTALLED=true
-[[ -f "$HOME/.local/bin/kessai-mcp" ]] && APP_INSTALLED=true
-[[ -f "$HOME/.local/bin/kessai-web" ]] && APP_INSTALLED=true
+[[ -f "$BIN_DIR/kessai" ]] && APP_INSTALLED=true
+[[ -f "$BIN_DIR/kessai-desktop" ]] && APP_INSTALLED=true
+[[ -f "$BIN_DIR/kessai-mcp" ]] && APP_INSTALLED=true
+[[ -f "$BIN_DIR/kessai-web" ]] && APP_INSTALLED=true
 dpkg -s kessai &>/dev/null 2>&1 && APP_INSTALLED=true
 rpm -q kessai &>/dev/null 2>&1 && APP_INSTALLED=true
 
 # Data
-[[ -d "$HOME/.local/share/com.asf.kessai" ]] && DATA_EXISTS=true
+[[ -d "$APP_DATA_DIR" ]] && DATA_EXISTS=true
 
 # ============================================================================
 # Banner
@@ -128,7 +135,7 @@ else
     echo -e "  ${DIM}○ Desktop app not found${NC}"
 fi
 if [[ "$DATA_EXISTS" == "true" ]]; then
-    echo -e "  ${GREEN}●${NC} App data exists (~/.local/share/com.asf.kessai)"
+    echo -e "  ${GREEN}●${NC} App data exists ($APP_DATA_DIR)"
 else
     echo -e "  ${DIM}○ No app data${NC}"
 fi
@@ -158,10 +165,10 @@ if [[ "$INTERACTIVE" == "true" ]]; then
         # Only leftover data, no app
         echo "  Only leftover app data was found."
         echo ""
-        read -p "Delete app data at ~/.local/share/com.asf.kessai? [y/N] " -n 1 -r
+        read -p "Delete app data at $APP_DATA_DIR? [y/N] " -n 1 -r
         echo
         if [[ $REPLY =~ ^[Yy]$ ]]; then
-            rm -rf "$HOME/.local/share/com.asf.kessai"
+            rm -rf "$APP_DATA_DIR"
             print_success "Data deleted"
         else
             print_warning "Data kept"
@@ -186,40 +193,40 @@ if [[ "$UNINSTALL_APP" == "true" ]]; then
     print_info "Removing local binaries and launcher"
 
     # Remove local install
-    if [[ -f "$HOME/.local/bin/kessai" ]]; then
-        rm -f "$HOME/.local/bin/kessai"
-        print_success "Removed launcher (~/.local/bin/kessai)"
+    if [[ -f "$BIN_DIR/kessai" ]]; then
+        rm -f "$BIN_DIR/kessai"
+        print_success "Removed launcher ($BIN_DIR/kessai)"
         FOUND_SOMETHING=true
     fi
 
-    if [[ -f "$HOME/.local/bin/kessai-desktop" ]]; then
-        rm -f "$HOME/.local/bin/kessai-desktop"
-        print_success "Removed desktop app (~/.local/bin/kessai-desktop)"
+    if [[ -f "$BIN_DIR/kessai-desktop" ]]; then
+        rm -f "$BIN_DIR/kessai-desktop"
+        print_success "Removed desktop app ($BIN_DIR/kessai-desktop)"
         FOUND_SOMETHING=true
     fi
 
-    if [[ -f "$HOME/.local/bin/kessai-mcp" ]]; then
-        rm -f "$HOME/.local/bin/kessai-mcp"
-        print_success "Removed MCP/CLI (~/.local/bin/kessai-mcp)"
+    if [[ -f "$BIN_DIR/kessai-mcp" ]]; then
+        rm -f "$BIN_DIR/kessai-mcp"
+        print_success "Removed MCP/CLI ($BIN_DIR/kessai-mcp)"
         FOUND_SOMETHING=true
     fi
 
-    if [[ -f "$HOME/.local/bin/kessai-web" ]]; then
-        rm -f "$HOME/.local/bin/kessai-web"
-        print_success "Removed web server (~/.local/bin/kessai-web)"
+    if [[ -f "$BIN_DIR/kessai-web" ]]; then
+        rm -f "$BIN_DIR/kessai-web"
+        print_success "Removed web server ($BIN_DIR/kessai-web)"
         FOUND_SOMETHING=true
     fi
 
-    if [[ -f "$HOME/.local/share/applications/kessai.desktop" ]]; then
-        rm -f "$HOME/.local/share/applications/kessai.desktop"
+    if [[ -f "$APPLICATIONS_DIR/kessai.desktop" ]]; then
+        rm -f "$APPLICATIONS_DIR/kessai.desktop"
         print_success "Removed desktop entry"
         FOUND_SOMETHING=true
     fi
 
-    if [[ -f "$HOME/.local/share/icons/hicolor/128x128/apps/kessai.png" ]]; then
-        rm -f "$HOME/.local/share/icons/hicolor/128x128/apps/kessai.png"
+    if [[ -f "$ICON_DIR/kessai.png" ]]; then
+        rm -f "$ICON_DIR/kessai.png"
         if command -v gtk-update-icon-cache &>/dev/null; then
-            gtk-update-icon-cache -f -t "$HOME/.local/share/icons/hicolor" 2>/dev/null || true
+            gtk-update-icon-cache -f -t "$ICON_THEME_DIR" 2>/dev/null || true
         fi
         print_success "Removed icon"
         FOUND_SOMETHING=true
@@ -259,26 +266,26 @@ if [[ "$UNINSTALL_APP" == "true" ]]; then
     fi
 
     # Handle app data
-    if [[ -d "$HOME/.local/share/com.asf.kessai" ]]; then
+    if [[ -d "$APP_DATA_DIR" ]]; then
         print_rule
         if [[ "$PURGE" == "true" ]]; then
-            rm -rf "$HOME/.local/share/com.asf.kessai"
+            rm -rf "$APP_DATA_DIR"
             print_success "App data deleted"
             REMOVED_DATA=true
         elif [[ "$INTERACTIVE" == "true" ]]; then
-            print_warning "App data found at ~/.local/share/com.asf.kessai"
+            print_warning "App data found at $APP_DATA_DIR"
             print_info "This contains your subscriptions database."
             read -p "Delete your subscription data? [y/N] " -n 1 -r
             echo
             if [[ $REPLY =~ ^[Yy]$ ]]; then
-                rm -rf "$HOME/.local/share/com.asf.kessai"
+                rm -rf "$APP_DATA_DIR"
                 print_success "App data deleted"
                 REMOVED_DATA=true
             else
-                print_info "Data kept at ~/.local/share/com.asf.kessai"
+                print_info "Data kept at $APP_DATA_DIR"
             fi
         else
-            print_info "App data kept at ~/.local/share/com.asf.kessai (use --purge to delete)"
+            print_info "App data kept at $APP_DATA_DIR (use --purge to delete)"
         fi
     fi
 fi
@@ -302,8 +309,8 @@ if [[ "$REMOVED_APP" == "false" && "$REMOVED_DATA" == "false" ]]; then
     echo -e "  ${DIM}Nothing was removed${NC}"
 fi
 
-if [[ -d "$HOME/.local/share/com.asf.kessai" ]]; then
-    print_info "Note: App data still exists at ~/.local/share/com.asf.kessai"
+if [[ -d "$APP_DATA_DIR" ]]; then
+    print_info "Note: App data still exists at $APP_DATA_DIR"
 fi
 
 print_rule

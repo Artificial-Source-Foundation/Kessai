@@ -10,6 +10,10 @@ body,
   height: 100%;
 }
 
+*[data-tauri-drag-region] {
+  app-region: drag;
+}
+
 @theme {
   /* ASF Design System — Kessai (Liquid Glass / Obsidian Vessel Adapted) */
   --color-background: #0e0e0e;

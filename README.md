@@ -172,11 +172,11 @@ All data stays on your device. Plain SQLite you can inspect, backup, or migrate.
 
 | Platform | Location                                        |
 | -------- | ----------------------------------------------- |
-| Linux    | `~/.local/share/com.asf.kessai/`                |
+| Linux    | `${XDG_DATA_HOME:-~/.local/share}/com.asf.kessai/` |
 | macOS    | `~/Library/Application Support/com.asf.kessai/` |
 | Windows  | `%APPDATA%/com.asf.kessai/`                     |
 
-Structured logs in `{data_dir}/logs/` for debugging. Frontend logs downloadable from Settings.
+Structured logs in the app data `logs/` directory for debugging. Frontend logs downloadable from Settings.
 
 ## Documentation
 

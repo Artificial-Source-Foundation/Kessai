@@ -18,7 +18,7 @@ Common install/startup cases:
 
 For startup failures after install, check app logs under:
 
-- Linux: `~/.local/share/com.asf.kessai/logs/`
+- Linux: `${XDG_DATA_HOME:-~/.local/share}/com.asf.kessai/logs/`
 - macOS: `~/Library/Application Support/com.asf.kessai/logs/`
 - Windows: `%APPDATA%/com.asf.kessai/logs/`
 
