@@ -41,4 +41,16 @@ if (versionRegex.test(cargoToml)) {
   }
 }
 
+// Update Cargo.lock app package version when the lockfile is present.
+const cargoLockPath = join(rootDir, 'Cargo.lock')
+const cargoLock = readFileSync(cargoLockPath, 'utf-8')
+const cargoLockRegex = /(\[\[package\]\]\nname = "kessai"\nversion = ")[^"]+("\n)/
+if (cargoLockRegex.test(cargoLock)) {
+  const newCargoLock = cargoLock.replace(cargoLockRegex, `$1${version}$2`)
+  if (newCargoLock !== cargoLock) {
+    writeFileSync(cargoLockPath, newCargoLock)
+    console.log(`Updated Cargo.lock version to ${version}`)
+  }
+}
+
 console.log('Version sync complete!')
