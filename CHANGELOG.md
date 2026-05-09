@@ -3,6 +3,12 @@
 All notable changes to Kessai will be documented in this file.
 
 
+## [0.4.6](https://github.com/Artificial-Source/Kessai/compare/v0.4.5...v0.4.6) (2026-05-09)
+
+### Refactoring
+
+* simplify app surface ([663d013](https://github.com/Artificial-Source/Kessai/commit/663d013ed822c6207a407f339610d4ad7a98d4e8))
+
 ## [0.4.5](https://github.com/Artificial-Source/Kessai/compare/v0.4.4...v0.4.5) (2026-05-07)
 
 ## [0.4.4](https://github.com/Artificial-Source/Kessai/compare/v0.4.3...v0.4.4) (2026-05-07)
