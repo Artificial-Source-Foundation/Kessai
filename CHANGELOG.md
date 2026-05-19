@@ -3,6 +3,20 @@
 All notable changes to Kessai will be documented in this file.
 
 
+## [0.4.7](https://github.com/Artificial-Source/Kessai/compare/v0.4.6...v0.4.7) (2026-05-19)
+
+### Features
+
+* show release notes for updates ([c4f536a](https://github.com/Artificial-Source/Kessai/commit/c4f536a5f9a7acb008d0f0a713060b961a5b1f93))
+
+### Refactoring
+
+* simplify dashboard layout ([bf29b1e](https://github.com/Artificial-Source/Kessai/commit/bf29b1ed4e3bd262ae8659cb8e9e84eef572f6e5))
+
+### Tests
+
+* update dashboard web smoke expectations ([c73ec38](https://github.com/Artificial-Source/Kessai/commit/c73ec387d772c2ff4233f892f2fff768cafe7f75))
+
 ## [0.4.6](https://github.com/Artificial-Source/Kessai/compare/v0.4.5...v0.4.6) (2026-05-09)
 
 ### Refactoring
