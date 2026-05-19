@@ -40,17 +40,23 @@ export function DashboardSkeleton() {
       </section>
 
       {/* Upcoming payments */}
-      <section className="glass-card p-6">
-        <Skeleton className="mb-5 h-6 w-44" />
-        <div className="flex flex-col gap-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-3">
-              <Skeleton className="h-10 w-10 rounded-lg" />
+      <section className="glass-card p-6 sm:p-8">
+        <div className="mb-6 flex items-start justify-between gap-3">
+          <div>
+            <Skeleton className="h-7 w-48" />
+            <Skeleton className="mt-2 h-3 w-24" />
+          </div>
+          <Skeleton className="h-14 w-28" />
+        </div>
+        <div className="flex flex-col gap-1">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-4 py-4 sm:gap-5 sm:py-5">
+              <Skeleton className="h-16 w-16 rounded-xl" />
               <div className="flex flex-1 flex-col gap-1.5">
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-5 w-36" />
+                <Skeleton className="h-3 w-24" />
               </div>
-              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-5 w-20" />
             </div>
           ))}
         </div>

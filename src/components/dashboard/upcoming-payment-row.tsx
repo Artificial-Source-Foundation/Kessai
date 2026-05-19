@@ -26,20 +26,20 @@ export const UpcomingPaymentRow = memo(function UpcomingPaymentRow({
     : null
 
   return (
-    <div className="border-border group flex w-full cursor-pointer items-center justify-between gap-4 border-b py-3 last:border-b-0">
-      <div className="flex min-w-0 flex-1 items-center gap-3">
+    <div className="border-border group flex w-full cursor-pointer items-center justify-between gap-4 border-b py-4 last:border-b-0 sm:gap-5 sm:py-5">
+      <div className="flex min-w-0 flex-1 items-center gap-4">
         <SubscriptionLogo
           logoUrl={subscription.logo_url}
           name={subscription.name}
           color={subscription.color}
-          size="lg"
-          className="shrink-0 rounded-lg"
+          size="xl"
+          className="shrink-0 rounded-xl"
         />
         <div className="min-w-0 flex-1">
-          <p className="text-foreground truncate font-[family-name:var(--font-heading)] font-semibold">
+          <p className="text-foreground truncate font-[family-name:var(--font-heading)] text-base font-semibold sm:text-lg">
             {subscription.name}
           </p>
-          <p className="text-muted-foreground truncate font-[family-name:var(--font-mono)] text-[11px]">
+          <p className="text-muted-foreground mt-1 truncate font-[family-name:var(--font-mono)] text-xs">
             {subscription.next_payment_date && formatShortDate(subscription.next_payment_date)}
           </p>
         </div>
@@ -54,7 +54,7 @@ export const UpcomingPaymentRow = memo(function UpcomingPaymentRow({
           return (
             <>
               <div className="flex items-baseline gap-1">
-                <p className="text-foreground font-[family-name:var(--font-heading)] font-bold">
+                <p className="text-foreground font-[family-name:var(--font-heading)] text-base font-bold sm:text-lg">
                   {formatCurrency(subscription.amount, subCurrency)}
                 </p>
                 <span className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px]">
@@ -70,7 +70,7 @@ export const UpcomingPaymentRow = memo(function UpcomingPaymentRow({
           )
         })()}
         {daysUntil !== null && daysUntil <= 1 ? (
-          <div className="border-ghost bg-surface-highest/50 text-primary rounded-full border px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] font-bold uppercase">
+          <div className="border-ghost bg-surface-highest/50 text-primary rounded-full border px-2.5 py-1 font-[family-name:var(--font-mono)] text-[10px] font-bold uppercase">
             {daysUntil === 0 ? 'Today' : 'Tomorrow'}
           </div>
         ) : (

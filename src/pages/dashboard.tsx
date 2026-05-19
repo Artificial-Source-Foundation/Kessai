@@ -12,12 +12,10 @@ import { getUpcomingPayments } from '@/lib/date-utils'
 import { ProgressBar } from '@/components/ui/progress-bar'
 import { StatCard } from '@/components/dashboard/stat-card'
 import { UpcomingPaymentRow } from '@/components/dashboard/upcoming-payment-row'
-import { SpendingTrends } from '@/components/dashboard/spending-trends'
 import { TrialsWidget } from '@/components/dashboard/trials-widget'
 import { BudgetWidget } from '@/components/dashboard/budget-widget'
 import { TrialAlertCard } from '@/components/dashboard/trial-alert-card'
 import { DashboardSkeleton } from '@/components/dashboard/dashboard-skeleton'
-import { ReviewNudgeCard } from '@/components/dashboard/review-nudge-card'
 import { WebBackendBanner } from '@/components/ui/web-backend-banner'
 import { calculateNormalizedAmount, NORMALIZATION_SUFFIXES } from '@/types/subscription'
 import type { CurrencyCode } from '@/lib/currency'
@@ -29,14 +27,12 @@ export function Dashboard() {
     isLoading,
     error: subscriptionsError,
     fetch: fetchSubscriptions,
-    fetchNeedingReview,
   } = useSubscriptionStore(
     useShallow((state) => ({
       subscriptions: state.subscriptions,
       isLoading: state.isLoading,
       error: state.error,
       fetch: state.fetch,
-      fetchNeedingReview: state.fetchNeedingReview,
     }))
   )
   const fetchCategories = useCategoryStore((state) => state.fetch)
@@ -100,8 +96,7 @@ export function Dashboard() {
     fetchSubscriptions()
     fetchCategories()
     fetchSettings()
-    fetchNeedingReview(30)
-  }, [fetchSubscriptions, fetchCategories, fetchSettings, fetchNeedingReview])
+  }, [fetchSubscriptions, fetchCategories, fetchSettings])
 
   if (isLoading) {
     return <DashboardSkeleton />
@@ -180,9 +175,6 @@ export function Dashboard() {
       {/* Trials Widget */}
       <TrialsWidget expiringTrials={expiringTrials} trialCount={trialCount} />
 
-      {/* Review Nudges */}
-      <ReviewNudgeCard />
-
       {/* Category Breakdown */}
       {categorySpending.length > 0 && (
         <section className="glass-card p-6">
@@ -216,14 +208,27 @@ export function Dashboard() {
         </section>
       )}
 
-      <SpendingTrends currency={currency} />
-
-      <TrialAlertCard subscriptions={subscriptions} />
-
-      <section className="glass-card p-6">
-        <h3 className="mb-5 text-lg font-bold">Upcoming Payments</h3>
+      <section className="glass-card p-6 sm:p-8">
+        <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h3 className="text-xl font-bold tracking-tight">Upcoming Payments</h3>
+            <p className="text-muted-foreground mt-1 font-[family-name:var(--font-mono)] text-[11px] tracking-wider uppercase">
+              Next 7 days
+            </p>
+          </div>
+          {upcomingPayments.length > 0 && (
+            <div className="border-border bg-surface-highest/40 rounded-none border px-3 py-2 text-right">
+              <p className="text-foreground font-[family-name:var(--font-heading)] text-lg font-bold">
+                {formatCurrency(upcomingTotal, currency)}
+              </p>
+              <p className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px] tracking-wider uppercase">
+                Due total
+              </p>
+            </div>
+          )}
+        </div>
         {upcomingPayments.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-[var(--color-border-hover)] bg-[var(--color-card)] py-12 text-center">
+          <div className="flex min-h-[240px] flex-col items-center justify-center rounded-xl border-2 border-dashed border-[var(--color-border-hover)] bg-[var(--color-card)] py-14 text-center sm:py-16">
             <div className="bg-success/10 animate-gentle-float mb-4 rounded-full p-4">
               <span className="text-3xl leading-none">🎉</span>
             </div>
@@ -231,13 +236,15 @@ export function Dashboard() {
             <p className="text-muted-foreground text-sm">No payments due in the next 7 days</p>
           </div>
         ) : (
-          <div className="flex flex-col gap-3">
-            {upcomingPayments.slice(0, 4).map((sub) => (
+          <div className="flex flex-col gap-1">
+            {upcomingPayments.slice(0, 6).map((sub) => (
               <UpcomingPaymentRow key={sub.id} subscription={sub} currency={currency} />
             ))}
           </div>
         )}
       </section>
+
+      <TrialAlertCard subscriptions={subscriptions} />
     </div>
   )
 }
