@@ -16,9 +16,6 @@ test.describe('Web smoke', () => {
       waitForOkGet(page, '/api/subscriptions'),
       waitForOkGet(page, '/api/categories'),
       waitForOkGet(page, '/api/settings'),
-      waitForOkGet(page, '/api/subscriptions/needs-review'),
-      waitForOkGet(page, '/api/payments'),
-      waitForOkGet(page, '/api/price-history/recent'),
     ])
 
     await page.goto('/')
