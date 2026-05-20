@@ -61,7 +61,6 @@ The shared frontend also keeps a few non-database values in browser storage when
 
 | Key | Source file | Purpose |
 | --- | --- | --- |
-| `kessai-exchange-rates` | `src/lib/exchange-rates.ts` | Cached exchange-rate responses |
 | `kessai-logs` | `src/lib/logger.ts` | Persisted warn/error frontend logs |
 | `kessai-sent-notifications` | `src/hooks/use-notification-scheduler.ts` | Deduplication record for desktop renewal notifications |
 

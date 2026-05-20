@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { CurrencySelect } from '@/components/ui/currency-select'
 import {
   subscriptionFormSchema,
   SUBSCRIPTION_COLORS,
@@ -28,8 +29,7 @@ import {
   type Subscription,
 } from '@/types/subscription'
 import { BILLING_CYCLE_LABELS } from '@/lib/constants'
-import { getCurrencyOptions, formatCurrency, type CurrencyCode } from '@/lib/currency'
-import { convertCurrencyCached } from '@/lib/exchange-rates'
+import type { CurrencyCode } from '@/lib/currency'
 import { cn } from '@/lib/utils'
 import { TagPicker } from '@/components/tags/tag-picker'
 import { useTagStore } from '@/stores/tag-store'
@@ -183,17 +183,6 @@ export function SubscriptionForm({
   const selectedColor = form.watch('color')
   const isTrial = form.watch('is_trial')
   const sharedCount = form.watch('shared_count')
-  const watchedAmount = form.watch('amount')
-  const watchedCurrency = form.watch('currency') as CurrencyCode
-
-  // Conversion hint: show approximate display-currency equivalent when currencies differ
-  const conversionHint = useMemo(() => {
-    if (!watchedAmount || watchedAmount <= 0) return null
-    if (watchedCurrency === globalCurrency) return null
-    const converted = convertCurrencyCached(watchedAmount, watchedCurrency, globalCurrency)
-    if (converted === null) return null
-    return formatCurrency(converted, globalCurrency)
-  }, [watchedAmount, watchedCurrency, globalCurrency])
 
   // When a template with a domain is selected, immediately trigger a logo fetch
   const templateDomain = template?.domain ?? null
@@ -236,8 +225,6 @@ export function SubscriptionForm({
     [form, onSubmit, selectedTagIds]
   )
 
-  const currencyOptions = useMemo(() => getCurrencyOptions(), [])
-
   return (
     <form onSubmit={handleSubmit} className="transform-gpu space-y-6">
       <div className="space-y-4">
@@ -277,28 +264,16 @@ export function SubscriptionForm({
               control={form.control}
               name="currency"
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger className="border-border bg-muted/50">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {currencyOptions.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>
-                        {opt.value}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <CurrencySelect
+                  id="currency"
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  triggerClassName="border-border bg-muted/50"
+                />
               )}
             />
           </div>
         </div>
-
-        {conversionHint && (
-          <p className="text-muted-foreground font-[family-name:var(--font-mono)] text-[11px]">
-            ≈ {conversionHint} {globalCurrency}
-          </p>
-        )}
 
         {/* ── Billing ───────────────────────────────────────── */}
         <div className="border-border mt-4 border-t pt-4" />

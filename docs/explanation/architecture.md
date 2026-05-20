@@ -93,7 +93,6 @@ Some behavior spans multiple layers:
   update adapters (`src-tauri/src/lib.rs`, `crates/kessai-web/src/routes.rs`).
   MCP and CLI update flows call core update methods directly and do not use this
   adapter-level pre-step.
-- Exchange-rate fetching lives in the shared frontend layer in `src/lib/exchange-rates.ts`.
 - Update checks live in the frontend store `src/stores/update-store.ts`, but only the installed desktop app can complete the full Tauri updater flow.
 - Renewal notifications are renderer-driven: `useNotificationScheduler()` runs in `AppShell`, checks hourly while the UI process is alive, uses Tauri notification APIs only when available, and deduplicates sends through `localStorage` rather than through a background OS daemon.
 

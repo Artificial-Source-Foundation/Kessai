@@ -60,7 +60,7 @@ After import:
 
 - Open **Subscriptions** and confirm expected records exist.
 - Open **Calendar** and verify payment entries are present.
-- Open **Settings** to confirm DB-backed preferences (for example, display currency, monthly budget, categories, and tags).
+- Open **Settings** to confirm DB-backed preferences (for example, default currency, monthly budget, categories, and tags).
 
 ## See also
 

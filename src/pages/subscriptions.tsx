@@ -9,7 +9,6 @@ import { useCategoryStore } from '@/stores/category-store'
 import { useUiStore } from '@/stores/ui-store'
 import { useSettingsStore } from '@/stores/settings-store'
 import { usePaymentStore } from '@/stores/payment-store'
-import { convertCurrencyCached } from '@/lib/exchange-rates'
 import { calculateNextPaymentDate, formatPaymentDate } from '@/lib/date-utils'
 import { Button } from '@/components/ui/button'
 import { SubscriptionBento } from '@/components/subscriptions/subscription-bento'
@@ -233,7 +232,7 @@ export function Subscriptions() {
     getCategory,
   ])
 
-  // Separate totals by billing cycle (converted to display currency)
+  // Separate totals by billing cycle from entered amounts.
   const monthlySubsTotal = useMemo(() => {
     return subscriptions
       .filter(
@@ -241,12 +240,9 @@ export function Subscriptions() {
       )
       .reduce((total, sub) => {
         const amount = sub.amount / Math.max(sub.shared_count, 1)
-        const subCurrency = (sub.currency || currency) as CurrencyCode
-        if (subCurrency === currency) return total + amount
-        const converted = convertCurrencyCached(amount, subCurrency, currency)
-        return total + (converted ?? amount)
+        return total + amount
       }, 0)
-  }, [subscriptions, currency])
+  }, [subscriptions])
 
   const yearlySubsTotal = useMemo(() => {
     return subscriptions
@@ -255,12 +251,9 @@ export function Subscriptions() {
       )
       .reduce((total, sub) => {
         const amount = sub.amount / Math.max(sub.shared_count, 1)
-        const subCurrency = (sub.currency || currency) as CurrencyCode
-        if (subCurrency === currency) return total + amount
-        const converted = convertCurrencyCached(amount, subCurrency, currency)
-        return total + (converted ?? amount)
+        return total + amount
       }, 0)
-  }, [subscriptions, currency])
+  }, [subscriptions])
 
   // Normalized total across all billable subscriptions
   const normalizedTotal = useMemo(() => {
@@ -269,16 +262,9 @@ export function Subscriptions() {
       .filter((sub) => sub.is_active && isBillableStatus(sub.status))
       .reduce((total, sub) => {
         const amount = sub.amount / Math.max(sub.shared_count, 1)
-        const subCurrency = (sub.currency || currency) as CurrencyCode
-        const convertedAmount =
-          subCurrency === currency
-            ? amount
-            : (convertCurrencyCached(amount, subCurrency, currency) ?? amount)
-        return (
-          total + calculateNormalizedAmount(convertedAmount, sub.billing_cycle, costNormalization)
-        )
+        return total + calculateNormalizedAmount(amount, sub.billing_cycle, costNormalization)
       }, 0)
-  }, [subscriptions, currency, costNormalization])
+  }, [subscriptions, costNormalization])
 
   const handleMarkAsPaid = async (sub: Subscription) => {
     if (!sub.next_payment_date) return

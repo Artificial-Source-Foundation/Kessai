@@ -11,9 +11,9 @@
 Kessai is a **local-first application** with the following security characteristics:
 
 - **All data stored locally** - SQLite database in your app data directory
-- **No telemetry or analytics** - the desktop app has no checked-in tracking layer, but optional features such as update checks, exchange-rate fetches, and logo fetches do make network requests
+- **No telemetry or analytics** - the desktop app has no checked-in tracking layer, but optional features such as update checks and logo fetches do make network requests
 - **No authentication** - No accounts, passwords, or login required
-- **Mostly local data handling** - subscription and payment data stay local by default, but optional network-assisted features such as logo fetch, exchange-rate lookup, and update checks do contact external services
+- **Mostly local data handling** - subscription and payment data stay local by default, but optional network-assisted features such as logo fetch and update checks do contact external services
 
 ### Data Storage Locations
 

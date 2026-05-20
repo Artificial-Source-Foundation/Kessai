@@ -14,10 +14,10 @@ This tutorial walks you through a complete first session in Kessai: launch the a
 1. Go to **Settings** in the left navigation.
 2. In **Appearance**:
    - Set your **Theme** (`Dark`, `Light`, or `System`).
-   - Set your **Display Currency**.
+   - Set your **Default Currency**.
 3. (Optional) Set a **Monthly Budget**.
 
-Why this matters: Dashboard totals and subscription amounts are shown using your display currency.
+Why this matters: Dashboard totals, budgets, and new subscriptions use your default currency. Kessai does not convert between currencies, so enter amounts in the value you want to track.
 
 ## 2) Add your first subscription
 

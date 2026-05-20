@@ -48,6 +48,7 @@ The current exporter writes `version: "1.1.0"` in `crates/kessai-core/src/servic
 | `tags` | `Tag` records | Exported when tags exist |
 | `subscription_tags` | mapping rows | Connects subscriptions to tags |
 | `settings` | `BackupSettings` | Stores the singleton settings row without its internal `id` |
+| `settings.display_exchange_rates` | legacy settings field | Kept for older backup compatibility; current frontend totals do not use exchange rates |
 
 ## Import behavior
 
@@ -82,7 +83,7 @@ That means default seeded categories remain available. The imported backup may s
 ### Settings behavior
 
 - Backup settings do not carry the `settings.id` field.
-- Import updates the existing singleton row with theme, currency, notification, budget, exchange-rate, and motion settings.
+- Import updates the existing singleton row with theme, currency, notification, budget, legacy exchange-rate, and motion settings.
 - Invalid or unknown theme strings fall back to `dark` during import.
 
 ## Related import paths

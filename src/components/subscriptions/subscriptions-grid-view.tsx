@@ -1,7 +1,6 @@
 import { memo } from 'react'
 import { Pencil, Trash2, Power, Pin, Ban } from 'lucide-react'
 import { formatCurrency } from '@/lib/currency'
-import { convertCurrencyCached } from '@/lib/exchange-rates'
 import { BILLING_CYCLE_LABELS, CATEGORY_BADGE_VARIANTS } from '@/lib/constants'
 import {
   calculateNormalizedAmount,
@@ -164,26 +163,20 @@ export const SubscriptionsGridView = memo(function SubscriptionsGridView({
                 <div className="flex flex-col gap-0.5">
                   {(() => {
                     const subCurrency = (sub.currency || currency) as CurrencyCode
-                    const isDifferent = subCurrency !== currency
-                    const converted = isDifferent
-                      ? convertCurrencyCached(sub.amount, subCurrency, currency)
-                      : null
 
                     if (isNormalized) {
-                      const baseAmount = isDifferent && converted !== null ? converted : sub.amount
-                      const displayCur = isDifferent && converted !== null ? currency : subCurrency
                       const normalizedAmount = calculateNormalizedAmount(
-                        baseAmount,
+                        sub.amount,
                         sub.billing_cycle,
                         costNormalization
                       )
                       return (
                         <div className="flex items-baseline gap-1">
                           <p className="text-foreground font-[family-name:var(--font-heading)] text-[28px] leading-none font-bold">
-                            {formatCurrency(normalizedAmount, displayCur)}
+                            {formatCurrency(normalizedAmount, subCurrency)}
                           </p>
                           <span className="text-muted-foreground font-[family-name:var(--font-mono)] text-xs">
-                            {displayCur.toUpperCase()}
+                            {subCurrency.toUpperCase()}
                             <span className="ml-0.5">
                               {NORMALIZATION_SUFFIXES[costNormalization]}
                             </span>
@@ -205,11 +198,6 @@ export const SubscriptionsGridView = memo(function SubscriptionsGridView({
                             </span>
                           </span>
                         </div>
-                        {isDifferent && converted !== null && (
-                          <p className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px]">
-                            ≈ {formatCurrency(converted, currency)} {currency}
-                          </p>
-                        )}
                       </>
                     )
                   })()}

@@ -1,25 +1,11 @@
 import { useMemo } from 'react'
 import { useSubscriptionStore } from '@/stores/subscription-store'
 import { useCategoryStore } from '@/stores/category-store'
-import { useSettingsStore } from '@/stores/settings-store'
 import { calculateMonthlyAmount } from '@/types/subscription'
-import { convertCurrencyCached } from '@/lib/exchange-rates'
-import type { CurrencyCode } from '@/lib/currency'
-import type { Subscription } from '@/types/subscription'
 import dayjs from 'dayjs'
 import isBetween from 'dayjs/plugin/isBetween'
 
 dayjs.extend(isBetween)
-
-/**
- * Convert a subscription amount to display currency, falling back to original amount.
- */
-function toDisplayAmount(sub: Subscription, displayCurrency: CurrencyCode): number {
-  const subCurrency = (sub.currency || displayCurrency) as CurrencyCode
-  if (subCurrency === displayCurrency) return sub.amount
-  const converted = convertCurrencyCached(sub.amount, subCurrency, displayCurrency)
-  return converted ?? sub.amount
-}
 
 /**
  * Spending data aggregated by category.
@@ -64,7 +50,6 @@ export function useDashboardStats() {
   // Use selective subscriptions for better performance
   const subscriptions = useSubscriptionStore((state) => state.subscriptions)
   const categories = useCategoryStore((state) => state.categories)
-  const displayCurrency = useSettingsStore((s) => (s.settings?.currency || 'USD') as CurrencyCode)
 
   const activeSubscriptions = useMemo(
     () => subscriptions.filter((s) => s.is_active),
@@ -75,8 +60,7 @@ export function useDashboardStats() {
     const spending: Record<string, { amount: number; name: string; color: string }> = {}
 
     activeSubscriptions.forEach((sub) => {
-      const convertedAmount = toDisplayAmount(sub, displayCurrency)
-      const monthlyAmount = calculateMonthlyAmount(convertedAmount, sub.billing_cycle)
+      const monthlyAmount = calculateMonthlyAmount(sub.amount, sub.billing_cycle)
       const category = categories.find((c) => c.id === sub.category_id)
 
       const key = sub.category_id || 'uncategorized'
@@ -100,16 +84,15 @@ export function useDashboardStats() {
         percentage: total > 0 ? (data.amount / total) * 100 : 0,
       }))
       .sort((a, b) => b.amount - a.amount)
-  }, [activeSubscriptions, categories, displayCurrency])
+  }, [activeSubscriptions, categories])
 
   const monthlySpending = useMemo((): MonthlySpending[] => {
     const now = dayjs()
     const months: MonthlySpending[] = []
 
-    // Calculate current monthly total from active subscriptions (converted)
+    // Calculate current monthly total from active subscriptions.
     const currentMonthlyTotal = activeSubscriptions.reduce(
-      (sum, sub) =>
-        sum + calculateMonthlyAmount(toDisplayAmount(sub, displayCurrency), sub.billing_cycle),
+      (sum, sub) => sum + calculateMonthlyAmount(sub.amount, sub.billing_cycle),
       0
     )
 
@@ -127,52 +110,51 @@ export function useDashboardStats() {
     }
 
     return months
-  }, [activeSubscriptions, displayCurrency])
+  }, [activeSubscriptions])
 
-  // Total of ALL subscriptions normalized to monthly (converted to display currency)
+  // Total of ALL subscriptions normalized to monthly from entered amounts.
   const totalMonthly = useMemo(
     () =>
       activeSubscriptions.reduce(
-        (sum, sub) =>
-          sum + calculateMonthlyAmount(toDisplayAmount(sub, displayCurrency), sub.billing_cycle),
+        (sum, sub) => sum + calculateMonthlyAmount(sub.amount, sub.billing_cycle),
         0
       ),
-    [activeSubscriptions, displayCurrency]
+    [activeSubscriptions]
   )
 
   const totalYearly = useMemo(() => totalMonthly * 12, [totalMonthly])
 
-  // Separate totals by billing cycle (converted to display currency)
+  // Separate totals by billing cycle from entered amounts.
   const monthlySubsTotal = useMemo(
     () =>
       activeSubscriptions
         .filter((sub) => sub.billing_cycle === 'monthly')
-        .reduce((sum, sub) => sum + toDisplayAmount(sub, displayCurrency), 0),
-    [activeSubscriptions, displayCurrency]
+        .reduce((sum, sub) => sum + sub.amount, 0),
+    [activeSubscriptions]
   )
 
   const yearlySubsTotal = useMemo(
     () =>
       activeSubscriptions
         .filter((sub) => sub.billing_cycle === 'yearly')
-        .reduce((sum, sub) => sum + toDisplayAmount(sub, displayCurrency), 0),
-    [activeSubscriptions, displayCurrency]
+        .reduce((sum, sub) => sum + sub.amount, 0),
+    [activeSubscriptions]
   )
 
   const weeklySubsTotal = useMemo(
     () =>
       activeSubscriptions
         .filter((sub) => sub.billing_cycle === 'weekly')
-        .reduce((sum, sub) => sum + toDisplayAmount(sub, displayCurrency), 0),
-    [activeSubscriptions, displayCurrency]
+        .reduce((sum, sub) => sum + sub.amount, 0),
+    [activeSubscriptions]
   )
 
   const quarterlySubsTotal = useMemo(
     () =>
       activeSubscriptions
         .filter((sub) => sub.billing_cycle === 'quarterly')
-        .reduce((sum, sub) => sum + toDisplayAmount(sub, displayCurrency), 0),
-    [activeSubscriptions, displayCurrency]
+        .reduce((sum, sub) => sum + sub.amount, 0),
+    [activeSubscriptions]
   )
 
   // Counts by billing cycle

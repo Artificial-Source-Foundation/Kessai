@@ -6,13 +6,9 @@ import { ErrorBoundary } from '@/components/error-boundary'
 import { RouteErrorBoundary } from '@/components/route-error-boundary'
 import { AppShell } from '@/components/layout/app-shell'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
-import { useSettingsStore } from '@/stores/settings-store'
-import { useSubscriptionStore } from '@/stores/subscription-store'
 import { useUpdateStore } from '@/stores/update-store'
 import { useTrayBadge } from '@/hooks/use-tray-badge'
 import { logger } from '@/lib/logger'
-import { preloadRates } from '@/lib/exchange-rates'
-import type { CurrencyCode } from '@/lib/currency'
 import '@/styles/globals.css'
 
 const Dashboard = lazy(() => import('@/pages/dashboard').then((m) => ({ default: m.Dashboard })))
@@ -37,34 +33,6 @@ export default function App() {
   useEffect(() => {
     logger.info('app', 'Kessai started')
     logger.info('app', 'version: 0.2.0')
-  }, [])
-
-  // Preload exchange rates on startup for multi-currency support
-  useEffect(() => {
-    const loadRates = () => {
-      const settings = useSettingsStore.getState().settings
-      const subs = useSubscriptionStore.getState().subscriptions
-      const currencies = new Set<CurrencyCode>()
-      currencies.add((settings?.currency || 'USD') as CurrencyCode)
-      for (const sub of subs) {
-        if (sub.currency) currencies.add(sub.currency as CurrencyCode)
-      }
-      if (currencies.size > 1) {
-        preloadRates([...currencies])
-      }
-    }
-
-    const unsubSettings = useSettingsStore.subscribe(loadRates)
-    const unsubSubs = useSubscriptionStore.subscribe(loadRates)
-
-    // Initial load after a short delay to let stores hydrate
-    const timer = setTimeout(loadRates, 500)
-
-    return () => {
-      clearTimeout(timer)
-      unsubSettings()
-      unsubSubs()
-    }
   }, [])
 
   useEffect(() => {

@@ -46,17 +46,13 @@ These related features are intentionally separate:
 
 You can think of categories as the main taxonomy, tags as lightweight overlays, and cards as payment metadata.
 
-## Display currency is not the same as stored currency
+## Currency values are entered as-is
 
-Each subscription stores its own billing currency, but the app also stores one display currency in `settings.currency`.
+Each subscription stores a billing currency, and the app stores one default currency in `settings.currency` for totals, budgets, and new subscription defaults.
 
-Conversion works in layers in `src/lib/exchange-rates.ts`:
+Kessai does not fetch exchange rates or convert mixed-currency subscriptions. If you want dashboard and subscription totals to be comparable, enter amounts in the equivalent value you use for tracking.
 
-1. manual overrides from `settings.display_exchange_rates`
-2. cached or fetched rates from `https://api.frankfurter.app`
-3. fallback behavior when no rate is available
-
-That is why one database can hold mixed-currency subscriptions while the dashboard still renders one display total.
+The backup/settings schema still accepts the legacy `display_exchange_rates` field for compatibility with older exports, but the frontend no longer exposes exchange-rate controls.
 
 ## Backups are full-state snapshots
 

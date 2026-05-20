@@ -6,23 +6,15 @@ import { useSubscriptionStore } from '@/stores/subscription-store'
 import { useCategoryStore } from '@/stores/category-store'
 import { useSettingsStore } from '@/stores/settings-store'
 import { useUpdateStore } from '@/stores/update-store'
-import { getCurrencyOptions } from '@/lib/currency'
 import { Moon, Sun, Monitor, Zap, X, Check, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { CurrencySelect } from '@/components/ui/currency-select'
 import { CategoryManager } from '@/components/categories/category-manager'
 import { TagManager } from '@/components/tags/tag-manager'
 import { DataManagement } from '@/components/settings/data-management'
 import { CardManager } from '@/components/settings/card-manager'
-import { DisplayExchangeRatesSettings } from '@/components/settings/display-exchange-rates-settings'
 import { NotificationSettings } from '@/components/settings/notification-settings'
 import { MotionSettings } from '@/components/settings/motion-settings'
 import { SettingsSkeleton } from '@/components/settings/settings-skeleton'
@@ -31,9 +23,6 @@ import { WebBackendBanner } from '@/components/ui/web-backend-banner'
 import type { Theme } from '@/types/settings'
 import type { CurrencyCode } from '@/lib/currency'
 import { logger } from '@/lib/logger'
-
-const normalizeDisplayExchangeRates = (rates: Record<string, number> | null | undefined) =>
-  rates ?? {}
 
 export function SettingsPage() {
   const {
@@ -47,15 +36,13 @@ export function SettingsPage() {
     refresh: refetchSettings,
   } = useSettings()
   const { theme, setTheme } = useTheme()
-  const { fetch: refetchSubscriptions } = useSubscriptionStore()
-  const subscriptions = useSubscriptionStore((state) => state.subscriptions)
+  const refetchSubscriptions = useSubscriptionStore((state) => state.fetch)
   const { fetch: refetchCategories } = useCategoryStore()
   const setBudget = useSettingsStore((state) => state.setBudget)
   const currentVersion = useUpdateStore((state) => state.currentVersion)
   const [budgetInput, setBudgetInput] = useState(settings?.monthly_budget?.toString() ?? '')
   const [budgetSaved, setBudgetSaved] = useState(false)
   const isInitialized = useRef(false)
-  const displayExchangeRates = normalizeDisplayExchangeRates(settings?.display_exchange_rates)
 
   const handleDataChanged = () => {
     refetchSettings()
@@ -101,37 +88,12 @@ export function SettingsPage() {
     { value: 'system', label: 'System', icon: Monitor },
   ]
 
-  const currencyOptions = getCurrencyOptions()
-  const usedCurrencies = Array.from(
-    new Set(
-      subscriptions
-        .map((subscription) => subscription.currency as CurrencyCode)
-        .filter(Boolean)
-        .concat(settings.currency as CurrencyCode)
-    )
-  )
-
-  const handleDisplayCurrencyChange = async (value: string) => {
+  const handleDefaultCurrencyChange = async (value: CurrencyCode) => {
     try {
-      await update({
-        currency: value,
-        display_exchange_rates: Object.fromEntries(
-          Object.entries(displayExchangeRates).filter(([currencyCode]) => currencyCode !== value)
-        ),
-      })
-      toast.success('Display currency updated')
+      await update({ currency: value })
+      toast.success('Default currency updated')
     } catch {
-      toast.error('Failed to update display currency')
-    }
-  }
-
-  const handleSaveDisplayExchangeRates = async (display_exchange_rates: Record<string, number>) => {
-    try {
-      await update({ display_exchange_rates })
-      toast.success('Exchange rates saved')
-    } catch {
-      toast.error('Failed to save exchange rates')
-      throw new Error('Failed to save exchange rates')
+      toast.error('Failed to update default currency')
     }
   }
 
@@ -174,32 +136,18 @@ export function SettingsPage() {
               </div>
               <div className="border-border flex flex-col gap-3 border-t pt-4">
                 <span className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px] tracking-widest uppercase">
-                  Display Currency
+                  Default Currency
                 </span>
-                <Select
+                <CurrencySelect
+                  id="currency"
                   value={settings.currency}
-                  onValueChange={(value) => void handleDisplayCurrencyChange(value)}
-                >
-                  <SelectTrigger id="currency">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {currencyOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  onValueChange={(value) => void handleDefaultCurrencyChange(value)}
+                />
+                <p className="text-muted-foreground text-xs">
+                  Used for app totals and new subscription defaults. Kessai does not convert between
+                  currencies.
+                </p>
               </div>
-
-              <DisplayExchangeRatesSettings
-                mainCurrency={settings.currency as CurrencyCode}
-                rates={displayExchangeRates}
-                usedCurrencies={usedCurrencies}
-                currencyOptions={currencyOptions}
-                onSave={handleSaveDisplayExchangeRates}
-              />
 
               <div className="border-border flex flex-col gap-3 border-t pt-4">
                 <Label htmlFor="monthly_budget">Monthly Budget</Label>

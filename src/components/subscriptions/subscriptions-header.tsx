@@ -28,7 +28,7 @@ export const SubscriptionsHeader = React.memo(function SubscriptionsHeader({
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-bold tracking-tight">My Subscriptions</h1>
         <p className="text-muted-foreground text-sm">
-          Totals are converted into {currency}. Change this in Settings under Display Currency.
+          Totals use entered amounts as-is in {currency}. Kessai does not convert currencies.
         </p>
         <div className="flex flex-wrap items-center gap-3">
           {costNormalization !== 'as-is' && normalizedTotal !== null ? (

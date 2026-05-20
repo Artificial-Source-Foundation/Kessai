@@ -19,11 +19,10 @@ There is no checked-in account, authentication, or cloud sync layer in the repos
 | --- | --- | --- |
 | Desktop updater | Fetches release metadata and assets from GitHub | `src-tauri/tauri.conf.json`, `src/stores/update-store.ts` |
 | Logo fetch | Requests favicon-like images from Google | `src-tauri/src/lib.rs`, `crates/kessai-web/src/routes.rs` |
-| Exchange rates | Requests rates from `https://api.frankfurter.app` | `src/lib/exchange-rates.ts` |
 | Web mode | Opens an HTTP server on `0.0.0.0:<port>` | `crates/kessai-web/src/main.rs` |
 | MCP server | Uses stdio, not HTTP, but can change the same local database | `crates/kessai-mcp/src/main.rs` |
 
-So the strongest privacy posture is the installed desktop app with no updater, logo fetch, or exchange-rate use at that moment. Web mode and network-assisted features widen the boundary.
+So the strongest privacy posture is the installed desktop app with no updater or logo fetch at that moment. Web mode and network-assisted features widen the boundary.
 
 ## Desktop-specific protections
 
@@ -51,7 +50,7 @@ Desktop logo commands in `src-tauri/src/lib.rs` reject path traversal patterns a
 ## Operational caveats
 
 - `kessai-web` binds to `0.0.0.0`, so running it exposes the API on the chosen port to whatever can reach that machine unless your firewall blocks access.
-- Browser-side `localStorage` entries such as `kessai-exchange-rates`, `kessai-logs`, and `kessai-sent-notifications` are convenience storage, not encrypted secret storage.
+- Browser-side `localStorage` entries such as `kessai-logs` and `kessai-sent-notifications` are convenience storage, not encrypted secret storage.
 - Logs may include operational details such as paths, errors, and app state transitions.
 - The desktop app is only as private as the local machine account and disk it runs on.
 

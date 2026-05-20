@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef, memo } from 'react'
 import { Pin } from 'lucide-react'
 import { formatCurrency, type CurrencyCode } from '@/lib/currency'
-import { convertCurrency, convertCurrencyCached } from '@/lib/exchange-rates'
 import { getLogoDataUrl } from '@/lib/logo-storage'
 import {
   calculateMonthlyAmount,
@@ -175,7 +174,7 @@ const BentoTile = memo(function BentoTile({
   percentage,
   currency,
   costNormalization,
-  convertedAmount,
+  amount,
   width,
   height,
   onEdit,
@@ -186,16 +185,17 @@ const BentoTile = memo(function BentoTile({
   percentage: number
   currency: CurrencyCode
   costNormalization: NormalizationPeriod
-  convertedAmount: number
+  amount: number
   width: number
   height: number
   onEdit: (subscription: Subscription) => void
 }) {
   const [logoSrc, setLogoSrc] = useState<string | null>(null)
   const isNormalized = costNormalization !== 'as-is'
+  const displayCurrency = (subscription.currency || currency) as CurrencyCode
   const displayAmount = isNormalized
-    ? calculateNormalizedAmount(convertedAmount, subscription.billing_cycle, costNormalization)
-    : calculateMonthlyAmount(convertedAmount, subscription.billing_cycle)
+    ? calculateNormalizedAmount(amount, subscription.billing_cycle, costNormalization)
+    : calculateMonthlyAmount(amount, subscription.billing_cycle)
   const bgColor = BENTO_COLORS[colorIndex % BENTO_COLORS.length]
 
   const isLarge = width > 150 && height > 100
@@ -283,7 +283,7 @@ const BentoTile = memo(function BentoTile({
                 isLarge ? 'text-xl' : isMedium ? 'text-base' : 'text-sm'
               }`}
             >
-              {formatCurrency(displayAmount, currency)}
+              {formatCurrency(displayAmount, displayCurrency)}
               {isNormalized && isLarge && (
                 <span className="text-muted-foreground ml-0.5 text-xs font-normal">
                   {NORMALIZATION_SUFFIXES[costNormalization]}
@@ -334,7 +334,6 @@ export function SubscriptionBento({
 }: SubscriptionBentoProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 })
-  const [convertedAmounts, setConvertedAmounts] = useState<Record<string, number>>({})
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -351,63 +350,23 @@ export function SubscriptionBento({
     return () => resizeObserver.disconnect()
   }, [])
 
-  const getConvertedAmount = useCallback(
-    (sub: Subscription): number => {
-      const resolved = convertedAmounts[sub.id]
-      if (resolved !== undefined) return resolved
-
-      const subCurrency = (sub.currency || currency) as CurrencyCode
-      if (subCurrency === currency) return sub.amount
-      return convertCurrencyCached(sub.amount, subCurrency, currency) ?? sub.amount
-    },
-    [convertedAmounts, currency]
-  )
-
-  useEffect(() => {
-    let cancelled = false
-
-    const resolveConvertedAmounts = async () => {
-      const entries = await Promise.all(
-        subscriptions.map(async (sub) => {
-          const subCurrency = (sub.currency || currency) as CurrencyCode
-          if (subCurrency === currency) {
-            return [sub.id, sub.amount] as const
-          }
-
-          const converted = await convertCurrency(sub.amount, subCurrency, currency)
-          return [sub.id, converted] as const
-        })
-      )
-
-      if (!cancelled) {
-        setConvertedAmounts(Object.fromEntries(entries))
-      }
-    }
-
-    void resolveConvertedAmounts()
-
-    return () => {
-      cancelled = true
-    }
-  }, [subscriptions, currency])
-
   const sortedSubscriptions = useMemo(() => {
     return [...subscriptions].sort((a, b) => {
       const priority = compareSubscriptionDisplayPriority(a, b)
       if (priority !== 0) return priority
 
-      const amountA = calculateMonthlyAmount(getConvertedAmount(a), a.billing_cycle)
-      const amountB = calculateMonthlyAmount(getConvertedAmount(b), b.billing_cycle)
+      const amountA = calculateMonthlyAmount(a.amount, a.billing_cycle)
+      const amountB = calculateMonthlyAmount(b.amount, b.billing_cycle)
       return amountB - amountA
     })
-  }, [subscriptions, getConvertedAmount])
+  }, [subscriptions])
 
   const totalMonthly = useMemo(() => {
     return subscriptions.reduce(
-      (sum, sub) => sum + calculateMonthlyAmount(getConvertedAmount(sub), sub.billing_cycle),
+      (sum, sub) => sum + calculateMonthlyAmount(sub.amount, sub.billing_cycle),
       0
     )
-  }, [subscriptions, getConvertedAmount])
+  }, [subscriptions])
 
   const treemapRects = useMemo((): TreemapRect[] => {
     if (
@@ -419,7 +378,7 @@ export function SubscriptionBento({
     }
 
     const nodes: TreemapNode[] = sortedSubscriptions.map((sub, index) => {
-      const monthlyValue = calculateMonthlyAmount(getConvertedAmount(sub), sub.billing_cycle)
+      const monthlyValue = calculateMonthlyAmount(sub.amount, sub.billing_cycle)
 
       return {
         value: monthlyValue,
@@ -435,7 +394,7 @@ export function SubscriptionBento({
       width: containerSize.width,
       height: containerSize.height,
     })
-  }, [sortedSubscriptions, containerSize, getConvertedAmount])
+  }, [sortedSubscriptions, containerSize])
 
   const getCategory = useCallback(
     (categoryId: string | null) => {
@@ -489,7 +448,7 @@ export function SubscriptionBento({
                 percentage={percentage}
                 currency={currency}
                 costNormalization={costNormalization}
-                convertedAmount={getConvertedAmount(rect.node.subscription)}
+                amount={rect.node.subscription.amount}
                 width={width}
                 height={height}
                 onEdit={onEdit}

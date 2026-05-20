@@ -1,7 +1,6 @@
 import { memo } from 'react'
 import { SubscriptionLogo } from '@/components/ui/subscription-logo'
 import { formatCurrency, type CurrencyCode } from '@/lib/currency'
-import { convertCurrencyCached } from '@/lib/exchange-rates'
 import { formatShortDate, getDaysUntil } from '@/lib/date-utils'
 
 interface UpcomingPaymentRowProps {
@@ -47,26 +46,15 @@ export const UpcomingPaymentRow = memo(function UpcomingPaymentRow({
       <div className="flex shrink-0 flex-col items-end gap-1 text-right">
         {(() => {
           const subCurrency = (subscription.currency || currency) as CurrencyCode
-          const isDifferent = subCurrency !== currency
-          const converted = isDifferent
-            ? convertCurrencyCached(subscription.amount, subCurrency, currency)
-            : null
           return (
-            <>
-              <div className="flex items-baseline gap-1">
-                <p className="text-foreground font-[family-name:var(--font-heading)] text-base font-bold sm:text-lg">
-                  {formatCurrency(subscription.amount, subCurrency)}
-                </p>
-                <span className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px]">
-                  {subCurrency}
-                </span>
-              </div>
-              {isDifferent && converted !== null && (
-                <p className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px]">
-                  ≈ {formatCurrency(converted, currency)} {currency}
-                </p>
-              )}
-            </>
+            <div className="flex items-baseline gap-1">
+              <p className="text-foreground font-[family-name:var(--font-heading)] text-base font-bold sm:text-lg">
+                {formatCurrency(subscription.amount, subCurrency)}
+              </p>
+              <span className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px]">
+                {subCurrency}
+              </span>
+            </div>
           )
         })()}
         {daysUntil !== null && daysUntil <= 1 ? (

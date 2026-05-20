@@ -1,7 +1,6 @@
 import { memo } from 'react'
 import { Pencil, Trash2, Power, Pin, Ban } from 'lucide-react'
 import { formatCurrency } from '@/lib/currency'
-import { convertCurrencyCached } from '@/lib/exchange-rates'
 import { formatPaymentDate } from '@/lib/date-utils'
 import { BILLING_CYCLE_SHORT, CATEGORY_BADGE_VARIANTS } from '@/lib/constants'
 import { calculateNormalizedAmount, NORMALIZATION_SUFFIXES } from '@/types/subscription'
@@ -115,18 +114,10 @@ export const SubscriptionsListView = memo(function SubscriptionsListView({
                   <td className="px-4 py-4">
                     {(() => {
                       const subCurrency = (sub.currency || currency) as CurrencyCode
-                      const isDifferent = subCurrency !== currency
-                      const converted = isDifferent
-                        ? convertCurrencyCached(sub.amount, subCurrency, currency)
-                        : null
 
                       if (isNormalized) {
-                        const baseAmount =
-                          isDifferent && converted !== null ? converted : sub.amount
-                        const displayCur =
-                          isDifferent && converted !== null ? currency : subCurrency
                         const normalizedAmount = calculateNormalizedAmount(
-                          baseAmount,
+                          sub.amount,
                           sub.billing_cycle,
                           costNormalization
                         )
@@ -134,10 +125,10 @@ export const SubscriptionsListView = memo(function SubscriptionsListView({
                           <>
                             <div className="flex items-baseline gap-1.5">
                               <p className="text-foreground font-[family-name:var(--font-heading)] font-semibold">
-                                {formatCurrency(normalizedAmount, displayCur)}
+                                {formatCurrency(normalizedAmount, subCurrency)}
                               </p>
                               <span className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px] tracking-wider">
-                                {displayCur}
+                                {subCurrency}
                               </span>
                             </div>
                             <p className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px] tracking-wider uppercase">
@@ -157,11 +148,6 @@ export const SubscriptionsListView = memo(function SubscriptionsListView({
                               {subCurrency}
                             </span>
                           </div>
-                          {isDifferent && converted !== null && (
-                            <p className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px]">
-                              ≈ {formatCurrency(converted, currency)} {currency}
-                            </p>
-                          )}
                           <p className="text-muted-foreground font-[family-name:var(--font-mono)] text-[10px] tracking-wider uppercase">
                             {BILLING_CYCLE_SHORT[sub.billing_cycle]}
                           </p>

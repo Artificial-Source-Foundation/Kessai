@@ -11,19 +11,10 @@ In the app sidebar, select **Settings**.
 In **Appearance**:
 
 1. Set **Theme** (`Dark`, `Light`, `System`).
-2. Set **Display Currency**.
+2. Set **Default Currency**.
 3. (Optional) Set **Monthly Budget**.
 
-These values drive totals shown in Dashboard and Subscriptions.
-
-## Configure exchange-rate overrides
-
-In **Custom Exchange Rates** (within **Appearance**):
-
-1. Add or adjust rates for currencies you use.
-2. Save changes.
-
-This uses settings-backed `display_exchange_rates` values.
+Default currency drives app totals, new subscription defaults, and budget formatting. Kessai does not convert between currencies; enter subscription amounts in the value you want totals to use.
 
 ## Configure notifications (desktop behavior)
 

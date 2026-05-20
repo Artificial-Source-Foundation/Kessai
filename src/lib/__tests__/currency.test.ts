@@ -36,6 +36,10 @@ describe('formatCurrency', () => {
   it('handles negative numbers', () => {
     expect(formatCurrency(-100, 'USD')).toBe('-$100.00')
   })
+
+  it('falls back for unsupported currency codes', () => {
+    expect(formatCurrency(12.34, 'NOT_A_CODE')).toBe('NOT_A_CODE 12.34')
+  })
 })
 
 describe('formatCompactCurrency', () => {
@@ -82,8 +86,12 @@ describe('getCurrencyOptions', () => {
     options.forEach((option) => {
       expect(option).toHaveProperty('value')
       expect(option).toHaveProperty('label')
+      expect(option).toHaveProperty('symbol')
+      expect(option).toHaveProperty('name')
+      expect(option).toHaveProperty('searchText')
       expect(typeof option.value).toBe('string')
       expect(typeof option.label).toBe('string')
+      expect(typeof option.searchText).toBe('string')
     })
   })
 
@@ -105,10 +113,24 @@ describe('CURRENCIES constant', () => {
       'MXN',
       'CAD',
       'AUD',
+      'NZD',
+      'CHF',
+      'SEK',
+      'NOK',
+      'DKK',
+      'PLN',
       'JPY',
       'CNY',
+      'KRW',
+      'SGD',
       'INR',
       'BRL',
+      'ARS',
+      'CLP',
+      'COP',
+      'PEN',
+      'ZAR',
+      'AED',
     ]
     expectedCurrencies.forEach((code) => {
       expect(CURRENCIES).toHaveProperty(code)
