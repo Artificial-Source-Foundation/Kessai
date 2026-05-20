@@ -3,6 +3,12 @@
 All notable changes to Kessai will be documented in this file.
 
 
+## [0.5.0](https://github.com/Artificial-Source/Kessai/compare/v0.4.7...v0.5.0) (2026-05-20)
+
+### Features
+
+* simplify currency handling ([547e323](https://github.com/Artificial-Source/Kessai/commit/547e32305845735506ede0bb782199ec7b12c695))
+
 ## [0.4.7](https://github.com/Artificial-Source/Kessai/compare/v0.4.6...v0.4.7) (2026-05-19)
 
 ### Features
