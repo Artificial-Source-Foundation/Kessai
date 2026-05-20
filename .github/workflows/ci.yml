@@ -54,7 +54,6 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm build
       - run: npx playwright install --with-deps chromium
       # E2E tests require a running Tauri app with display server.
       # Run dedicated real-web smoke coverage against the web backend path.
